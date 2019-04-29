@@ -12,7 +12,7 @@ def get_sales_person_based_on_address(address=None):
 from `tabAddress` as address
 inner join `tabTerritory` as territory
 on address.territory=territory.name
-where address.name=%s""",address,as_dict=True)[0]
-        return sales_person
+where address.name=%s""",address,as_dict=True)
+        return sales_person[0] if sales_person else None
     else:
         return None

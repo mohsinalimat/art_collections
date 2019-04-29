@@ -8,7 +8,7 @@ frappe.ui.form.on('Customer', {
         frappe.model.set_value(child.doctype, child.name, "address_title", address)
     },
     refresh: function (frm) {
-        if (frm.fields_dict['address_html'] && "addr_list" in frm.doc.__onload) {
+        if (frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)
             var str_to_find = "Address/"
             var len_of_str_to_find = str_to_find.length;
@@ -18,13 +18,11 @@ frappe.ui.form.on('Customer', {
             address = address.replace("%20", " ");
             if (frm.doc.customer_sales_person.length == 0) {
                 cur_frm.events.fill_customer_sales_person(address)
-            }
-            frm.doc.customer_sales_person.forEach(function (row) {
-                if (row.address_title != address) {
+            }else{
+                if (frm.doc.customer_sales_person[0].address_title != address) {
                     cur_frm.events.fill_customer_sales_person(address)
                 }
-            });
-
+            }
         }
     }
 });

@@ -1,4 +1,5 @@
 frappe.ui.form.on('Customer', {
+
     fill_customer_sales_person: function (address) {
         var doc = cur_frm.doc;
         if (doc.customer_sales_person[0]) {
@@ -7,6 +8,7 @@ frappe.ui.form.on('Customer', {
         var child = cur_frm.add_child("customer_sales_person");
         frappe.model.set_value(child.doctype, child.name, "address_title", address)
     },
+
     refresh: function (frm) {
         if (cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)
@@ -14,29 +16,47 @@ frappe.ui.form.on('Customer', {
             if (str.indexOf('No address added yet.')!=-1) {
                 console.log('no add')
             } else {
-                console.log('add')
-                var str_to_find = "Address/"
-                var len_of_str_to_find = str_to_find.length;
-                var pos = str.indexOf(str_to_find);
-                var new_pos = str.indexOf('"', pos + len_of_str_to_find);
-                var address = str.slice(pos + len_of_str_to_find, new_pos)
-                address = address.replace("%20", " ");
-                if (frm.doc.customer_sales_person.length == 0) {
-                    cur_frm.events.fill_customer_sales_person(address)
-                }else{
-                    if (frm.doc.customer_sales_person[0].address_title != address) {
-                        cur_frm.events.fill_customer_sales_person(address)
+                console.log('there is add')
+              return  frappe.call({
+                    method: 'art_collections.api.get_address_list',
+                    args: {
+                        name: frm.doc.name,
+                        doctype:frm.doc.doctype
+                    },
+                    async:false,
+                    callback: function (r) {
+                        if (r.message) {
+                            var no_change=true
+                            var customer_address_list=r.message
+                            if (customer_address_list.length==frm.doc.customer_sales_person.length) {
+                                customer_address_list.forEach(function (row,i) {
+                                    if (row.name!=frm.doc.customer_sales_person[i].address_title) {
+                                        no_change=false;
+                                        console.log('title not amtch'+i)
+                                    }
+                                });                       
+                                
+                            } else {
+                                console.log('leng not match')
+                                no_change=false
+                            }
+                            if (no_change==false) {
+                                frm.doc.customer_sales_person=undefined
+                                frm.refresh_field("customer_sales_person")
+                                customer_address_list.forEach(function (row,i) {
+                                    console.log(i)
+                                    var child = cur_frm.add_child("customer_sales_person");
+                                    frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
+                                });                              
+                            }
+                        }
                     }
-                }              
+                });
+
+    
             }
         }
-        // if (frm.doc.customer_sales_person.length > 0) {
-        //     frm.doc.customer_sales_person.forEach(function (row) {
-        //         if (!row.sales_person) {
-        //                 frappe.throw(__("Sales Person is empty at {0} row", [row.idx]));
-        //         }
-        //     });
-        // }   
+ 
     }
 });
 frappe.ui.form.on('Customer Sales Person', {

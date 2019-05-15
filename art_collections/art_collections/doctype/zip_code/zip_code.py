@@ -7,4 +7,5 @@ import frappe
 from frappe.model.document import Document
 
 class ZipCode(Document):
-	pass
+	def autoname(self):
+		self.name = " - ".join([self.zip_code, self.city])

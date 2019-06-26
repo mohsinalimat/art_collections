@@ -28,6 +28,4 @@ def get_address_list(name,doctype):
                 key = functools.cmp_to_key(lambda a, b:
                         (int(a.is_primary_address - b.is_primary_address)) or
                         (1 if a.modified - b.modified else 0)), reverse=True)
-        print address_list
-        print len(address_list)
         return address_list if address_list else None

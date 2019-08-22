@@ -46,9 +46,10 @@ frappe.ui.form.on('Customer', {
                                     console.log(i)
                                     var child = cur_frm.add_child("customer_sales_person");
                                     frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
-                                    frm.refresh_field("customer_sales_person")
-                                    frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
-                                });                              
+                                }); 
+                                frm.refresh_field("customer_sales_person")
+                                frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
+                                                         
                             }
                         }
                     }

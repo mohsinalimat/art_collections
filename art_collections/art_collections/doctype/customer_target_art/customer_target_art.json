@@ -1,0 +1,49 @@
+{
+ "creation": "2019-08-22 07:14:30.159310",
+ "description": "Year-wise Customer Target ",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fiscal_year",
+  "goal_amount",
+  "discount_percent"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "fiscal_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Year",
+   "options": "Fiscal Year",
+   "reqd": 1
+  },
+  {
+   "columns": 4,
+   "fieldname": "goal_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Goal Amount",
+   "reqd": 1
+  },
+  {
+   "columns": 3,
+   "fieldname": "discount_percent",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Discount Percentage"
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-08-22 07:23:26.137827",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Customer Target Art",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

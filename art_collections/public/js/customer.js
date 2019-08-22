@@ -42,11 +42,12 @@ frappe.ui.form.on('Customer', {
                             }
                             if (no_change==false) {
                                 frm.doc.customer_sales_person=undefined
-                                frm.refresh_field("customer_sales_person")
                                 customer_address_list.forEach(function (row,i) {
                                     console.log(i)
                                     var child = cur_frm.add_child("customer_sales_person");
                                     frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
+                                    frm.refresh_field("customer_sales_person")
+                                    frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
                                 });                              
                             }
                         }

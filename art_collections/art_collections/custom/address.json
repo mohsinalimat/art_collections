@@ -675,7 +675,7 @@
    "columns": 0,
    "creation": "2019-08-22 06:18:49.499055",
    "default": null,
-   "depends_on": "eval:doc.address_type == \"Shipping\"",
+   "depends_on": "",
    "description": null,
    "docstatus": 0,
    "dt": "Address",

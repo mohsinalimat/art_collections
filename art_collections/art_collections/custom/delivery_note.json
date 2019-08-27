@@ -181,7 +181,7 @@
    "in_list_view": 0,
    "in_standard_filter": 0,
    "insert_after": "double_check_order_flag_art",
-   "label": "Did you double check the order",
+   "label": "Order was double checked",
    "modified": "2019-08-22 06:33:58.291706",
    "modified_by": "Administrator",
    "name": "Delivery Note-did_you_double_check_the_order_art",

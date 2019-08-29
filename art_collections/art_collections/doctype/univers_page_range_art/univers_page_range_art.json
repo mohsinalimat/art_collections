@@ -1,0 +1,42 @@
+{
+ "creation": "2019-08-29 06:01:30.114395",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "univers",
+  "page_range_start",
+  "page_range_end"
+ ],
+ "fields": [
+  {
+   "fieldname": "univers",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Univers",
+   "options": "Univers Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "page_range_start",
+   "fieldtype": "Int",
+   "label": "Page Range Start"
+  },
+  {
+   "fieldname": "page_range_end",
+   "fieldtype": "Int",
+   "label": "Page Range End"
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-08-29 06:01:30.114395",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Univers Page Range Art",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

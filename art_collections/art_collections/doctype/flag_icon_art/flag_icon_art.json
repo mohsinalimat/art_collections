@@ -1,0 +1,61 @@
+{
+ "autoname": "field:flag_name",
+ "creation": "2019-08-30 06:14:09.668199",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "flag_name",
+  "flag__icon"
+ ],
+ "fields": [
+  {
+   "fieldname": "flag_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flag Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "flag__icon",
+   "fieldtype": "Attach Image",
+   "label": "Flag  Icon"
+  }
+ ],
+ "modified": "2019-08-30 06:14:09.668199",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Flag Icon Art",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

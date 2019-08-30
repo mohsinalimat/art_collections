@@ -1,55 +1,28 @@
 {
- "autoname": "field:event_name",
- "creation": "2019-08-29 05:50:04.982003",
- "description": "Specific Items are used in specific events",
+ "creation": "2019-08-30 06:10:06.989208",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "event_name"
+  "artyfetes_event"
  ],
  "fields": [
   {
-   "fieldname": "event_name",
-   "fieldtype": "Data",
+   "fieldname": "artyfetes_event",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Event Name",
-   "reqd": 1,
-   "unique": 1
+   "label": "Artyfetes Event",
+   "options": "Artyfetes Event",
+   "reqd": 1
   }
  ],
- "modified": "2019-08-29 05:50:04.982003",
+ "istable": 1,
+ "modified": "2019-08-30 06:10:06.989208",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Item Event Art",
- "name_case": "Title Case",
  "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Item Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
+ "permissions": [],
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

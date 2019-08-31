@@ -7,6 +7,8 @@ from frappe.website.render import clear_cache
 from frappe.core.doctype.file.file import create_new_folder
 from frappe.utils.file_manager import upload
 from frappe.utils import encode
+from datetime import datetime
+from frappe.utils import cstr, get_url, now_datetime
 
 
 @frappe.whitelist()
@@ -162,3 +164,17 @@ def heading(i,count):
                 'det':'Detail_'+count
         }
         return switcher.get(i,"Incorrect header")
+
+
+
+def zip_failed_files():
+    todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
+    failed_folder_path=frappe.get_site_path("public", "files")
+    zip_file_name="failed"+"_"+todays_date+".tar"
+    
+    zip_file_with_path=os.path.join(frappe.get_site_path("public", "files"),zip_file_name)
+    print(zip_file_with_path)
+    cmd_string = """tar -czf %s %s""" % (zip_file_with_path, "--directory="+failed_folder_path+" failed")
+    print(cmd_string)
+    err, out = frappe.utils.execute_in_shell(cmd_string)
+    print(err,out)

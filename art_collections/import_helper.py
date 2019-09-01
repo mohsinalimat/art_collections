@@ -168,13 +168,24 @@ def heading(i,count):
 
 
 def zip_failed_files():
-    todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
+
     failed_folder_path=frappe.get_site_path("public", "files")
+
+    todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
     zip_file_name="failed"+"_"+todays_date+".tar"
-    
     zip_file_with_path=os.path.join(frappe.get_site_path("public", "files"),zip_file_name)
     print(zip_file_with_path)
-    cmd_string = """tar -czf %s %s""" % (zip_file_with_path, "--directory="+failed_folder_path+" failed")
+
+    directory_argument="--directory="+failed_folder_path+" failed"
+    print(directory_argument)
+
+    cmd_string = """tar -czf %s %s""" % (zip_file_with_path,directory_argument)
+
     print(cmd_string)
     err, out = frappe.utils.execute_in_shell(cmd_string)
+    # cmd_string
     print(err,out)
+    # tar -cvzf ./arty_develop/public/files/g.tar --directory=./arty_develop/public/files failed
+    # err, out = frappe.utils.execute_in_shell("pwd")
+    # cmd_string
+    # print(err,out)

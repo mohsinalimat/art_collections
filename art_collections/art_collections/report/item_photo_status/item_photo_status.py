@@ -76,27 +76,27 @@ def get_columns():
 def get_data(filters):
 	condition =''
 	if filters["based_on"] == "All Items":
-		condition = """1=1"""
+		condition = """1=1 """
 	elif filters["based_on"] == "All < 5 Photo":
 		condition="""( 
-					file.item_count =0 or file.item_count is NULL or 
-					file.ba_count =0 or file.ba_count is NULL or
-					file.fr_count =0 or file.fr_count is NULL or
-					file.sit_count =0 or file.sit_count is NULL or
-					file.det_count =0 or file.det_count is NULL 
+					(file.item_count =0 or file.item_count is NULL )or 
+					(file.ba_count =0 or file.ba_count is NULL) or
+					(file.fr_count =0 or file.fr_count is NULL )or
+					(file.sit_count =0 or file.sit_count is NULL) or
+					(file.det_count =0 or file.det_count is NULL )
 					)"""
 	elif filters["based_on"] == "< 5 Photo & not resolved":		
 		condition="""( 
-					file.item_count =0 or file.item_count is NULL or 
-					file.ba_count =0 or file.ba_count is NULL or
-					file.fr_count =0 or file.fr_count is NULL or
-					file.sit_count =0 or file.sit_count is NULL or
-					file.det_count =0 or file.det_count is NULL 
-					)
+					(file.item_count =0 or file.item_count is NULL )or 
+					(file.ba_count =0 or file.ba_count is NULL) or
+					(file.fr_count =0 or file.fr_count is NULL )or
+					(file.sit_count =0 or file.sit_count is NULL) or
+					(file.det_count =0 or file.det_count is NULL ))
 					and i.allow_insufficient_images_for_web_art=0"""
 
 	data = []
-	data = frappe.db.sql("""
+	print(condition)
+	query="""
 SELECT 
     COALESCE(file.item, i.name) item,
     i.item_name item_name,
@@ -121,20 +121,21 @@ FROM
     FROM
         (SELECT 
         attached_to_name item,
-            REPLACE(REPLACE(LOWER(file_name), CONCAT(LOWER(attached_to_name), '_'), ''), '.jpeg', '') suff
+        	substring_index(REPLACE(LOWER(file_name), CONCAT(LOWER(attached_to_name), '_'), ''), '.', 1) suff
     FROM
         tabFile
     WHERE
         docstatus = 0 AND is_folder = 0
-            AND attached_to_doctype = 'Website Slideshow' UNION ALL SELECT 
-        REPLACE(file_name, '.jpeg', '') item, 'item' suff
+            AND attached_to_doctype = 'Website Slideshow' 
+  UNION ALL SELECT 
+        substring_index(file_name, '.', 1) item,  
+        'item' suff
     FROM
         tabFile
     WHERE
         docstatus = 0 AND is_folder = 0
             AND attached_to_doctype = 'Item') t
     GROUP BY t.item) file ON LOWER(i.name) = LOWER(file.item)
-	WHERE %s
-	ORDER BY allow_insuff , total_count""",condition
-	, as_dict=1)
+	WHERE """+condition+""" ORDER BY allow_insuff , total_count"""
+	data = frappe.db.sql(query, as_dict=1)
 	return data

@@ -156,6 +156,30 @@
  ],
  "custom_perms": [],
  "doctype": "Item Website Specification",
- "property_setters": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2019-08-29 06:28:51.937187",
+   "default_value": null,
+   "doc_type": "Item Website Specification",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "label",
+   "idx": 0,
+   "modified": "2019-08-29 06:28:51.937187",
+   "modified_by": "Administrator",
+   "name": "Item Website Specification-label-reqd",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "reqd",
+   "property_type": "Check",
+   "value": "1"
+  }
+ ],
  "sync_on_migrate": 1
 }

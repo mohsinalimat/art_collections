@@ -46,5 +46,34 @@ frappe.ui.form.on('Photo Upload Utility', {
 				});
 			}, "fa fa-play", "btn-success");
 		}
+
+		frm.add_custom_button(__('Download Failed Files'), function() {
+			frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.zip_failed_files', {
+				
+			}).then(r => {
+				let data=r.message
+				if (data) {
+					if (data=='failed') {
+						frappe.msgprint({
+							title: __('ZIP File Status'),
+							indicator: 'red',
+							message: __('Zip File Download Failure Encountered.')
+						})
+					} else {
+						var file_url = '/files/'+data;
+						file_url = file_url.replace(/#/g, '%23');
+						window.open(file_url);
+					}
+				}
+			})
+		}, "fa fa-play", "btn-success");
+
+		frm.add_custom_button(__('Report'), function() {
+			frappe.set_route('query-report', 'Item Photo Status', {based_on: '< 5 Photo & not resolved'});
+		}, "fa fa-play", "btn-success");
+
+		frm.add_custom_button(__('Error Log'), function() {
+			frappe.set_route('List', 'Error Log',{title:'1File Photo Upload Failure',seen: 'No'})
+		}, "fa fa-play", "btn-success");
 	}
 });

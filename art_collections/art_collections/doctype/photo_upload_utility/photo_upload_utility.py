@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 
 from frappe import _
-import os
+import os,json
 import shutil
 from frappe.website.render import clear_cache
 from frappe.core.doctype.file.file import create_new_folder,get_files_path
@@ -79,6 +79,14 @@ def upload_files(photo_upload_utility):
     # create virtual folder item_pics in file list if not exist
     if not frappe.db.exists("File", {"file_name": 'item_pics'}):
         create_new_folder('item_pics','Home')
+
+
+    # create a file_dict_with_status - this is a log
+    file_dict_with_status = {}
+    for dirpath, dirnames, filenames in os.walk(temp_public_folder):
+        for filename in filenames:
+            file_dict_with_status[filename] = "pending"
+
     try:
         walk_folder=os.walk(temp_public_folder)
         for dirpath, dirnames, filenames in walk_folder:
@@ -126,13 +134,18 @@ def upload_files(photo_upload_utility):
                                     else:
                                         reason='suffix_count_is_incorrect_it_should_be_'+next_count
                                 else:
-                                    suffix_heading=heading(suffix_in_fname[0:3],count)
-                                    reason=None                                   
+                                    if count=='01':
+                                        suffix_heading=heading(suffix_in_fname[0:3],count)
+                                        reason=None                                         
+                                    else:
+                                        reason='suffix_count_is_incorrect_it_should_be_'+count
+                                  
                         else:
                             reason='incorrect_suffix'
                 if reason:
                     # move_file_with_reason(temp_public_folder,failed_public_folder,fname,reason)
                     failed_files_count+=1
+                    file_dict_with_status[filename]='failed'+'_'+reason
                     shutil.move(os.path.join(dirpath, filename),os.path.join(failed_public_folder, filename))
                     os.rename(os.path.join(failed_public_folder, filename), os.path.join(failed_public_folder, (filename+'_'+reason)))
                     frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
@@ -209,6 +222,7 @@ def upload_files(photo_upload_utility):
                         os.remove(os.path.join(dirpath, filename))
                     
                     successful_files_count=successful_files_count+1
+                    file_dict_with_status[filename]='successful'
                     print('for loop processed_files_count',processed_files_count)
                 pending_files_count=pending_files_count-1
                 processed_files_count =processed_files_count+1
@@ -216,6 +230,7 @@ def upload_files(photo_upload_utility):
     except Exception as e:
         print('ex processed_files_count',processed_files_count)
         system_error = True
+        file_dict_with_status[filename]='system_error'+'_'+cstr(e)
         err_msg=cstr(e)+"\n"+cstr(fname)+"\n"+frappe.get_traceback()
         error_log = frappe.log_error(err_msg, _("File Photo Upload Failure"))
     finally:
@@ -231,6 +246,7 @@ def upload_files(photo_upload_utility):
         doc.system_error=system_error
         doc.pending_files_count=pending_files_count
         doc.successful_files_count=successful_files_count
+        doc.file_dict_with_status=json.dumps(file_dict_with_status,indent=0)
         if system_error==True:
             doc.photo_upload_status="System Error"
         else:
@@ -316,3 +332,6 @@ WHERE
     ORDER BY
     CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))
     return data[0][0] if data else None
+
+def create_file_list_with_status():
+    pass

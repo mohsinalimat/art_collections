@@ -5,7 +5,20 @@ frappe.ui.form.on('Photo Upload Utility', {
 
 	onload: function(frm) {
 		console.log('onload')
-
+		$(frm.fields_dict['output'].wrapper)
+		.html(`<ul>
+		<li><span >Total File Count #`+frm.doc.total_files_count+`</span>
+		  <ul class="nested">
+			<li><span >Processed File</span>
+			  <ul class="nested">
+			  <li>Successful File Count #`+frm.doc.successful_files_count+`</li>
+			  <li>Failed File Count #`+frm.doc.failed_files_count+`</li>
+			  </ul>
+			</li>
+			<li>Pending File Count #`+frm.doc.pending_files_count+`</li>
+		  </ul>
+		</li>
+	  </ul>`)
 
 		frappe.realtime.on("file_upload_progress", function(data) {
 			console.log(data,'data')
@@ -72,8 +85,9 @@ frappe.ui.form.on('Photo Upload Utility', {
 				frm.doc.processed_files_count=0
 				frm.doc.failed_files_count=0
 				frm.doc.system_error=0
-				frm.successful_files_count=0
-				frm.pending_files_count=0
+				frm.doc.successful_files_count=0
+				frm.doc.pending_files_count=0
+				$(frm.fields_dict['output'].wrapper).html(``)
 				frm.refresh_fields()
 				// frm.refresh_field('photo_upload_status')
 				frappe.call({
@@ -89,8 +103,9 @@ frappe.ui.form.on('Photo Upload Utility', {
 								frm.doc.processed_files_count=0
 								frm.doc.failed_files_count=0
 								frm.doc.system_error=0
-								frm.successful_files_count=0
-								frm.pending_files_count=0
+								frm.doc.successful_files_count=0
+								frm.doc.pending_files_count=0
+								$(frm.fields_dict['output'].wrapper).html(``)
 								frm.refresh_fields()								
 								frappe.msgprint(message[1]+' folder is empty','Error')
 							} else if(message=='queued'){

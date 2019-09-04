@@ -14,34 +14,40 @@ from frappe.core.doctype.file.file import create_new_folder,get_files_path
 from frappe.utils.file_manager import upload
 from frappe.utils import encode
 from datetime import datetime
-from frappe.utils import cstr, get_url, now_datetime
+from frappe.utils import cstr, get_url, now_datetime,get_bench_path
 from frappe.utils import update_progress_bar
+from frappe.utils.background_jobs import enqueue
+
 
 
 class PhotoUploadUtility(Document):
-	
-	def create_fees(self):
-		frappe.publish_realtime("file_upload__progress", {"progress": "25", "reload": 1}, user=frappe.session.user)
-		self.db_set("photo_upload_status", "In Process")
-		# frappe.publish_realtime("file_upload__progress",
-		# 	{"progress": "0", "reload": 1}, user=frappe.session.user)
-		# from art_collections.import_helper import upload_files
-		print('-------------25')
-		self.upload_files()
-		# total_records = sum([int(d.total_students) for d in self.student_groups])
-		# if total_records > 10:
-		# 	frappe.msgprint(_('''Fee records will be created in the background.
-		# 		In case of any error the error message will be updated in the Schedule.'''))
-		# 	enqueue(generate_fee, queue='default', timeout=6000, event='generate_fee',
-		# 		fee_schedule=self.name)
-		# else:
-		# 	generate_fee(self.name)
+    def start_file_upload(self):
+        frappe.publish_realtime("file_upload_progress",{"progress": "0", "reload": 1}, user=frappe.session.user)
 
+        public_files_path = frappe.get_site_path('public', 'files')
+        temp_public_folder = os.path.join(public_files_path, "temp")
+        total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
+        if total_files_count==0:
+            frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
+            temp_folder_absolute_path=get_bench_path()+temp_public_folder
+            temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites')
+            return 'empty_folder',temp_folder_absolute_path
+        else:
+        # self.queue_action('upload_action')
+            enqueue(upload_files, queue='default', timeout=6000, event='upload_files',photo_upload_utility=self.name)
+            return 'queued'
 
 
 @frappe.whitelist()
-def upload_files():
+def upload_files(photo_upload_utility):
     error_log=[]
+    total_files_count=0
+    processed_files_count=0
+    failed_files_count=0
+    system_error=False
+    successful_files_count=0
+    pending_files_count=0
+
     #folder paths
     public_files_path = frappe.get_site_path('public', 'files')
     temp_public_folder = os.path.join(public_files_path, "temp")
@@ -51,6 +57,21 @@ def upload_files():
     frappe.create_folder(failed_public_folder, with_init=False)
     frappe.create_folder(temp_public_folder, with_init=False)
 
+    # take  backup of last state of failed folder
+    zip_failed_files()
+    #del all files from failed folder
+    failed_files_path = os.path.join(public_files_path, "failed/*")
+    cmd_string = """rm -r %s""" % (failed_files_path)
+    err, out = frappe.utils.execute_in_shell(cmd_string)
+
+    #del old failed tar files other than last 2
+    cmd_string = """find %s -type f -name "failed_*.tar" | sort -nr | tail -n +3 | xargs rm -v""" % (public_files_path)
+    err, out = frappe.utils.execute_in_shell(cmd_string)    
+
+    total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
+    pending_files_count=total_files_count
+    # if total_files_count==0:
+    #     frappe.throw("Temp Folder is empty")
     # get list of item codes
     list_of_item_code = frappe.get_list('Item', filters={'docstatus': 0}, fields=['name'], order_by='name')
     list_of_item_code = [x['name'].lower() for x in list_of_item_code] # convert item_codes in lower case
@@ -60,12 +81,7 @@ def upload_files():
         create_new_folder('item_pics','Home')
     try:
         walk_folder=os.walk(temp_public_folder)
-        processed_records = 0
         for dirpath, dirnames, filenames in walk_folder:
-            total_records = sum([len(filenames)])
-            if total_records==0:
-                raise Exception("Temp Folder is empty")
-            print(total_records)
             for filename in filenames:
                 item_code_in_fname=None
                 suffix_in_fname=None
@@ -101,19 +117,25 @@ def upload_files():
                             if suffix_in_fname[-2].isdigit(): 
                                 count=suffix_in_fname[-2:]
                                 file_count_from_db=get_count_of_image_type(item_code_in_fname,suffix_in_fname[0:3])
-                                print(file_count_from_db)
-                                next_count='{0:02d}'.format(int(int(file_count_from_db)+1))
-                                if count==next_count:
-                                    suffix_heading=heading(suffix_in_fname[0:3],count)
-                                    reason=None
+                                if file_count_from_db!=None:
+                                    print(file_count_from_db)
+                                    next_count='{0:02d}'.format(int(int(file_count_from_db)+1))
+                                    if count==next_count:
+                                        suffix_heading=heading(suffix_in_fname[0:3],count)
+                                        reason=None
+                                    else:
+                                        reason='suffix_count_is_incorrect_it_should_be_'+next_count
                                 else:
-                                    reason='suffix_count_is_incorrect_it_should_be_'+next_count
+                                    suffix_heading=heading(suffix_in_fname[0:3],count)
+                                    reason=None                                   
                         else:
                             reason='incorrect_suffix'
                 if reason:
                     # move_file_with_reason(temp_public_folder,failed_public_folder,fname,reason)
+                    failed_files_count+=1
                     shutil.move(os.path.join(dirpath, filename),os.path.join(failed_public_folder, filename))
                     os.rename(os.path.join(failed_public_folder, filename), os.path.join(failed_public_folder, (filename+'_'+reason)))
+                    frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
                 else:
                     # move_file_to_public_folder(temp_public_folder,fname,public_files_path)
 
@@ -128,6 +150,7 @@ def upload_files():
                     if not suffix_in_fname:
                         attached_to_doctype='Item'
                         attached_to_name=item_code_in_fname
+                        folder_name='Home/item_pics/'+item_code_in_fname
                     else:
                         if not frappe.db.exists("Website Slideshow", item_code_in_fname):
                             slideshow_doc = frappe.get_doc({
@@ -181,16 +204,41 @@ def upload_files():
                         slideshow_doc.save()
                         item_doc.slideshow=slideshow_doc.name
                         item_doc.save()
-                        # add_comment('Website Slideshow',slideshow_doc.name)
                         clear_cache()
                     if os.path.exists(os.path.join(dirpath, filename)):
                         os.remove(os.path.join(dirpath, filename))
-            processed_records += 1
-            frappe.publish_realtime("file_upload__progress", {"progress": str(100), "reload": 1}, user=frappe.session.user)
-            # frappe.publish_realtime("file_upload__progress", {"progress": str(int(processed_records * 100/total_records)), "reload": 1}, user=frappe.session.user)
-    except Exception:
-        error_log = frappe.log_error(frappe.get_traceback(), _("File Photo Upload Failure"))
-
+                    
+                    successful_files_count=successful_files_count+1
+                    print('for loop processed_files_count',processed_files_count)
+                pending_files_count=pending_files_count-1
+                processed_files_count =processed_files_count+1
+                frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
+    except Exception as e:
+        print('ex processed_files_count',processed_files_count)
+        system_error = True
+        err_msg=cstr(e)+"\n"+cstr(fname)+"\n"+frappe.get_traceback()
+        error_log = frappe.log_error(err_msg, _("File Photo Upload Failure"))
+    finally:
+        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "total_files_count", total_files_count)
+        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "processed_files_count", processed_files_count)
+        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "failed_files_count", failed_files_count)
+        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "system_error", system_error)
+        print('fin processed_files_count',processed_files_count)
+        doc=frappe.get_doc(photo_upload_utility)
+        doc.total_files_count=total_files_count
+        doc.processed_files_count=processed_files_count
+        doc.failed_files_count=failed_files_count
+        doc.system_error=system_error
+        doc.pending_files_count=pending_files_count
+        doc.successful_files_count=successful_files_count
+        if system_error==True:
+            doc.photo_upload_status="System Error"
+        else:
+            doc.photo_upload_status="Completed"
+        doc.save()
+        doc.notify_update()
+        doc.reload()
+        frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
 
 
 def add_comment(dt,dn):
@@ -217,30 +265,54 @@ def heading(i,count):
 
 @frappe.whitelist()
 def zip_failed_files():
-
-    failed_folder_path=frappe.get_site_path("public", "files")
-
-    todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
-    zip_file_name="failed"+"_"+todays_date+".tar"
-    zip_file_with_path=os.path.join(frappe.get_site_path("public", "files"),zip_file_name)
-    print(zip_file_with_path)
-
-    directory_argument="--directory="+failed_folder_path+" failed"
-    print(directory_argument)
-
-    cmd_string = """tar -czf %s %s""" % (zip_file_with_path,directory_argument)
-
+    public_files_path = frappe.get_site_path('public', 'files')
+    failed_public_folder = os.path.join(public_files_path, "failed")
+    cmd_string = """find %s -type d ! -empty""" % (failed_public_folder)
     print(cmd_string)
     err, out = frappe.utils.execute_in_shell(cmd_string)
     # cmd_string
     print(err,out)
-    if err==b'':
-        print(zip_file_name)
-        return zip_file_name
+    if out!=b'':
+
+        failed_folder_path=frappe.get_site_path("public", "files")
+
+        todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
+        zip_file_name="failed"+"_"+todays_date+".tar"
+        zip_file_with_path=os.path.join(frappe.get_site_path("public", "files"),zip_file_name)
+        print(zip_file_with_path)
+
+        directory_argument="--directory="+failed_folder_path+" failed"
+        print(directory_argument)
+
+        cmd_string = """tar -czf %s %s""" % (zip_file_with_path,directory_argument)
+
+        print(cmd_string)
+        err, out = frappe.utils.execute_in_shell(cmd_string)
+        # cmd_string
+        print(err,out)
+        if err==b'':
+            print(zip_file_name)
+            return zip_file_name
+        else:
+            print('failed')
+            return failed
     else:
-        print('failed')
-        return failed
+        print('no file failed')
+        return 'empty failed folder'
     # tar -cvzf ./arty_develop/public/files/g.tar --directory=./arty_develop/public/files failed
     # err, out = frappe.utils.execute_in_shell("pwd")
     # cmd_string
     # print(err,out)
+
+def get_count_of_image_type(item_code,suffix):
+    data = frappe.db.sql("""
+    SELECT 
+    SUBSTR(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '.', 1),'_',- 1),4,2) AS file_count_from_db
+FROM
+    `tabFile`
+WHERE
+    STRCMP(LEFT(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '.', 1),'_',- 1),3),%s) = 0
+    AND attached_to_name = %s
+    ORDER BY
+    CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))
+    return data[0][0] if data else None

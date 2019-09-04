@@ -5,7 +5,17 @@
  "engine": "InnoDB",
  "field_order": [
   "output",
-  "photo_upload_status"
+  "photo_upload_status",
+  "section_break_3",
+  "total_files_count",
+  "system_error",
+  "system_error_log",
+  "column_break_7",
+  "successful_files_count",
+  "failed_files_count",
+  "download_failed_files",
+  "pending_files_count",
+  "processed_files_count"
  ],
  "fields": [
   {
@@ -17,11 +27,62 @@
    "fieldname": "photo_upload_status",
    "fieldtype": "Data",
    "label": "photo_upload_status"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_files_count",
+   "fieldtype": "Int",
+   "label": "Total Files #"
+  },
+  {
+   "fieldname": "failed_files_count",
+   "fieldtype": "Int",
+   "label": "Failed Files #"
+  },
+  {
+   "default": "0",
+   "fieldname": "system_error",
+   "fieldtype": "Check",
+   "label": "System Error"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "processed_files_count",
+   "fieldtype": "Int",
+   "label": "Processed Files #"
+  },
+  {
+   "depends_on": "eval:doc.failed_files_count>0",
+   "fieldname": "download_failed_files",
+   "fieldtype": "Button",
+   "label": "Download Failed Files"
+  },
+  {
+   "depends_on": "eval:doc.system_error==1",
+   "fieldname": "system_error_log",
+   "fieldtype": "Button",
+   "label": "System Error Log"
+  },
+  {
+   "fieldname": "successful_files_count",
+   "fieldtype": "Int",
+   "label": "Successful Files #"
+  },
+  {
+   "fieldname": "pending_files_count",
+   "fieldtype": "Int",
+   "label": "Pending Files #"
   }
  ],
  "issingle": 1,
- "modified": "2019-09-03 06:52:35.765971",
- "modified_by": "Administrator",
+ "modified": "2019-09-04 14:41:00.974102",
+ "modified_by": "ashish@greycube.in",
  "module": "Art Collections",
  "name": "Photo Upload Utility",
  "owner": "Administrator",

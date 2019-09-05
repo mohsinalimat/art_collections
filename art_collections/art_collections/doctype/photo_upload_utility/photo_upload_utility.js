@@ -125,7 +125,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 								frm.doc.zip_file_name='empty_failed_folder'
 								$(frm.fields_dict['output'].wrapper).html(``)
 								frm.refresh_fields()								
-								frappe.msgprint(message[1]+' folder is empty','Error')
+								frappe.msgprint('Empty Folder ---> '+message[1]+'<br><br> Please upload file in temp folder','Error')
 							} else if(message=='queued'){
 								frappe.show_alert({message:__('Your Process is queued'), indicator:'green'},2);
 							}

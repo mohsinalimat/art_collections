@@ -136,8 +136,9 @@ def upload_photo_files(photo_upload_utility):
                             if suffix_in_fname[-2].isdigit(): 
                                 count=suffix_in_fname[-2:]
                                 file_count_from_db=get_count_of_image_type(item_code_in_fname,suffix_in_fname[0:3])
+                                print(file_count_from_db)
+                                print('count1',count,type(count))
                                 if file_count_from_db!=None:
-                                    print(file_count_from_db)
                                     next_count='{0:02d}'.format(int(int(file_count_from_db)+1))
                                     if count==next_count:
                                         suffix_heading=heading(suffix_in_fname[0:3],count)
@@ -145,11 +146,12 @@ def upload_photo_files(photo_upload_utility):
                                     else:
                                         reason='suffix_count_is_incorrect_it_should_be_'+next_count
                                 else:
+                                    print('count2',count,type(count))
                                     if count=='01':
                                         suffix_heading=heading(suffix_in_fname[0:3],count)
                                         reason=None                                         
                                     else:
-                                        reason='suffix_count_is_incorrect_it_should_be_'+count
+                                        reason='suffix_count_is_incorrect_it_should_be_01'
                                   
                         else:
                             reason='incorrect_suffix'
@@ -330,6 +332,7 @@ WHERE
     AND attached_to_name = %s
     ORDER BY
     CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))
+    print(data,'data')
     return data[0][0] if data else None
 
 @frappe.whitelist()

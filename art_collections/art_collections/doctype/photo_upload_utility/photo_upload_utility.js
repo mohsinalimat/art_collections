@@ -7,15 +7,15 @@ frappe.ui.form.on('Photo Upload Utility', {
 		console.log('onload')
 		$(frm.fields_dict['output'].wrapper)
 		.html(`<ul>
-		<li><span >Total File Count #`+frm.doc.total_files_count+`</span>
+		<li><span >Total File Count #	<b>`+frm.doc.total_files_count+`</b></span>
 		  <ul class="nested">
 			<li><span >Processed File</span>
 			  <ul class="nested">
-			  <li>Successful File Count #`+frm.doc.successful_files_count+`</li>
-			  <li>Failed File Count #`+frm.doc.failed_files_count+`</li>
+			  <li>Successful File Count #	<b>`+frm.doc.successful_files_count+`</b></li>
+			  <li>Failed File Count #	<b>`+frm.doc.failed_files_count+`</b></li>
 			  </ul>
 			</li>
-			<li>Pending File Count #`+frm.doc.pending_files_count+`</li>
+			<li>Pending File Count #	<b>`+frm.doc.pending_files_count+`</b></li>
 		  </ul>
 		</li>
 	  </ul>`)
@@ -135,7 +135,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 								frm.refresh_fields()								
 								frappe.msgprint(message[1]+' folder is empty','Error')
 							} else if(message=='queued'){
-								frappe.msgprint('Your Process is queued','Information')
+								frappe.show_alert({message:__('Your Process is queued'), indicator:'green'},2);
 							}
 							else {
 								console.log(r)

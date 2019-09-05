@@ -72,8 +72,6 @@ def upload_photo_files(photo_upload_utility):
 
     total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
     pending_files_count=total_files_count
-    # if total_files_count==0:
-    #     frappe.throw("Temp Folder is empty")
     # get list of item codes
     list_of_item_code = frappe.get_list('Item', filters={'docstatus': 0}, fields=['name'], order_by='name')
     list_of_item_code = [x['name'].lower() for x in list_of_item_code] # convert item_codes in lower case
@@ -96,11 +94,8 @@ def upload_photo_files(photo_upload_utility):
         filenames_list=[]
         walk_folder=os.walk(temp_public_folder)
         for dirpath, dirnames, filenames in walk_folder:
-            print('tuples',filenames)
             filenames_list.extend(filenames)
-            print('list before',filenames_list)
             filenames_list.sort()
-            print('list after',filenames_list)
             for filename in filenames_list:
                 item_code_in_fname=None
                 suffix_in_fname=None
@@ -136,8 +131,6 @@ def upload_photo_files(photo_upload_utility):
                             if suffix_in_fname[-2].isdigit(): 
                                 count=suffix_in_fname[-2:]
                                 file_count_from_db=get_count_of_image_type(item_code_in_fname,suffix_in_fname[0:3])
-                                print(file_count_from_db)
-                                print('count1',count,type(count))
                                 if file_count_from_db!=None:
                                     next_count='{0:02d}'.format(int(int(file_count_from_db)+1))
                                     if count==next_count:
@@ -146,7 +139,6 @@ def upload_photo_files(photo_upload_utility):
                                     else:
                                         reason='suffix_count_is_incorrect_it_should_be_'+next_count
                                 else:
-                                    print('count2',count,type(count))
                                     if count=='01':
                                         suffix_heading=heading(suffix_in_fname[0:3],count)
                                         reason=None                                         
@@ -213,7 +205,6 @@ def upload_photo_files(photo_upload_utility):
                     if not suffix_in_fname:
                         item_doc.image=file_doc.file_url
                         item_doc.save()
-                        # item_doc.run_method('validate')
                         item_doc.run_method('validate_website_image')
                         item_doc.run_method('make_thumbnail')
                     else:
@@ -287,10 +278,7 @@ def zip_failed_files():
     public_files_path = frappe.get_site_path('public', 'files')
     failed_public_folder = os.path.join(public_files_path, "failed")
     cmd_string = """find %s -type d ! -empty""" % (failed_public_folder)
-    print(cmd_string)
     err, out = frappe.utils.execute_in_shell(cmd_string)
-    # cmd_string
-    print(err,out)
     if out!=b'':
 
         failed_folder_path=frappe.get_site_path("public", "files")
@@ -300,25 +288,17 @@ def zip_failed_files():
         failed_zip_folder = os.path.join(public_files_path, "failed_zip_folder")
         zip_file_with_path=os.path.join(failed_zip_folder,zip_file_name)
         
-        print(zip_file_with_path)
 
         directory_argument="--directory="+failed_folder_path+" failed"
-        print(directory_argument)
 
         cmd_string = """tar -czf %s %s""" % (zip_file_with_path,directory_argument)
 
-        print(cmd_string)
         err, out = frappe.utils.execute_in_shell(cmd_string)
-        # cmd_string
-        print(err,out)
         if err==b'':
-            print(zip_file_name)
             return zip_file_name
         else:
-            print('failed')
             return 'failed'
     else:
-        print('no file failed')
         return 'empty_failed_folder'
 
 def get_count_of_image_type(item_code,suffix):
@@ -332,7 +312,6 @@ WHERE
     AND attached_to_name = %s
     ORDER BY
     CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))
-    print(data,'data')
     return data[0][0] if data else None
 
 @frappe.whitelist()
@@ -343,15 +322,11 @@ def empty_all_folder():
     failed_zip_folder = os.path.join(public_files_path, "failed_zip_folder")
     #del old failed tar files other than last 2
     cmd_string = """find %s -type f -name "failed_*.tar" | sort -nr | tail -n +3 | xargs rm """ % (failed_zip_folder)
-    print(cmd_string)
     err, out = frappe.utils.execute_in_shell(cmd_string)
-    print('zip',err,out)
 
     #del all files from temp folder
     temp_files_path = os.path.join(public_files_path, "temp/*")
     cmd_string = """rm -r %s""" % (temp_files_path)
-    print(cmd_string)
     err, out = frappe.utils.execute_in_shell(cmd_string)
-    print('temp',err,out)
     return out
 

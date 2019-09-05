@@ -4,7 +4,6 @@
 frappe.ui.form.on('Photo Upload Utility', {
 
 	onload: function(frm) {
-		console.log('onload')
 		$(frm.fields_dict['output'].wrapper)
 		.html(`<ul>
 		<li><span >Total File Count #	<b>`+frm.doc.total_files_count+`</b></span>
@@ -21,7 +20,6 @@ frappe.ui.form.on('Photo Upload Utility', {
 	  </ul>`)
 
 		frappe.realtime.on("file_upload_progress", function(data) {
-			console.log(data,'data')
 			if (data.reload && data.reload === 1) {
 				frm.reload_doc();
 			}
@@ -35,9 +33,6 @@ frappe.ui.form.on('Photo Upload Utility', {
 		});
 	},
 	download_failed_files: function(frm) {
-			// frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.zip_failed_files', {
-			// }).then(r => 
-			// 	{
 				let data=frm.doc.zip_file_name
 				if (data) {
 					if (data=='failed') {
@@ -66,8 +61,6 @@ frappe.ui.form.on('Photo Upload Utility', {
 						message: __('Failed Folder is Empty, Nothing to Download.')
 					})
 				}
-			// }
-			// )
 	},	
 	system_error_log: function(frm) {
 		frappe.set_route('List', 'Error Log',{method:['Like','%photo%'],seen: 'No'})
@@ -76,7 +69,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 		frm.page.add_menu_item(__("Sanitize Folder"), function() {
 			frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.empty_all_folder', {
 			}).then(r => 
-				{	console.log(r)
+				{	
 					if (r.message=='') {
 						frappe.msgprint({
 							title: __('Folder Status'),
@@ -113,7 +106,6 @@ frappe.ui.form.on('Photo Upload Utility', {
 				frm.doc.zip_file_name='empty_failed_folder'
 				$(frm.fields_dict['output'].wrapper).html(``)
 				frm.refresh_fields()
-				// frm.refresh_field('photo_upload_status')
 				frappe.call({
 					method: "start_file_upload",
 					doc: frm.doc,

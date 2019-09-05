@@ -81,8 +81,8 @@ frappe.ui.form.on('Photo Upload Utility', {
 						frappe.msgprint({
 							title: __('Folder Status'),
 							indicator: 'green',
-							message: __(`Temp Folder is Emptied.`+`\\n`+
-										`failed_zip_folder has latest 2 files only`)
+							message: __(`[a] Temp Folder is Emptied.`+`<br>`+
+										`[b] failed_zip_folder has now latest 2 files only`)
 						})					
 					}
 

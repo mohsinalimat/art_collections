@@ -91,7 +91,7 @@
   {
    "fieldname": "file_dict_with_status",
    "fieldtype": "Code",
-   "label": "File Log"
+   "label": "Process Log"
   },
   {
    "fieldname": "column_break_2",
@@ -105,7 +105,7 @@
   }
  ],
  "issingle": 1,
- "modified": "2019-09-05 06:22:43.455607",
+ "modified": "2019-09-05 08:33:29.039564",
  "modified_by": "ashish@greycube.in",
  "module": "Art Collections",
  "name": "Photo Upload Utility",

@@ -35,9 +35,10 @@ frappe.ui.form.on('Photo Upload Utility', {
 		});
 	},
 	download_failed_files: function(frm) {
-			frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.zip_failed_files', {
-			}).then(r => {
-				let data=r.message
+			// frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.zip_failed_files', {
+			// }).then(r => 
+			// 	{
+				let data=frm.doc.zip_file_name
 				if (data) {
 					if (data=='failed') {
 						frappe.msgprint({
@@ -46,7 +47,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 							message: __('Zip File Download Failure Encountered.')
 						})
 					}
-					else if(data=='empty failed folder'){
+					else if(data=='empty_failed_folder'){
 						frappe.msgprint({
 							title: __('ZIP File Status'),
 							indicator: 'red',
@@ -54,18 +55,39 @@ frappe.ui.form.on('Photo Upload Utility', {
 						})
 					}
 					else {
-						var file_url = '/files/'+data;
+						var file_url = '/files/failed_zip_folder/'+data;
 						file_url = file_url.replace(/#/g, '%23');
 						window.open(file_url);
 					}
+				}else{
+					frappe.msgprint({
+						title: __('ZIP File Status'),
+						indicator: 'red',
+						message: __('Failed Folder is Empty, Nothing to Download.')
+					})
 				}
-			})
+			// }
+			// )
 	},	
 	system_error_log: function(frm) {
-		frappe.set_route('List', 'Error Log',{method:'File Photo Upload Failure',seen: 'No'})
+		frappe.set_route('List', 'Error Log',{method:['Like','%photo%'],seen: 'No'})
 	},
 	refresh: function(frm) {
+		frm.page.add_menu_item(__("Sanitize Folder"), function() {
+			frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.empty_all_folder', {
+			}).then(r => 
+				{	console.log(r)
+					if (r.message=='') {
+						frappe.msgprint({
+							title: __('Folder Status'),
+							indicator: 'green',
+							message: __(`Temp Folder is Emptied.`+`\\n`+
+										`failed_zip_folder has latest 2 files only`)
+						})					
+					}
 
+				})
+		});
 		
 		if(!frm.doc.__islocal && frm.doc.__onload &&
 			frm.doc.photo_upload_status=="Completed") {
@@ -87,6 +109,8 @@ frappe.ui.form.on('Photo Upload Utility', {
 				frm.doc.system_error=0
 				frm.doc.successful_files_count=0
 				frm.doc.pending_files_count=0
+				frm.doc.file_dict_with_status=''
+				frm.doc.zip_file_name='empty_failed_folder'
 				$(frm.fields_dict['output'].wrapper).html(``)
 				frm.refresh_fields()
 				// frm.refresh_field('photo_upload_status')
@@ -105,6 +129,8 @@ frappe.ui.form.on('Photo Upload Utility', {
 								frm.doc.system_error=0
 								frm.doc.successful_files_count=0
 								frm.doc.pending_files_count=0
+								frm.doc.file_dict_with_status=''
+								frm.doc.zip_file_name='empty_failed_folder'
 								$(frm.fields_dict['output'].wrapper).html(``)
 								frm.refresh_fields()								
 								frappe.msgprint(message[1]+' folder is empty','Error')

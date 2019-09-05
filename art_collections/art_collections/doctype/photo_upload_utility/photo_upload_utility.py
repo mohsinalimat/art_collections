@@ -23,23 +23,25 @@ from frappe.utils.background_jobs import enqueue
 class PhotoUploadUtility(Document):
     def start_file_upload(self):
         frappe.publish_realtime("file_upload_progress",{"progress": "0", "reload": 1}, user=frappe.session.user)
-
         public_files_path = frappe.get_site_path('public', 'files')
         temp_public_folder = os.path.join(public_files_path, "temp")
-        total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
-        if total_files_count==0:
+        frappe.create_folder(temp_public_folder, with_init=False)
+        cmd_string = """find %s -type d ! -empty""" % (temp_public_folder)
+        err, out = frappe.utils.execute_in_shell(cmd_string)
+        if out==b'':
+        # total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
+        # if total_files_count==0:
             frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
             temp_folder_absolute_path=get_bench_path()+temp_public_folder
             temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites')
             return 'empty_folder',temp_folder_absolute_path
         else:
-        # self.queue_action('upload_action')
-            enqueue(upload_files, queue='default', timeout=6000, event='upload_files',photo_upload_utility=self.name)
+            enqueue(upload_photo_files, queue='default', timeout=6000, event='upload_photo_files',photo_upload_utility=self.name)
             return 'queued'
 
 
 @frappe.whitelist()
-def upload_files(photo_upload_utility):
+def upload_photo_files(photo_upload_utility):
     error_log=[]
     total_files_count=0
     processed_files_count=0
@@ -52,21 +54,21 @@ def upload_files(photo_upload_utility):
     public_files_path = frappe.get_site_path('public', 'files')
     temp_public_folder = os.path.join(public_files_path, "temp")
     failed_public_folder = os.path.join(public_files_path, "failed")
-
+    failed_zip_folder = os.path.join(public_files_path, "failed_zip_folder")
+    
     #create folder if it doesn't exist
     frappe.create_folder(failed_public_folder, with_init=False)
-    frappe.create_folder(temp_public_folder, with_init=False)
+    frappe.create_folder(failed_zip_folder, with_init=False)    
 
     # take  backup of last state of failed folder
-    zip_failed_files()
+    # zip_failed_files()
+    
     #del all files from failed folder
     failed_files_path = os.path.join(public_files_path, "failed/*")
     cmd_string = """rm -r %s""" % (failed_files_path)
     err, out = frappe.utils.execute_in_shell(cmd_string)
 
-    #del old failed tar files other than last 2
-    cmd_string = """find %s -type f -name "failed_*.tar" | sort -nr | tail -n +3 | xargs rm -v""" % (public_files_path)
-    err, out = frappe.utils.execute_in_shell(cmd_string)    
+   
 
     total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
     pending_files_count=total_files_count
@@ -83,14 +85,23 @@ def upload_files(photo_upload_utility):
 
     # create a file_dict_with_status - this is a log
     file_dict_with_status = {}
+    filenames_list_for_log=[]
     for dirpath, dirnames, filenames in os.walk(temp_public_folder):
-        for filename in filenames:
+        filenames_list_for_log.extend(filenames)
+        filenames_list_for_log.sort()
+        for filename in filenames_list_for_log:
             file_dict_with_status[filename] = "pending"
 
     try:
+        filenames_list=[]
         walk_folder=os.walk(temp_public_folder)
         for dirpath, dirnames, filenames in walk_folder:
-            for filename in filenames:
+            print('tuples',filenames)
+            filenames_list.extend(filenames)
+            print('list before',filenames_list)
+            filenames_list.sort()
+            print('list after',filenames_list)
+            for filename in filenames_list:
                 item_code_in_fname=None
                 suffix_in_fname=None
                 reason=None
@@ -152,11 +163,6 @@ def upload_files(photo_upload_utility):
                 else:
                     # move_file_to_public_folder(temp_public_folder,fname,public_files_path)
 
-                    path = os.path.join(dirpath, fname)
-                    print(path)
-                    file_size = os.stat(os.path.join(dirpath, filename)).st_size # in bytes
-
-
                     if not frappe.db.exists("File", {"file_name": item_code_in_fname}):
                         create_new_folder(item_code_in_fname,'Home/item_pics')
 
@@ -186,8 +192,6 @@ def upload_files(photo_upload_utility):
                     else:
                         file_doc = frappe.new_doc("File")
 
-                    path = os.path.join(dirpath, fname)
-                    print(path)
                     file_size = os.stat(os.path.join(dirpath, filename)).st_size # in bytes
 
                     file_doc.file_name = fname
@@ -223,22 +227,15 @@ def upload_files(photo_upload_utility):
                     
                     successful_files_count=successful_files_count+1
                     file_dict_with_status[filename]='successful'
-                    print('for loop processed_files_count',processed_files_count)
                 pending_files_count=pending_files_count-1
                 processed_files_count =processed_files_count+1
                 frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
     except Exception as e:
-        print('ex processed_files_count',processed_files_count)
         system_error = True
         file_dict_with_status[filename]='system_error'+'_'+cstr(e)
         err_msg=cstr(e)+"\n"+cstr(fname)+"\n"+frappe.get_traceback()
         error_log = frappe.log_error(err_msg, _("File Photo Upload Failure"))
     finally:
-        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "total_files_count", total_files_count)
-        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "processed_files_count", processed_files_count)
-        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "failed_files_count", failed_files_count)
-        # frappe.db.set_value(photo_upload_utility, photo_upload_utility, "system_error", system_error)
-        print('fin processed_files_count',processed_files_count)
         doc=frappe.get_doc(photo_upload_utility)
         doc.total_files_count=total_files_count
         doc.processed_files_count=processed_files_count
@@ -251,6 +248,10 @@ def upload_files(photo_upload_utility):
             doc.photo_upload_status="System Error"
         else:
             doc.photo_upload_status="Completed"
+        if failed_files_count>0:
+            doc.zip_file_name=zip_failed_files()
+        else:
+            doc.zip_file_name='empty_failed_folder'
         doc.save()
         doc.notify_update()
         doc.reload()
@@ -294,7 +295,9 @@ def zip_failed_files():
 
         todays_date = now_datetime().strftime('%Y%m%d_%H%M%S')
         zip_file_name="failed"+"_"+todays_date+".tar"
-        zip_file_with_path=os.path.join(frappe.get_site_path("public", "files"),zip_file_name)
+        failed_zip_folder = os.path.join(public_files_path, "failed_zip_folder")
+        zip_file_with_path=os.path.join(failed_zip_folder,zip_file_name)
+        
         print(zip_file_with_path)
 
         directory_argument="--directory="+failed_folder_path+" failed"
@@ -311,14 +314,10 @@ def zip_failed_files():
             return zip_file_name
         else:
             print('failed')
-            return failed
+            return 'failed'
     else:
         print('no file failed')
-        return 'empty failed folder'
-    # tar -cvzf ./arty_develop/public/files/g.tar --directory=./arty_develop/public/files failed
-    # err, out = frappe.utils.execute_in_shell("pwd")
-    # cmd_string
-    # print(err,out)
+        return 'empty_failed_folder'
 
 def get_count_of_image_type(item_code,suffix):
     data = frappe.db.sql("""
@@ -333,5 +332,23 @@ WHERE
     CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))
     return data[0][0] if data else None
 
-def create_file_list_with_status():
-    pass
+@frappe.whitelist()
+def empty_all_folder():
+    public_files_path = frappe.get_site_path('public', 'files')
+    temp_public_folder = os.path.join(public_files_path, "temp")
+    failed_public_folder = os.path.join(public_files_path, "failed")
+    failed_zip_folder = os.path.join(public_files_path, "failed_zip_folder")
+    #del old failed tar files other than last 2
+    cmd_string = """find %s -type f -name "failed_*.tar" | sort -nr | tail -n +3 | xargs rm """ % (failed_zip_folder)
+    print(cmd_string)
+    err, out = frappe.utils.execute_in_shell(cmd_string)
+    print('zip',err,out)
+
+    #del all files from temp folder
+    temp_files_path = os.path.join(public_files_path, "temp/*")
+    cmd_string = """rm -r %s""" % (temp_files_path)
+    print(cmd_string)
+    err, out = frappe.utils.execute_in_shell(cmd_string)
+    print('temp',err,out)
+    return out
+

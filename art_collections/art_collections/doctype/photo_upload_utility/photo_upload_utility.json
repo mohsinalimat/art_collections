@@ -13,6 +13,7 @@
   "successful_files_count",
   "failed_files_count",
   "download_failed_files",
+  "zip_file_name",
   "pending_files_count",
   "system_error",
   "system_error_log",
@@ -95,10 +96,16 @@
   {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.failed_files_count>0",
+   "fieldname": "zip_file_name",
+   "fieldtype": "Data",
+   "label": "ZIP Failed File Name"
   }
  ],
  "issingle": 1,
- "modified": "2019-09-04 21:12:15.100578",
+ "modified": "2019-09-05 06:22:43.455607",
  "modified_by": "ashish@greycube.in",
  "module": "Art Collections",
  "name": "Photo Upload Utility",

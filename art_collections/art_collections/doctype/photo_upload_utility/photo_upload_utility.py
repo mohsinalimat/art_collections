@@ -21,27 +21,43 @@ from frappe.utils.background_jobs import enqueue
 
 
 class PhotoUploadUtility(Document):
-    def start_file_upload(self):
-        frappe.publish_realtime("file_upload_progress",{"progress": "0", "reload": 1}, user=frappe.session.user)
-        public_files_path = frappe.get_site_path('public', 'files')
-        temp_public_folder = os.path.join(public_files_path, "temp")
-        frappe.create_folder(temp_public_folder, with_init=False)
-        cmd_string = """find %s -type d ! -empty""" % (temp_public_folder)
-        err, out = frappe.utils.execute_in_shell(cmd_string)
-        if out==b'':
-        # total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
-        # if total_files_count==0:
-            frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
-            temp_folder_absolute_path=get_bench_path()+temp_public_folder
-            temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites')
-            return 'empty_folder',temp_folder_absolute_path
-        else:
-            enqueue(upload_photo_files, queue='default', timeout=6000, event='upload_photo_files',photo_upload_utility=self.name)
-            return 'queued'
+    pass
+@frappe.whitelist()    
+def start_file_upload(start_time):
+    frappe.publish_realtime("file_upload_progress",{"progress": "0", "reload": 1}, user=frappe.session.user)
+    public_files_path = frappe.get_site_path('public', 'files')
+    temp_public_folder = os.path.join(public_files_path, "temp")
+    frappe.create_folder(temp_public_folder, with_init=False)
+    cmd_string = """find %s -type d ! -empty""" % (temp_public_folder)
+    err, out = frappe.utils.execute_in_shell(cmd_string)
+    if out==b'':
+    # total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
+    # if total_files_count==0:
+        frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
+        temp_folder_absolute_path=get_bench_path()+temp_public_folder
+        temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites')
+
+        doc=frappe.get_doc('Photo Upload Utility')
+        doc.last_execution_date_time=start_time
+        doc.photo_upload_status='Completed'
+        doc.total_files_count=0
+        doc.successful_files_count=0
+        doc.failed_files_count=0
+        doc.zip_file_name='empty_failed_folder'
+        doc.pending_files_count=0
+        doc.system_error=0
+        doc.processed_files_count=0
+        doc.file_dict_with_status=''
+        doc.save()
+        doc.reload()
+        return 'empty_folder',temp_folder_absolute_path
+    else:
+        enqueue(upload_photo_files, queue='short', timeout=9000, event='upload_photo_files',start_time=start_time)
+        return 'queued'
 
 
 @frappe.whitelist()
-def upload_photo_files(photo_upload_utility):
+def upload_photo_files(start_time):
     error_log=[]
     total_files_count=0
     processed_files_count=0
@@ -155,7 +171,7 @@ def upload_photo_files(photo_upload_utility):
                             file_dict_with_status[filename]='failed__'+reason
                             shutil.move(os.path.join(dirpath, filename),os.path.join(failed_public_folder, filename))
                             os.rename(os.path.join(failed_public_folder, filename), os.path.join(failed_public_folder, (filename+'__'+reason)))
-                            frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
+                            # frappe.publish_realtime("file_upload_progress", {"progress": str(int(processed_files_count * 100/total_files_count))}, user=frappe.session.user)
                         else:
                             # move_file_to_public_folder(temp_public_folder,fname,public_files_path)
 
@@ -242,13 +258,14 @@ def upload_photo_files(photo_upload_utility):
                         err_msg=cstr(e)+"\n"+cstr(fname)+"\n"+frappe.get_traceback()
                         error_log = frappe.log_error(err_msg, _("File Photo Upload Failure"))
                     finally:
-                        doc=frappe.get_doc(photo_upload_utility)
+                        doc=frappe.get_doc('Photo Upload Utility')
                         doc.total_files_count=total_files_count
                         doc.processed_files_count=processed_files_count
                         doc.failed_files_count=failed_files_count
                         doc.system_error=system_error
                         doc.pending_files_count=pending_files_count
                         doc.successful_files_count=successful_files_count
+                        doc.last_execution_date_time=start_time
                         doc.file_dict_with_status=json.dumps(file_dict_with_status,indent=0)
                         if system_error==True:
                             doc.photo_upload_status="System Error"
@@ -259,9 +276,9 @@ def upload_photo_files(photo_upload_utility):
                         else:
                             doc.zip_file_name='empty_failed_folder'
                         doc.save()
-                        doc.notify_update()
-                        doc.reload()
+                        # doc.notify_update()
                         frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
+                        doc.reload()
 
 
 def add_comment(dt,dn):

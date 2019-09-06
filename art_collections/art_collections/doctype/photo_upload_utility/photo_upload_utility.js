@@ -82,10 +82,6 @@ frappe.ui.form.on('Photo Upload Utility', {
 				})
 		});
 		
-		if(!frm.doc.__islocal && frm.doc.__onload &&
-			frm.doc.photo_upload_status=="Completed") {
-
-		}
 		if (frm.doc.photo_upload_status=="In Process") {
 			frm.dashboard.add_progress(__('Photo Upload Status'), "0");
 		}
@@ -105,26 +101,16 @@ frappe.ui.form.on('Photo Upload Utility', {
 				frm.doc.file_dict_with_status=''
 				frm.doc.zip_file_name='empty_failed_folder'
 				$(frm.fields_dict['output'].wrapper).html(``)
+				frm.doc.last_execution_date_time=frappe.datetime.now_datetime()
 				frm.refresh_fields()
 				frappe.call({
-					method: "start_file_upload",
-					doc: frm.doc,
+					method: "art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.start_file_upload",
+					args: {start_time:frm.doc.last_execution_date_time},
 					callback: function(r) {
 						if (r) {
 							console.log(r)
 							let message=r.message
 							if (message[0]=='empty_folder') {
-								frm.doc.photo_upload_status='Completed'
-								frm.doc.total_files_count=0
-								frm.doc.processed_files_count=0
-								frm.doc.failed_files_count=0
-								frm.doc.system_error=0
-								frm.doc.successful_files_count=0
-								frm.doc.pending_files_count=0
-								frm.doc.file_dict_with_status=''
-								frm.doc.zip_file_name='empty_failed_folder'
-								$(frm.fields_dict['output'].wrapper).html(``)
-								frm.refresh_fields()								
 								frappe.msgprint('Empty Folder ---> '+message[1]+'<br><br> Please upload file in temp folder','Error')
 							} else if(message=='queued'){
 								frappe.show_alert({message:__('Your Process is queued'), indicator:'green'},2);
@@ -155,7 +141,9 @@ frappe.ui.form.on('Photo Upload Utility', {
 						<i class="fa fa-hand-right"></i>
 						${__('Notes')}
 					</h4>
-<ul><li>valid Photo file formats gif, jpg, jpeg,tiff,pn,svg</li><li>valid File name convention&nbsp; : a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; b)&nbsp;For website slideshow&nbsp; : Itemcode_suffix.extn</li><li>e.g. itemcode = 7878</li><li>valid suffix = fr, ba, sit, det</li><li>fr and ba will be only one per item , while situation (sit) , details (det) could be multiple with number suffix . e.g. 7878_sit01.jpg , 7878_sit02.png</li><li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while website slideshow is created with the other item images and the website slideshow gets linked with the item , Upon publishing the Item for website , the relevant images , slideshow becomes visible.</li></ul>
+<ul><li>valid Photo file formats gif, jpg, jpeg,tiff,pn,svg</li><li>valid File name convention&nbsp; : a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; b)&nbsp;For website slideshow&nbsp; : Itemcode_suffix.extn</li><li>e.g. itemcode = 7878</li><li>valid suffix = fr, ba, sit, det</li><li>fr and ba will be only one per item , while situation (sit) , details (det) could be multiple with number suffix . e.g. 7878_sit01.jpg , 7878_sit02.png</li><li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while website slideshow is created with the other item images and the website slideshow gets linked with the item , Upon publishing the Item for website , the relevant images , slideshow becomes visible.</li>
+<li>"Photo Status Report" shows the list of items and their count for various images available in the files folder.</li>
+</ul>
 				<tr><td>
 					<h4><i class="fa fa-question-sign"></i>
 						${__('Process flow for file upload utility')}

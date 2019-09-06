@@ -35,7 +35,7 @@ def start_file_upload(start_time):
     # if total_files_count==0:
         frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
         temp_folder_absolute_path=get_bench_path()+temp_public_folder
-        temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites')
+        temp_folder_absolute_path=temp_folder_absolute_path.replace('.','/sites',1)
 
         doc=frappe.get_doc('Photo Upload Utility')
         doc.last_execution_date_time=start_time

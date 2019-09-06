@@ -7,7 +7,7 @@
  "doctype": "Report",
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2019-09-01 06:17:50.078088",
+ "modified": "2019-09-06 07:44:51.559205",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Item Photo Status",
@@ -16,5 +16,9 @@
  "ref_doctype": "File",
  "report_name": "Item Photo Status",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ]
 }

@@ -1,6 +1,7 @@
 {
  "creation": "2019-09-03 06:49:12.445050",
  "doctype": "DocType",
+ "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
@@ -19,7 +20,9 @@
   "system_error_log",
   "processed_files_count",
   "section_break_13",
-  "file_dict_with_status"
+  "file_dict_with_status",
+  "section_break_17",
+  "photo_upload_help"
  ],
  "fields": [
   {
@@ -102,11 +105,21 @@
    "fieldname": "zip_file_name",
    "fieldtype": "Read Only",
    "label": "ZIP Failed File Name"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "photo_upload_help",
+   "fieldtype": "HTML",
+   "label": "Photo Upload Help"
   }
  ],
+ "hide_toolbar": 1,
  "issingle": 1,
- "modified": "2019-09-05 10:02:39.910553",
- "modified_by": "ashish@greycube.in",
+ "modified": "2019-09-06 07:50:37.598722",
+ "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Upload Utility",
  "owner": "Administrator",

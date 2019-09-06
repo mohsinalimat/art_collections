@@ -22,6 +22,13 @@ def get_columns():
 			"width": 150
 		},
 		{
+			"fieldname": "slideshow",
+			"fieldtype": "Link",
+			"options": "Website Slideshow",
+			"label": "Slideshow",
+			"width": 100
+		},
+		{
 			"fieldname": "item_name",
 			"fieldtype": "Data",
 			"label": _("Item Name"),
@@ -31,12 +38,6 @@ def get_columns():
 			"fieldname": "allow_insuff",
 			"fieldtype": "Check",
 			"label": _("Allow Less"),
-			"width": 90
-		},
-		{
-			"fieldname": "total_photo",
-			"fieldtype": "Int",
-			"label": _("Total Photo"),
 			"width": 90
 		},
 		{
@@ -68,6 +69,12 @@ def get_columns():
 			"fieldtype": "Int",
 			"label": _("Situation"),
 			"width": 80
+		},
+		{
+			"fieldname": "total_photo",
+			"fieldtype": "Int",
+			"label": _("Total Photo"),
+			"width": 90
 		}
 	]
 
@@ -106,7 +113,8 @@ SELECT
     COALESCE(file.ba_count, 0) back,
     COALESCE(file.fr_count, 0) front,
     COALESCE(file.sit_count, 0) situation,
-    COALESCE(file.det_count, 0) detail
+    COALESCE(file.det_count, 0) detail,
+	i.slideshow slideshow
 FROM
     tabItem i
         LEFT OUTER JOIN

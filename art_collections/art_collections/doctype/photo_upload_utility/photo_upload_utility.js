@@ -148,5 +148,25 @@ frappe.ui.form.on('Photo Upload Utility', {
 			frappe.set_route('query-report', 'Item Photo Status', {based_on: '< 5 Photo & not resolved'});
 		}, "fa fa-play", "btn-success");
 
+		var help_content =
+			`<table class="table table-bordered" style="background-color: #f9f9f9;">
+				<tr><td>
+					<h4>
+						<i class="fa fa-hand-right"></i>
+						${__('Notes')}
+					</h4>
+<ul><li>valid Photo file formats gif, jpg, jpeg,tiff,pn,svg</li><li>valid File name convention&nbsp; : a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; b)&nbsp;For website slideshow&nbsp; : Itemcode_suffix.extn</li><li>e.g. itemcode = 7878</li><li>valid suffix = fr, ba, sit, det</li><li>fr and ba will be only one per item , while situation (sit) , details (det) could be multiple with number suffix . e.g. 7878_sit01.jpg , 7878_sit02.png</li><li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while website slideshow is created with the other item images and the website slideshow gets linked with the item , Upon publishing the Item for website , the relevant images , slideshow becomes visible.</li></ul>
+				<tr><td>
+					<h4><i class="fa fa-question-sign"></i>
+						${__('Process flow for file upload utility')}
+					</h4>
+					<ol>
+					<li>Upload the item images to public/file/temp folder</li><li>Click on "Start Photo Processing .." button</li><li>Wait till the process gets over, reload to check the status</li><li>After processing , it will output the counts for&nbsp;total file, successful,failed &amp; pending.</li><li>The failed files will be&nbsp;zipped together and will be available on&nbsp;click of "Download Failed Files" button.</li><li> System Error checkbox will be checked to show If there was any system related exception/ error while processing with the error log link.</li><li>The process log will be available against each file with its stat</li>
+					</ol>
+				</td></tr>
+			</table>`;
+		frm.set_df_property('photo_upload_help', 'options', help_content);
+
+
 	}
 });

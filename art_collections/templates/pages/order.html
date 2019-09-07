@@ -12,9 +12,10 @@
 {% endblock %}
 
 {% block header_actions %}
+<a href="#" onclick="get_zip();">{{ _("Download Photo") }}</a>
+<br>
 <a href='/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}' target="_blank" rel="noopener noreferrer">{{ _("Print") }}</a>
 {% endblock %}
-
 {% block page_content %}
 
 <div class="row transaction-subheading">
@@ -162,7 +163,20 @@
 {% endblock %}
 
 {% block script %}
-	<script> {% include "templates/pages/order.js" %} </script>
+		<script> {% include "templates/pages/order.js" %} </script>
+		<script> {% include "frappe/public/js/frappe/utils/urllib.js" %} </script>
+	<script>
+		function get_zip(){
+					var w = window.open(
+							frappe.urllib.get_full_url(
+								"/api/method/art_collections.www.downloadphotoview.get_zip?"
+								+"name="+encodeURIComponent('{{ doc.name }}')));
+
+						if(!w) {
+							frappe.msgprint(__("Please enable pop-ups")); return;
+						}
+				}
+	</script>
 	<script>
 		window.doc_info = {
 			customer: '{{doc.customer}}',

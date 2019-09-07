@@ -30,22 +30,4 @@ def get_address_list(name,doctype):
                         (1 if a.modified - b.modified else 0)), reverse=True)
         return address_list if address_list else None
 
-@frappe.whitelist()
-def get_image_list_for_sales_invoice(sales_invoice_name):
-        file_list=[]
-        doc = frappe.get_doc('Sales Invoice', sales_invoice_name)
-        for si_item in doc.get("items") or []:
-                main_image=si_item.image
-                file_list.append(main_image)
-                item_code=si_item.item_code
-                item_slideshow=frappe.get_value('Item', item_code, 'slideshow')
-                slideshow=frappe.get_doc('Website Slideshow', item_slideshow)
-                for slideshow_item in doc.get("slideshow_items") or []:
-                        slideshow_image=slideshow_item.image
-                        file_list.append(slideshow_image)
-                print('file_list',file_list)
-                for file_name in file_list:
-                        file_doc = frappe.get_doc('File', {"file_url": file_name})
-                        file_path = file_doc.get_full_path()
-                        print('file_path',file_path)
 

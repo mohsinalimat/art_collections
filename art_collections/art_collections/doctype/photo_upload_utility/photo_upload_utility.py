@@ -321,7 +321,7 @@ def zip_failed_files():
 
         directory_argument="--directory="+failed_folder_path+" failed"
 
-        cmd_string = """tar -czf %s %s""" % (zip_file_with_path,directory_argument)
+        cmd_string = """tar -caf %s %s""" % (zip_file_with_path,directory_argument)
 
         err, out = frappe.utils.execute_in_shell(cmd_string)
         if err==b'':

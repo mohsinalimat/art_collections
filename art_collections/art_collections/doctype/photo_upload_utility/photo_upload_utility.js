@@ -5,19 +5,24 @@ frappe.ui.form.on('Photo Upload Utility', {
 
 	onload: function(frm) {
 		$(frm.fields_dict['output'].wrapper)
-		.html(`<ul>
-		<li><span >Total File Count #	<b>`+frm.doc.total_files_count+`</b></span>
-		  <ul class="nested">
-			<li><span >Processed File</span>
-			  <ul class="nested">
-			  <li>Successful File Count #	<b>`+frm.doc.successful_files_count+`</b></li>
-			  <li>Failed File Count #	<b>`+frm.doc.failed_files_count+`</b></li>
-			  </ul>
-			</li>
-			<li>Pending File Count #	<b>`+frm.doc.pending_files_count+`</b></li>
-		  </ul>
-		</li>
-	  </ul>`)
+		.html(`
+		<table style="text-align: center">
+		<tr >
+			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/files.svg" /> </td>
+			<td></td>
+			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/right.svg" /> </td>
+			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/cross.svg" /> </td>
+			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/pending.svg" /> </td>
+		</tr>
+		<tr>
+			<td> `+frm.doc.total_files_count+` </td>
+			<td> = </td>
+			<td> `+frm.doc.successful_files_count+` </td>
+			<td> `+frm.doc.failed_files_count+` </td>
+			<td> `+frm.doc.pending_files_count+` </td>
+		</tr>
+	</table>
+	  `)
 
 		frappe.realtime.on("file_upload_progress", function(data) {
 			if (data.reload && data.reload === 1) {

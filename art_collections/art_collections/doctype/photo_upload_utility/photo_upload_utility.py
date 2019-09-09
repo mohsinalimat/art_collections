@@ -52,7 +52,7 @@ def start_file_upload(start_time):
         doc.reload()
         return 'empty_folder',temp_folder_absolute_path
     else:
-        enqueue(upload_photo_files, queue='short', timeout=9000, event='upload_photo_files',start_time=start_time)
+        enqueue(upload_photo_files, queue='long', timeout=600000, event='upload_photo_files',start_time=start_time)
         return 'queued'
 
 

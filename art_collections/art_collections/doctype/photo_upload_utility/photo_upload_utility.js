@@ -6,23 +6,26 @@ frappe.ui.form.on('Photo Upload Utility', {
 	onload: function(frm) {
 		$(frm.fields_dict['output'].wrapper)
 		.html(`
-		<table style="text-align: center">
-		<tr >
-			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/files.svg" /> </td>
-			<td></td>
-			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/right.svg" /> </td>
-			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/cross.svg" /> </td>
-			<td> <img style="max-width: 40px;" src="/assets/art_collections/images/pending.svg" /> </td>
-		</tr>
-		<tr>
-			<td> `+frm.doc.total_files_count+` </td>
-			<td> = </td>
-			<td> `+frm.doc.successful_files_count+` </td>
-			<td> `+frm.doc.failed_files_count+` </td>
-			<td> `+frm.doc.pending_files_count+` </td>
-		</tr>
-	</table>
-	  `)
+		<div style="width:100%; text-align:center;">
+<table style="text-align: center; display:inline-block;">
+	<tr >
+		<td style="width:100px; padding:8px 0;"> <img style="max-width: 50px;" src="/assets/art_collections/images/files.svg" alt="Total File Count" title="Total File Count" /> </td>
+		<td></td>
+		<td style="width:100px; "> <img style="max-width: 50px;" src="/assets/art_collections/images/right.svg" data-toggle="tooltip"  alt="Successful File Count" title="Successful File Count" /> </td>
+		<td style="width:100px;"> <img style="max-width: 50px;" src="/assets/art_collections/images/cross.svg" data-toggle="tooltip"  alt="Failed File Count" title="Failed File Count" /> </td>
+		<td style="width:100px;"> <img style="max-width: 50px;" src="/assets/art_collections/images/pending.svg" data-toggle="tooltip"  alt="Pending File Count" title="Pending File Count" /> </td>
+	</tr>
+
+	<tr>
+		<td> `+frm.doc.total_files_count+` </td>
+		<td> = </td>
+		<td> `+frm.doc.successful_files_count+` </td>
+		<td> `+frm.doc.failed_files_count+` </td>
+		<td> `+frm.doc.pending_files_count+` </td>
+	</tr>
+</table>
+</div>
+`)
 
 		frappe.realtime.on("file_upload_progress", function(data) {
 			if (data.reload && data.reload === 1) {

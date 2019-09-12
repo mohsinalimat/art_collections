@@ -33,30 +33,30 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                         slideshow_image=slideshow_item.image
                         file_list.append(slideshow_image)
 
-                public_files_path = frappe.get_site_path('public', 'files')
-                si_zip_folder = os.path.join(public_files_path, "si_zip_folder")
-                frappe.create_folder(si_zip_folder, with_init=False)
-                #del old failed tar files other than last 2
-                cmd_string = """find %s -type f -name "acc*.tar" | sort -nr | tail -n +3 | xargs rm """ % (si_zip_folder)
-                err, out = frappe.utils.execute_in_shell(cmd_string)
+        public_files_path = frappe.get_site_path('public', 'files')
+        si_zip_folder = os.path.join(public_files_path, "si_zip_folder")
+        frappe.create_folder(si_zip_folder, with_init=False)
+        #del old failed tar files other than last 2
+        cmd_string = """find %s -type f -name "acc*.tar" | sort -nr | tail -n +3 | xargs rm """ % (si_zip_folder)
+        err, out = frappe.utils.execute_in_shell(cmd_string)
 
-                zip_file_name=scrub(sales_invoice_name+'.tar')
+        zip_file_name=scrub(sales_invoice_name+'.tar')
 
-                zip_file_with_path=os.path.join(si_zip_folder,zip_file_name)
-                with tarfile.open(zip_file_with_path, "w:gz") as tar_handle:
-                        for file_name in file_list or []:
-                                try:
-                                        file_doc = frappe.get_doc('File', {"file_url": file_name})
-                                        file_path = file_doc.get_full_path()
-                                        file_list_with_path.append(file_path)
-                                        tar_handle.add(file_path,arcname=file_doc.file_name)
-                                except frappe.DoesNotExistError:
-                                        continue
-                tar_handle.close()
-                #print(os.stat(zip_file_with_path).st_size)
-                #for empty it is 69 
-                print(zip_file_with_path,zip_file_name)
-                return zip_file_with_path,zip_file_name
+        zip_file_with_path=os.path.join(si_zip_folder,zip_file_name)
+        with tarfile.open(zip_file_with_path, "w:gz") as tar_handle:
+                for file_name in file_list or []:
+                        try:
+                                file_doc = frappe.get_doc('File', {"file_url": file_name})
+                                file_path = file_doc.get_full_path()
+                                file_list_with_path.append(file_path)
+                                tar_handle.add(file_path,arcname=file_doc.file_name)
+                        except frappe.DoesNotExistError:
+                                continue
+        tar_handle.close()
+        #print(os.stat(zip_file_with_path).st_size)
+        #for empty it is 69 
+        print(zip_file_with_path,zip_file_name)
+        return zip_file_with_path,zip_file_name
 
 
 

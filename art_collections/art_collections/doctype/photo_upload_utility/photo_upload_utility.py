@@ -17,7 +17,7 @@ from datetime import datetime
 from frappe.utils import cstr, get_url, now_datetime,get_bench_path
 from frappe.utils import update_progress_bar
 from frappe.utils.background_jobs import enqueue
-
+import zipfile
 
 
 class PhotoUploadUtility(Document):
@@ -121,7 +121,8 @@ def upload_photo_files(start_time):
 
                         fname=filename.lower()
                         extn = fname.rsplit(".", 1)[1]
-                        
+                        #above would fail if there is no file extension given
+
                         # Extract suffix and item_code from file name
                         delimit_filename = fname.split("_")
                         for index,value in enumerate(delimit_filename):
@@ -178,19 +179,21 @@ def upload_photo_files(start_time):
                             if not frappe.db.exists("File", {"file_name": item_code_in_fname}):
                                 create_new_folder(item_code_in_fname,'Home/item_pics')
 
+                            # create slideshow doctype if it doesn't exist
+                            if not frappe.db.exists("Website Slideshow", item_code_in_fname):
+                                slideshow_doc = frappe.get_doc({
+                                    "doctype": "Website Slideshow",
+                                    "slideshow_name": item_code_in_fname,
+                                })
+                                slideshow_doc.insert()
+                            else:
+                                slideshow_doc =frappe.get_doc('Website Slideshow', item_code_in_fname)
+
                             if not suffix_in_fname:
                                 attached_to_doctype='Item'
                                 attached_to_name=item_code_in_fname
                                 folder_name='Home/item_pics/'+item_code_in_fname
                             else:
-                                if not frappe.db.exists("Website Slideshow", item_code_in_fname):
-                                    slideshow_doc = frappe.get_doc({
-                                        "doctype": "Website Slideshow",
-                                        "slideshow_name": item_code_in_fname,
-                                    })
-                                    slideshow_doc.insert()
-                                else:
-                                    slideshow_doc =frappe.get_doc('Website Slideshow', item_code_in_fname)
                                 attached_to_doctype='Website Slideshow'
                                 attached_to_name=slideshow_doc.name
                                 folder_name='Home/item_pics/'+item_code_in_fname
@@ -225,6 +228,17 @@ def upload_photo_files(start_time):
                                 item_doc.save()
                                 item_doc.run_method('validate_website_image')
                                 item_doc.run_method('make_thumbnail')
+                                
+                                # attach main image to slide show also
+                                row=slideshow_doc.append("slideshow_items",{})
+                                row.image=file_doc.file_url 
+                                suffix_heading=heading('mn','00')
+                                row.heading=suffix_heading
+                                slideshow_doc.save()
+                                item_doc.slideshow=slideshow_doc.name
+                                item_doc.save()
+                                clear_cache()
+
                             else:
                                 row=slideshow_doc.append("slideshow_items",{})
                                 row.image=file_doc.file_url 
@@ -298,6 +312,7 @@ def heading(i,count):
         switcher={
                 'fr':'Front',
                 'ba':'Back',
+                'mn':'Main',
                 'sit':'Situation_'+count,
                 'det':'Detail_'+count
         }
@@ -360,3 +375,31 @@ def empty_all_folder():
     err, out = frappe.utils.execute_in_shell(cmd_string)
     return out
 
+@frappe.whitelist()
+def unzip_file(name):
+    '''Unzip the given file and make file records for each of the extracted files'''
+    file_obj = frappe.get_doc('File', name)
+    files = unzip(file_obj)
+    print('inside unzip')
+    return len(files)
+
+def unzip(self):
+    '''Unzip current file and replace it by its children'''
+    if not ".zip" in self.file_name:
+        frappe.msgprint(_("Not a zip file"))
+        return
+
+    public_files_path = frappe.get_site_path('public', 'files')
+    temp_public_folder = os.path.join(public_files_path, "temp")
+
+    zip_path = frappe.get_site_path(self.file_url.strip('/'))
+    base_url = os.path.dirname(self.file_url)
+
+    files = []
+    with zipfile.ZipFile(zip_path) as zf:
+        zf.extractall(temp_public_folder)
+        for info in zf.infolist():
+            print(info,'info')
+            files.append(info.filename)
+    frappe.delete_doc('File', self.name)
+    return files   

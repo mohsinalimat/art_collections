@@ -89,7 +89,27 @@ frappe.ui.form.on('Photo Upload Utility', {
 
 				})
 		});
-		
+		frm.page.add_menu_item(__("Upload Zip"), function() {
+			new frappe.ui.FileUploader({
+				folder: this.current_folder,
+				restrictions: {
+					allowed_file_types: ['.zip']
+				},
+				on_success: file => {
+					frappe.show_alert(__('Unzipping files...'));
+					frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.unzip_file', { name: file.name })
+						.then((r) => {
+							if (r.message) {
+								frappe.show_alert(__('Unzipped {0} files', [r.message]));
+								start_processing(frm)
+							}
+						});
+						
+				}
+			});			
+
+		});
+
 		if (frm.doc.photo_upload_status=="In Process") {
 			frm.dashboard.add_progress(__('Photo Upload Status'), "0");
 		}
@@ -99,39 +119,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 		|| frm.doc.photo_upload_status == "System Error"
 		) {
 			frm.add_custom_button(__('Start Photo Processing...'), function() {
-				frm.doc.photo_upload_status='In Process'
-				frm.doc.total_files_count=0
-				frm.doc.processed_files_count=0
-				frm.doc.failed_files_count=0
-				frm.doc.system_error=0
-				frm.doc.successful_files_count=0
-				frm.doc.pending_files_count=0
-				frm.doc.file_dict_with_status=''
-				frm.doc.zip_file_name='empty_failed_folder'
-				$(frm.fields_dict['output'].wrapper).html(``)
-				frm.doc.last_execution_date_time=frappe.datetime.now_datetime()
-				frm.refresh_fields()
-				frappe.call({
-					method: "art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.start_file_upload",
-					args: {start_time:frm.doc.last_execution_date_time},
-					callback: function(r) {
-						if (r) {
-							console.log(r)
-							let message=r.message
-							if (message[0]=='empty_folder') {
-								frappe.msgprint('Empty Folder ---> '+message[1]+'<br><br> Please upload file in temp folder','Error')
-							} else if(message=='queued'){
-								frappe.show_alert({message:__('Your Process is queued'), indicator:'green'},2);
-							}
-							else {
-								console.log(r)
-							}
-							
-						}
-						console.log(r)
-						frm.refresh();
-					}
-				});
+				start_processing(frm)
 			}, "fa fa-play", "btn-success");
 		}
 
@@ -166,3 +154,39 @@ frappe.ui.form.on('Photo Upload Utility', {
 
 	}
 });
+
+var start_processing=function(frm) {
+	frm.doc.photo_upload_status='In Process'
+	frm.doc.total_files_count=0
+	frm.doc.processed_files_count=0
+	frm.doc.failed_files_count=0
+	frm.doc.system_error=0
+	frm.doc.successful_files_count=0
+	frm.doc.pending_files_count=0
+	frm.doc.file_dict_with_status=''
+	frm.doc.zip_file_name='empty_failed_folder'
+	$(frm.fields_dict['output'].wrapper).html(``)
+	frm.doc.last_execution_date_time=frappe.datetime.now_datetime()
+	frm.refresh_fields()
+	frappe.call({
+		method: "art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.start_file_upload",
+		args: {start_time:frm.doc.last_execution_date_time},
+		callback: function(r) {
+			if (r) {
+				console.log(r)
+				let message=r.message
+				if (message[0]=='empty_folder') {
+					frappe.msgprint('Empty Folder ---> '+message[1]+'<br><br> Please upload file in temp folder','Error')
+				} else if(message=='queued'){
+					frappe.show_alert({message:__('Your Process is queued'), indicator:'green'},2);
+				}
+				else {
+					console.log(r)
+				}
+				
+			}
+			console.log(r)
+			frm.refresh();
+		}
+	});	
+}

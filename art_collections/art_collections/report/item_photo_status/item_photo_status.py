@@ -35,11 +35,11 @@ def get_columns():
 			"width": 150
 		},
 		{
-			"fieldname": "allow_insuff",
-			"fieldtype": "Check",
+			"fieldname": "check_allow_insuf",
+			"fieldtype": "Data",
 			"label": _("Allow Less"),
 			"width": 90
-		},
+		},		
 		{
 			"fieldname": "main",
 			"fieldtype": "Int",
@@ -107,7 +107,10 @@ def get_data(filters):
 SELECT 
     COALESCE(file.item, i.name) item,
     i.item_name item_name,
-    i.allow_insufficient_images_for_web_art allow_insuff,
+    i.allow_insufficient_images_for_web_art as allow_insuff,
+	IF(i.allow_insufficient_images_for_web_art=1,
+	 concat("<input type='checkbox' id=",i.name," onclick='toggle_allow_insufficient_images(&quot;",i.name,"&quot;);' class='buzz' checked/>") , 
+	 concat("<input type='checkbox' id=",i.name," onclick='toggle_allow_insufficient_images(&quot;",i.name,"&quot;);' class='buzz' />")) check_allow_insuf,	
     COALESCE(file.total_count, 0) total_photo,
     COALESCE(file.item_count, 0) main,
     COALESCE(file.ba_count, 0) back,

@@ -142,10 +142,22 @@ frappe.ui.form.on('Photo Upload Utility', {
 </ul>
 				<tr><td>
 					<h4><i class="fa fa-question-sign"></i>
-						${__('Process flow for file upload utility')}
+						${__('Process flow for Photo upload utility')}
 					</h4>
+					<h5>
+					${__('There are 2 options to upload image files, depending upon the option execute the first 2 steps, rest of the steps are common.')}
+					</h5>
 					<ol>
-					<li>Upload the item images to public/file/temp folder</li><li>Click on "Start Photo Processing .." button</li><li>Wait till the process gets over, reload to check the status</li><li>After processing , it will output the counts for&nbsp;total file, successful,failed &amp; pending.</li><li>The failed files will be&nbsp;zipped together and will be available on&nbsp;click of "Download Failed Files" button.</li><li> System Error checkbox will be checked to show If there was any system related exception/ error while processing with the error log link.</li><li>The process log will be available against each file with its stat</li>
+					<p><b>Option 1 :</b> From "Photo Upload Utility" --> it is preferred if images are 25-50.</p>
+					<li>Click on Menu > "Sanitize Folder" to clear all previous processed files</li>
+					<li>Click on Menu > Upload Zip to upload the zip containing all the images.</li>
+					</ol>
+					<ol>
+					<p><b>Option 2 :</b> From FTP (Filezilla) --> it is preferred for any number of images. default option</p>
+					<li>Upload the item images to public/file/temp folder</li>
+					<li>Click on "Start Photo Processing .." button</li>
+					<br>
+					<li>Wait till the process gets over, reload to check the status</li><li>After processing , it will output the counts for&nbsp;total file, successful,failed &amp; pending.</li><li>The failed files will be&nbsp;zipped together and will be available on&nbsp;click of "Download Failed Files" button.</li><li> System Error checkbox will be checked to show If there was any system related exception/ error while processing with the error log link.</li><li>The process log will be available against each file with its stat</li>
 					</ol>
 				</td></tr>
 			</table>`;

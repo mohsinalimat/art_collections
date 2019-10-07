@@ -5,8 +5,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item",
-  "univers",
-  "page_number"
+  "item_page_no"
  ],
  "fields": [
   {
@@ -18,22 +17,17 @@
    "reqd": 1
   },
   {
-   "fieldname": "univers",
-   "fieldtype": "Link",
-   "label": "Univers",
-   "options": "Univers Art"
-  },
-  {
-   "fieldname": "page_number",
+   "fieldname": "item_page_no",
    "fieldtype": "Int",
-   "label": "Page Number"
+   "in_list_view": 1,
+   "label": "Page #"
   }
  ],
  "istable": 1,
- "modified": "2019-08-29 06:04:04.878592",
+ "modified": "2019-10-05 08:55:37.401072",
  "modified_by": "Administrator",
  "module": "Art Collections",
- "name": "Item Univers Page Art",
+ "name": "Item Universe Page Art",
  "owner": "Administrator",
  "permissions": [],
  "quick_entry": 1,

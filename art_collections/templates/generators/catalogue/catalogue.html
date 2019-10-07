@@ -1,0 +1,24 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<h1 itemprop="name">
+	{{ catalogue_name }}
+</h1>
+{% for d in catalogue -%}
+<tr>
+<td style="vertical-align:middle;">{{ d.catalogue_name }}</td>
+</tr>
+{%- endfor %}
+
+
+
+{% for catalogue in doc.catalogues %}
+<h1>{{ catalogue.catalogue_name }}</h1>
+{%- endfor %}
+
+<h1>{{ doc.name }}Test</h1>
+{% for catalogue1 in doc.catalogue %}
+<h1>{{ catalogue1.catalogue_name }}</h1>
+{%- endfor %}
+
+{% endblock %}

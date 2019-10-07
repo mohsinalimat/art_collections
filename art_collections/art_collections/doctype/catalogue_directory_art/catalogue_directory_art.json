@@ -1,0 +1,173 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:catalogue_directory_art_name",
+ "creation": "2019-10-04 14:17:58.463266",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "node_type",
+  "year",
+  "catalogue_directory_art_name",
+  "universe_page_range_start",
+  "universe_page_range_end",
+  "show_in_website",
+  "lft",
+  "rgt",
+  "is_group",
+  "old_parent",
+  "parent_catalogue_directory_art",
+  "website_image",
+  "website_title",
+  "catalogue_type",
+  "items_in_universe"
+ ],
+ "fields": [
+  {
+   "allow_in_quick_entry": 1,
+   "depends_on": "eval:doc.node_type=='Universe'",
+   "fieldname": "universe_page_range_start",
+   "fieldtype": "Int",
+   "label": "Universe Page Start"
+  },
+  {
+   "depends_on": "eval:doc.node_type=='Universe'",
+   "fieldname": "universe_page_range_end",
+   "fieldtype": "Int",
+   "label": "Universe Page End"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "1",
+   "depends_on": "eval:in_list(['Universe','Catalogue','Catalogue Year'], doc.node_type)",
+   "fieldname": "show_in_website",
+   "fieldtype": "Check",
+   "label": "Show In Website",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lft",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Left",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rgt",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Right",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "1",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "old_parent",
+   "fieldtype": "Link",
+   "label": "Old Parent",
+   "options": "Catalogue Directory Art"
+  },
+  {
+   "fieldname": "parent_catalogue_directory_art",
+   "fieldtype": "Link",
+   "label": "Parent Catalogue Directory Art",
+   "options": "Catalogue Directory Art",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.node_type =='Catalogue Year'",
+   "description": "Ex. 2019",
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "label": "Year"
+  },
+  {
+   "depends_on": "eval:in_list(['Universe','Catalogue','Catalogue Year'], doc.node_type)",
+   "fieldname": "website_image",
+   "fieldtype": "Attach Image",
+   "label": "Website Image"
+  },
+  {
+   "default": "Universe",
+   "fieldname": "node_type",
+   "fieldtype": "Select",
+   "label": "Node Type",
+   "options": "Universe\nCatalogue\nCatalogue Year",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:in_list(['Universe','Catalogue','Catalogue Year'], doc.node_type)",
+   "fieldname": "website_title",
+   "fieldtype": "Data",
+   "label": "Website Title"
+  },
+  {
+   "depends_on": "eval:doc.node_type=='Catalogue'",
+   "fieldname": "catalogue_type",
+   "fieldtype": "Select",
+   "label": "Catalogue Type",
+   "options": "\nPermanant\nFestif\nNo\u00ebl"
+  },
+  {
+   "fieldname": "catalogue_directory_art_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "depends_on": "eval:doc.node_type=='Universe'",
+   "fieldname": "items_in_universe",
+   "fieldtype": "Table",
+   "label": "Item's in Universe",
+   "options": "Item Universe Page Art"
+  }
+ ],
+ "is_tree": 1,
+ "modified": "2019-10-07 06:08:38.322911",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Catalogue Directory Art",
+ "name_case": "Title Case",
+ "nsm_parent_field": "parent_catalogue_directory_art",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

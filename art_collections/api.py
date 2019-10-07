@@ -31,3 +31,15 @@ def get_address_list(name,doctype):
         return address_list if address_list else None
 
 
+@frappe.whitelist(allow_guest=True)
+def get_value():
+        from frappe.desk.treeview import get_children,get_all_nodes
+        catalogue =get_children("Territory",parent="All Territories")
+        universe=[]
+        for x in catalogue:
+                print('YYY',x.get('title'))
+                title=x.get('title')
+                universe.append(title)
+        return universe	
+
+

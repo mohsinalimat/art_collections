@@ -7,8 +7,7 @@
  "field_order": [
   "template_name",
   "template_type",
-  "description",
-  "is_filter"
+  "item_website_specification"
  ],
  "fields": [
   {
@@ -27,18 +26,13 @@
    "options": "Item Website Specification Template Art"
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Text",
-   "label": "Description"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_filter",
-   "fieldtype": "Check",
-   "label": "Is Filter"
+   "fieldname": "item_website_specification",
+   "fieldtype": "Table",
+   "label": "Item Website Specification",
+   "options": "Item Website Specification"
   }
  ],
- "modified": "2019-08-29 06:16:20.470590",
+ "modified": "2019-10-07 08:01:52.320126",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Item Website Specification Template Art",

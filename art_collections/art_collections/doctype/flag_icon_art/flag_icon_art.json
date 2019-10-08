@@ -6,7 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "flag_name",
-  "flag__icon"
+  "flag__icon",
+  "country"
  ],
  "fields": [
   {
@@ -21,9 +22,14 @@
    "fieldname": "flag__icon",
    "fieldtype": "Attach Image",
    "label": "Flag  Icon"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country"
   }
  ],
- "modified": "2019-08-30 06:14:09.668199",
+ "modified": "2019-10-07 08:47:20.329624",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Flag Icon Art",
@@ -55,6 +61,7 @@
   }
  ],
  "quick_entry": 1,
+ "search_fields": "flag_name,country",
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

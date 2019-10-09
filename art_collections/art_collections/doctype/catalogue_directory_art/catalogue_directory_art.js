@@ -6,14 +6,18 @@ frappe.ui.form.on('Catalogue Directory Art', {
 
 	// }
 
-	refresh: function() {
+	refresh: function(frm) {
 		frm.set_value("show_in_website", "1");
+		frm.set_value("is_group", "1");
 		console.log("ref")
 	},
 
 	onload: function (frm) {
 		
-	},	
+	},
+	year: function (frm) {
+		console.log('year',frm.doc.year)
+	},		
 });
 
 //get query select territory

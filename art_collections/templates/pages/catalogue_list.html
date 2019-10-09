@@ -5,7 +5,20 @@
 {% block header %}<h2>{{ title }}</h2>{% endblock %}
 
 {% block page_content %}
-<div >
-	{{universe}}
-</div>
+<!-- add-breadcrumbs -->
+{% from "erpnext/templates/includes/macros.html" import product_image %}
+		{% for u in universe %}
+		<div class="col-md-8">
+				{{ loop.index }}
+				{{u.title}}	
+				<img src="{{u.image}}" class="rounded mx-auto d-block" alt="{{u.title}}">
+
+				<a class="btn btn-outline-secondary" href="/{{pathname}}?parent={{u.title}}">{{ _("Next") }}</a>
+
+
+				<a class="no-underline" href="products/vbajaj-a4evv">
+					<img class="website-image" src="/files/333.jpeg" alt="vbajaj">
+				</a>				
+		</div>
+		{% endfor %}
 {% endblock %}

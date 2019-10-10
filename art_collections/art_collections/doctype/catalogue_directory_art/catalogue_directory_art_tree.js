@@ -4,11 +4,12 @@ frappe.treeview_settings["Catalogue Directory Art"] = {
 	
 	fields: [
 		{fieldtype:'Check', fieldname:'is_group', label:__('Is A Group'), 
-			description: __(''),reqd:1,		default:1		},		
+			description: __(''),reqd:1,	default:1},		
 		{fieldtype:'Select', fieldname:'node_type', label:__('Node Type'),
-		options: "Universe\nCatalogue\nCatalogue Year",reqd:true,default:"Universe"},
-		{fieldtype:'Data', fieldname:'website_title', label:__('Website Title'),
-		depends_on: "eval:in_list(['Universe','Catalogue'], doc.node_type)"},
+		options: "Universe\nCatalogue",reqd:true,default:"Universe"},
+		{fieldtype:'Data', fieldname:'catalogue_directory_art_name', label:__('Node Name'),reqd:true},
+		{fieldtype:'Data', fieldname:'title', label:__('Website Name'),
+		depends_on: "eval:in_list(['Universe','Catalogue','Root'], doc.node_type)"},
 		{fieldtype:'Int', fieldname:'universe_page_range_start', label:__('Universe Page Start #'),
 		depends_on: "eval:doc.node_type=='Universe'",reqd:true,default:'0'},
 		{fieldtype:'Int', fieldname:'universe_page_range_end', label:__('Universe Page End #'),
@@ -16,9 +17,9 @@ frappe.treeview_settings["Catalogue Directory Art"] = {
 		{fieldtype:'Select', fieldname:'catalogue_type', label:__('Catalogue Type'),
 		options: "\nPermanant\nFestif\nNo\u00ebl",depends_on:"eval:doc.node_type=='Catalogue'" },
 		{fieldtype:'Check', fieldname:'show_in_website', label:__('Show In Website'),
-			depends_on: "eval:in_list(['Universe','Catalogue','Catalogue Year'], doc.node_type)"},
+			depends_on: "eval:in_list(['Universe','Catalogue','Root'], doc.node_type)",default:1},
 		{fieldtype:'Int', fieldname:'year', label:__('Year'),
-			depends_on: "eval:doc.node_type =='Catalogue Year'",description: __('Ex 2019')}			
+			depends_on: "eval:doc.node_type =='Catalogue'",description: __('Ex 2019')}			
 
 	],	
 	ignore_fields:["parent_catalogue_directory_art"],
@@ -48,9 +49,6 @@ frappe.treeview_settings["Catalogue Directory Art"] = {
   
   var custom_new_node = function(node) {
 	var me = frappe.treeview_settings["Catalogue Directory Art"].treeview;
-	console.log(node)
-	// var node = me.tree.get_selected_node();
-  
 	if (!(node && node.expandable)) {
 	  frappe.msgprint(__("Select a group node first."));
 	  return;

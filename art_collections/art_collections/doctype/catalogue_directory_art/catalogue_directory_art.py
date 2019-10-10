@@ -34,6 +34,23 @@ class CatalogueDirectoryArt(NestedSet,WebsiteGenerator):
 				self.parent_catalogue_directory_art = _('Catalogues')
 		self.make_route()
 		self.set_title()
+		# self.set_universe_catalogue_in_item_description()
+
+	def set_universe_catalogue_in_item_description(self):
+		if self.items_in_universe and self.node_type=='Universe':
+			# from frappe.utils.nestedset import get_ancestors_of
+			result=get_ancestors_of(self.doctype,self.name)
+			result.append(self.title or self.name)
+			result=cstr(result)
+			for item in self.items_in_universe:
+				print(item.item,cstr(result))
+				description = frappe.db.get_value('Item', item.item, 'description')
+				if not(result in description):
+					description +=result
+					frappe.db.set_value('Item', item.item, 'description',description)
+
+
+
 
 	def set_title(self):
 		if not self.title:
@@ -88,6 +105,16 @@ class CatalogueDirectoryArt(NestedSet,WebsiteGenerator):
 			context.update(get_slideshow(self))
 
 		return context
+
+
+def get_ancestors_of(doctype, name, order_by="lft desc", limit=None):
+	"""Get ancestor elements of a DocType with a tree structure"""
+	lft, rgt = frappe.db.get_value(doctype, name, ["lft", "rgt"])
+
+	result = [d["title"] or d["name"] for d in frappe.db.get_all(doctype, {"lft": ["<", lft], "rgt": [">", rgt]},
+		["name","title"], order_by=order_by, limit_page_length=limit)]
+
+	return result or []
 
 @frappe.whitelist(allow_guest=True)
 def get_product_list_for_group(product_group=None, start=0, limit=10, search=None,parent=None,node_type=None,universe_items=None):

@@ -246,7 +246,7 @@ def get_parent_item_groups(item_group_name):
 		return base_parents
 
 	item_group = frappe.get_doc("Catalogue Directory Art", item_group_name)
-	parent_groups = frappe.db.sql("""select name, route from `tabCatalogue Directory Art`
+	parent_groups = frappe.db.sql("""select ifnull(title,name) as name, route from `tabCatalogue Directory Art`
 		where lft <= %s and rgt >= %s
 		and show_in_website=1
 		order by lft asc""", (item_group.lft, item_group.rgt), as_dict=True)

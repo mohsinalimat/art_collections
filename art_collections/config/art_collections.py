@@ -20,6 +20,16 @@ def get_data():
 					"doctype": "File"
 				},
 			]
+		},		{
+			"label": _("Documents"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Catalogue Directory Art",
+					"route":"Tree/Catalogue Directory Art" ,
+					"description": _("Create Catalogue.")
+				}
+			]
 		}
 		]
 	return config

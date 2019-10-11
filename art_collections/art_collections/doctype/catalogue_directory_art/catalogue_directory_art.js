@@ -32,7 +32,7 @@ frappe.ui.form.on('Catalogue Directory Art', {
 	refresh: function (frm) {
 		frm.trigger("set_root_readonly");
 		frm.add_custom_button(__("Catalogue Directory Art Tree"), function () {
-			frappe.set_route("Tree", "'Catalogue Directory Art");
+			frappe.set_route("Tree", "Catalogue Directory Art");
 		});
 		if (!frm.is_new()) {
 			frm.add_custom_button(__("Items"), function () {

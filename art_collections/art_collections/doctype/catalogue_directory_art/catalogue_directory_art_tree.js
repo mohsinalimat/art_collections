@@ -11,7 +11,7 @@ frappe.treeview_settings["Catalogue Directory Art"] = {
 		{fieldtype:'Data', fieldname:'title', label:__('Website Name'),
 		depends_on: "eval:in_list(['Universe','Catalogue','Root'], doc.node_type)"},
 		{fieldtype:'Int', fieldname:'universe_page_range_start', label:__('Universe Page Start #'),
-		depends_on: "eval:doc.node_type=='Universe'",reqd:true,default:'0'},
+		depends_on: "eval:doc.node_type=='Universe'"},
 		{fieldtype:'Int', fieldname:'universe_page_range_end', label:__('Universe Page End #'),
 		depends_on: "eval:doc.node_type=='Universe'"},								
 		{fieldtype:'Select', fieldname:'catalogue_type', label:__('Catalogue Type'),

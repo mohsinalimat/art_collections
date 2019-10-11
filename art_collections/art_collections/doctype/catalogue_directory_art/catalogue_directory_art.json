@@ -10,6 +10,7 @@
   "node_type",
   "catalogue_directory_art_name",
   "title",
+  "label",
   "year",
   "universe_page_range_start",
   "universe_page_range_end",
@@ -19,6 +20,7 @@
   "route",
   "is_group",
   "image",
+  "alt_image",
   "section_break_12",
   "items_in_universe",
   "section_break_14",
@@ -172,13 +174,24 @@
    "fieldname": "title",
    "fieldtype": "Data",
    "label": "Website Name"
+  },
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "label"
+  },
+  {
+   "depends_on": "eval:doc.image",
+   "fieldname": "alt_image",
+   "fieldtype": "Data",
+   "label": "Alt Image"
   }
  ],
  "has_web_view": 1,
  "image_field": "image",
  "is_published_field": "show_in_website",
  "is_tree": 1,
- "modified": "2019-10-10 12:51:19.505817",
+ "modified": "2019-10-11 14:23:28.049577",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Catalogue Directory Art",

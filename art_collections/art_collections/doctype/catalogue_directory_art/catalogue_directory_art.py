@@ -168,7 +168,7 @@ def get_child_groups_for_list_in_html(item_group, start, limit, search,parent,no
 	data=None
 	if node_type =='Catalogue' or node_type =='Root':
 		data = frappe.db.get_all('Catalogue Directory Art',
-			fields = ['name','title' ,'route', 'description', 'image','is_group'],
+			fields = ['name','title' ,'route', 'description', 'image','is_group','alt_image'],
 			filters = dict(
 				show_in_website = 1,
 				lft = ('>', item_group.lft),

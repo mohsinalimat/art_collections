@@ -3,7 +3,7 @@
 		<div class="col-md-3">
 			<div class="card-body">
 				<a class="no-underline" href="/{{ item.route }}">
-					<img class="website-image" src="{{ item.website_image or item.image or 'no-image.jpg' }}" alt="{{ item.title }}">
+					<img class="website-image" src="{{ item.website_image or item.image or 'no-image.jpg' }}" alt="{{ item.alt_image or item.title }}">
 				</a>
 			</div>
 		</div>

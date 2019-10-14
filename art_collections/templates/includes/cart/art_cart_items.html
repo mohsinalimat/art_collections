@@ -1,0 +1,121 @@
+
+{% for d in doc.items %}
+111
+<tr data-name="{{ d.name }}">
+	<td>
+		<div class="font-weight-bold">
+			{{ d.item_name }}
+		</div>
+		<div>
+			{{ d.item_code }}
+		</div>
+		{%- set variant_of = frappe.db.get_value('Item', d.item_code, 'variant_of') %}
+		{% if variant_of %}
+		<span class="text-muted">
+			{{ _('Variant of') }} <a href="{{frappe.db.get_value('Item', variant_of, 'route')}}">{{ variant_of }}</a>
+		</span>
+		{% endif %}
+		<div class="mt-2">
+			<textarea data-item-code="{{d.item_code}}" class="form-control" rows="2" placeholder="{{ _('Add notes') }}">{{d.additional_notes or ''}}</textarea>
+		</div>
+	</td>
+	<td class="text-right">
+		<div class="input-group number-spinner">
+			<span class="input-group-prepend d-none d-sm-inline-block">
+				<button class="btn btn-outline-secondary cart-btn" data-dir="dwn">–</button>
+			</span>
+			<input class="form-control text-right cart-qty border-secondary" value="{{ d.get_formatted('qty') }}" data-item-code="{{ d.item_code }}">
+			<span class="input-group-append d-none d-sm-inline-block">
+				<button class="btn btn-outline-secondary cart-btn" data-dir="up">+</button>
+			</span>
+		</div>
+	</td>
+	<td>
+		{%- set qty = d.get_formatted('qty') %}
+		{{qty}}
+			<button	data-item-code="{{d.item_code}}" class="btn btn-outline-primary btn-add-to-cart ">
+				{{ _("Add to Cart") }}
+			</button>
+	</td>
+	{% if cart_settings.enable_checkout %}
+	<td class="text-right">
+		<div>
+			{{ d.get_formatted('amount') }}
+		</div>
+		<span class="text-muted">
+			{{ _('Rate:') }} {{ d.get_formatted('rate') }}
+		</span>
+	</td>
+	{% endif %}
+</tr>
+{% endfor %}
+
+<script>
+		frappe.ready(() => {
+			$('.page_content').on('click', '.btn-add-to-cart', (e) => {
+				const $btn = $(e.currentTarget);
+				$btn.prop('disabled', true);
+				const item_code = $btn.data('item-code');
+				erpnext.shopping_cart.update_cart({
+					item_code,
+					qty: 1,
+					callback(r) {
+						console.log('here')
+						$btn.prop('disabled', false);
+						if (r.message) {
+
+							frappe.freeze();	
+							if(frappe.session.user==="Guest") {
+			if(localStorage) {
+				localStorage.setItem("last_visited", window.location.pathname);
+			}
+			window.location.href = "/login";
+		} else {
+			console.log('rrrrrrrr')
+			let additional_notes
+			let with_items=1
+			let cart_dropdown=true
+			return frappe.call({
+				type: "POST",
+				method: "art_collections.art_cart.update_cart_for_wishlist_preorder",
+				args: {
+					item_code: item_code,
+					qty: 0,
+					additional_notes: additional_notes !== undefined ? additional_notes : undefined,
+					with_items: with_items || 0
+				},
+				btn: this,
+				callback: function(r) {
+					console.log('rrrrrrrr',r)
+					shopping_cart.set_cart_count();
+					if (r.message.shopping_cart_menu) {
+						$('.shopping-cart-menu').html(r.message.shopping_cart_menu);
+					}
+					frappe.unfreeze();
+				if(!r.exc) {
+					$(".cart-items").html(r.message.items);
+					$(".cart-tax-items").html(r.message.taxes);
+					if (cart_dropdown != true) {
+						$(".cart-icon").hide();
+					}
+				}
+					$btn.prop('disabled', false);
+					$('.btn-add-to-cart, .btn-view-in-cart').toggleClass('hidden');
+				}
+			});
+		}
+
+
+
+						
+
+
+
+							
+						}
+					}
+				});
+			});
+		});
+	</script>
+

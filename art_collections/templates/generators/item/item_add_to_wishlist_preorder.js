@@ -1,4 +1,47 @@
+	function render_wishlist_ui() {
+		$('.btn-view-in-cart-wishlist').remove()
+		$('.btn-add-to-cart-wishlist').remove()
+		var item_code=$("span[itemprop='productID']").text()
+		frappe.call({
+			type: "POST",
+			method: "art_collections.art_cart.get_product_info_for_website",
+			args: {
+				item_code: item_code,
+			},
+			btn: this,
+			callback: function(r) {
+				if (r.message) {
+					console.log('wish',r.message.product_info.qty)
+
+					var qty=r.message.product_info.qty;
+					var $button_to_show;
+					if (qty>0) {
+						console.log(qty,'aty')
+						$button_to_show=$('<button class="btn btn-inquiry btn-view-in-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <i class="fa fa-heart "></i></button>')
+					}else{
+						console.log(qty,'aty')
+						$button_to_show=$('<button class="btn btn-inquiry btn-add-to-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><i class="fa fa-heart-o"></i></button>')
+					}
+					console.log($button_to_show)
+					// $button_to_show.appendTo($('<div class="div-wishlist"></div>'))
+					$('.div-wishlist').append($button_to_show)
+					
+
+				}
+			}	
+		});
+		
+	}
+	
 	frappe.ready(() => {
+	
+		render_wishlist_ui() 
+
+
+
+		// var x="{{product_info.qty}}"
+		// alert(x);
+		console.log('here')
 		$('.page_content').on('click', '.btn-add-to-cart-wishlist', (e) => {
 			const $btn = $(e.currentTarget);
 			$btn.prop('disabled', true);
@@ -31,7 +74,9 @@
 					}
 					$btn.prop('disabled', false);
 					// $('.btn-add-to-cart-wishlist').find('i').toggleClass('fa-heart-o fa-heart');
-					$('.btn-add-to-cart-wishlist, .btn-view-in-cart-wishlist').toggleClass('hidden');
+					render_wishlist_ui() 
+
+					// $('.btn-add-to-cart-wishlist, .btn-view-in-cart-wishlist').toggleClass('hidden');
 
 				}
 			});

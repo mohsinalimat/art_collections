@@ -20,7 +20,9 @@ app_license = "MIT"
 
 # include js, css files in header of web template
 web_include_css = "/assets/art_collections/css/art_collections.css"
-# web_include_js = "/assets/art_collections/js/art_collections.js"
+web_include_js = [
+"/assets/art_collections/js/shopping_cart.js"
+]
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
@@ -66,8 +68,8 @@ doctype_js = {"Customer" : "public/js/customer.js",
 
 # notification_config = "art_collections.notifications.get_notification_config"
 
-on_session_creation = "art_collections.shopping_cart.utils.set_wishlist_cart_count"
-on_logout = "art_collections.shopping_cart.utils.clear_wishlist_cart_count"
+on_session_creation = "art_collections.art_cart.set_wishlist_cart_count"
+on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 # Permissions
 # -----------

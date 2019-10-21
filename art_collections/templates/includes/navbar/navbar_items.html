@@ -1,16 +1,16 @@
 {% extends 'frappe/templates/includes/navbar/navbar_items.html' %}
 
 {% block navbar_right_extension %}
-	<li class="shopping-cart cart-icon hidden">
-		<a href="/cart" class="nav-link">
-			{{ _("Cart") }}
-			<span class="badge badge-primary" id="cart-count"></span>
-		</a>
-	 </li>
-	<li class="shopping-cart wishlist-cart-icon hidden ">
-	 		<a href="/art_cart" class="nav-link">
-				<i class="fa fa-heart-o"></i>
-			<span class="badge badge-primary" id="wishlist-cart-count"></span>
-		</a>	
-		 </li>
+<li class="shopping-cart cart-icon hidden">
+	<a href="/cart" class="nav-link">
+		{{ _("Cart") }}
+		<span class="badge badge-primary" id="cart-count"></span>
+	</a>
+</li>
+<li class="wishlist-shopping-cart wishlist-cart-icon hidden ">
+	<a href="/art_cart" class="nav-link">
+		<img src="/assets/art_collections/images/wishlist.svg" alt="wish list">
+		<span class="badge badge-primary" id="wishlist-cart-count"></span>
+	</a>
+</li>
 {% endblock %}

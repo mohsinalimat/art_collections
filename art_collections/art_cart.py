@@ -55,7 +55,7 @@ def get_product_info_for_website(item_code):
 				product_info["qty"] = item[0].qty
 
 	return frappe._dict({
-		"product_info": product_info,
+		"wishlist_product_info": product_info,
 		"cart_settings": cart_settings
 	})
 
@@ -178,7 +178,7 @@ def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, wit
 
 	if cint(with_items):
 		return {
-			"items": frappe.render_template("templates/includes/cart/cart_items.html",
+			"items": frappe.render_template("templates/includes/cart/art_cart_items.html",
 				context),
 			"taxes": frappe.render_template("templates/includes/order/order_taxes.html",
 				context),
@@ -581,3 +581,16 @@ def get_address_territory(address_name):
 
 def show_terms(doc):
 	return doc.tc_name
+
+# ashish
+def set_wishlist_cart_count(login_manager):
+	from erpnext.shopping_cart.utils import  show_cart_count , check_customer_or_supplier
+	role, parties = check_customer_or_supplier()
+	if role == 'Supplier': return
+	if show_cart_count():
+		set_cart_count()
+
+def clear_wishlist_cart_count(login_manager):
+	from erpnext.shopping_cart.utils import  show_cart_count
+	if show_cart_count():
+		frappe.local.cookie_manager.delete_cookie("wishlist_cart_count")

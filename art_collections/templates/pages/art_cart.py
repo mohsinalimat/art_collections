@@ -8,6 +8,4 @@ import frappe
 from art_collections.art_cart import get_cart_quotation
 
 def get_context(context):
-	print('GGGGGGGGG--',get_cart_quotation()['doc'].items)
-
 	context.update(get_cart_quotation())

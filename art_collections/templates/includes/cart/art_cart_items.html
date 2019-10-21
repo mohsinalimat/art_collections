@@ -28,12 +28,7 @@
 			</span>
 		</div>
 	</td>
-	<td>
-		{%- set qty = d.get_formatted('qty') %}
-			<button	data-item-code="{{d.item_code}}" class="btn btn-outline-primary btn-add-to-cart ">
-				{{ _("Add to Cart") }}
-			</button>
-	</td>
+
 	{% if cart_settings.enable_checkout %}
 	<td class="text-right">
 		<div>
@@ -44,6 +39,12 @@
 		</span>
 	</td>
 	{% endif %}
+	<td class="text-right">
+			{%- set qty = d.get_formatted('qty') %}
+				<button	data-item-code="{{d.item_code}}" data-qty="{{qty}}" class="btn btn-outline-primary btn-add-to-cart ">
+					{{ _("Add to Cart") }}
+				</button>
+		</td>
 </tr>
 {% endfor %}
 <script>
@@ -52,9 +53,11 @@
 				const $btn = $(e.currentTarget);
 				$btn.prop('disabled', true);
 				const item_code = $btn.data('item-code');
+				console.log($btn)
+				const qty= $btn.data('qty') || 1;
 				erpnext.shopping_cart.update_cart({
 					item_code,
-					qty: 1,
+					qty: qty,
 					callback(r) {
 						console.log('here')
 						$btn.prop('disabled', false);
@@ -83,17 +86,17 @@
 				btn: this,
 				callback: function(r) {
 					console.log('rrrrrrrr',r)
-					// shopping_cart.set_cart_count();
+					shopping_cart.set_wishlist_cart_count();
 					if (r.message.shopping_cart_menu) {
-						// $('.shopping-cart-menu').html(r.message.shopping_cart_menu);
+						$('.shopping-cart-menu').html(r.message.shopping_cart_menu);
 					}
 					frappe.unfreeze();
 				if(!r.exc) {
-					// $(".cart-items").html(r.message.items);
+					$(".wishlist-cart-items").html(r.message.items);
 					// $(".cart-tax-items").html(r.message.taxes);
-					// if (cart_dropdown != true) {
-					// 	$(".cart-icon").hide();
-					// }
+					if (cart_dropdown != true) {
+						$(".wishlist-cart-icon").hide();
+					}
 				}
 					$btn.prop('disabled', false);
 					$('.btn-add-to-cart, .btn-view-in-cart').toggleClass('hidden');

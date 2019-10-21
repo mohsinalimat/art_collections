@@ -1,20 +1,17 @@
 {% if shopping_cart and shopping_cart.cart_settings.enabled %}
 {% set cart_settings = shopping_cart.cart_settings %}
-{% set product_info = shopping_cart.product_info %}
+{% set product_info = shopping_cart.wishlist_product_info %}
 
 <div class="row mt-3">
-
 {% if cart_settings.show_wishlist_art | int %}
 	<div class="div-wishlist" ></div>
 	{% endif %}
-	
-	{% if cart_settings.show_preorder_art | int %}
+	<!-- {% if cart_settings.show_preorder_art | int %}
 	<button class="btn btn-link btn-inquiry" data-item-code="{{ doc.name }}">
 		{{ _('Pr Order') }}
 	</button>
 	{% endif %}
-	<button class="btn btn-outline-primary btn-add-to-cart" onclick="window.history.back();">Go Back</button>
-
+	<button class="btn btn-outline-primary btn-add-to-cart" onclick="window.history.back();">Go Back</button> -->
 </div>
 <script>
 {% include "templates/generators/item/item_add_to_wishlist_preorder.js" %}

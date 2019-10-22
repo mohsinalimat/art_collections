@@ -2,7 +2,9 @@
 
 {% block title %} {{ _("Wish List Shopping Cart") }} {% endblock %}
 
-{% block header %}<h1>{{ _("Wish List Shopping Cart") }}</h1>{% endblock %}
+{% block header %}
+<div></div>
+<h1><img src="/assets/art_collections/images/wishlist.svg" alt="Wish list"> {{ _("Wish List Shopping Cart") }}</h1>{% endblock %}
 
 {% block script %}
 <script>{% include "templates/includes/art_cart.js" %}</script>

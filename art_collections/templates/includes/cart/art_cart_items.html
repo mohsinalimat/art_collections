@@ -20,11 +20,11 @@
 	<td class="text-right">
 		<div class="input-group number-spinner">
 			<span class="input-group-prepend d-none d-sm-inline-block">
-				<button class="btn btn-outline-secondary cart-btn" data-dir="dwn">–</button>
+				<button class="btn btn-outline-secondary cart-btn" data-dir="dwn" data-additional-notes="{{d.additional_notes or ''}}">–</button>
 			</span>
-			<input class="form-control text-right cart-qty border-secondary" value="{{ d.get_formatted('qty') }}" data-item-code="{{ d.item_code }}">
+			<input class="form-control text-right cart-qty border-secondary" value="{{ d.get_formatted('qty') }}" data-item-code="{{ d.item_code }}" data-additional-notes="{{d.additional_notes or ''}}">
 			<span class="input-group-append d-none d-sm-inline-block">
-				<button class="btn btn-outline-secondary cart-btn" data-dir="up">+</button>
+				<button class="btn btn-outline-secondary cart-btn" data-dir="up" data-additional-notes="{{d.additional_notes or ''}}">+</button>
 			</span>
 		</div>
 	</td>
@@ -41,7 +41,7 @@
 	{% endif %}
 	<td class="text-right">
 			{%- set qty = d.get_formatted('qty') %}
-				<button	data-item-code="{{d.item_code}}" data-qty="{{qty}}" class="btn btn-outline-primary btn-add-to-cart ">
+				<button	data-item-code="{{d.item_code}}" data-qty="{{qty}}" data-additional-notes="{{d.additional_notes or ''}}" class="btn btn-outline-primary btn-add-to-cart ">
 					{{ _("Add to Cart") }}
 				</button>
 		</td>
@@ -53,11 +53,14 @@
 				const $btn = $(e.currentTarget);
 				$btn.prop('disabled', true);
 				const item_code = $btn.data('item-code');
-				console.log($btn)
+				const additional_notes=$btn.data('additional-notes');
 				const qty= $btn.data('qty') || 1;
+				console.log(qty,'qty to be passed to cart',additional_notes,'additional_notes')
+
 				erpnext.shopping_cart.update_cart({
 					item_code,
 					qty: qty,
+					additional_notes: additional_notes,
 					callback(r) {
 						console.log('here')
 						$btn.prop('disabled', false);

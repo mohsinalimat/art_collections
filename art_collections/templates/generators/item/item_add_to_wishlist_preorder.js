@@ -17,10 +17,10 @@
 					var $button_to_show;
 					if (qty>0) {
 						console.log(qty,'aty')
-						$button_to_show=$('<button class="btn btn-inquiry btn-view-in-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <img src="/assets/art_collections/images/heart_filled.svg"></button>')
+						$button_to_show=$('<button class="btn btn-inquiry btn-view-in-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <img class="standard-image" src="/assets/art_collections/images/heart_filled.svg"></button>')
 					}else{
 						console.log(qty,'aty')
-						$button_to_show=$('<button class="btn btn-inquiry btn-add-to-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><img src="/assets/art_collections/images/heart_empty.svg"></button>')
+						$button_to_show=$('<button class="btn btn-inquiry btn-add-to-cart-wishlist" data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><img class="standard-image" src="/assets/art_collections/images/heart_empty.svg"></button>')
 					}
 					console.log($button_to_show)
 					// $button_to_show.appendTo($('<div class="div-wishlist"></div>'))

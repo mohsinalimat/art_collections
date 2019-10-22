@@ -17,8 +17,8 @@ $.extend(shopping_cart, {
 		shopping_cart.bind_address_select();
 		shopping_cart.bind_place_order();
 		shopping_cart.bind_request_quotation();
-		shopping_cart.bind_change_qty();
-		shopping_cart.bind_change_notes();
+		shopping_cart.wishlist_bind_change_qty();
+		shopping_cart.wishlist_bind_change_notes();
 		shopping_cart.bind_dropdown_cart_buttons();
 	},
 
@@ -57,17 +57,21 @@ $.extend(shopping_cart, {
 		});
 	},
 
-	bind_change_qty: function() {
+	wishlist_bind_change_qty: function() {
 		// bind update button
 		$(".wishlist-cart-items").on("change", ".cart-qty", function() {
 			var item_code = $(this).attr("data-item-code");
 			var newVal = $(this).val();
-			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal});
+			var btn = $(this)
+			var additional_notes=btn.data('additional-notes');
+			console.log('xxnotes 1',additional_notes)
+			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes});
 		});
 
 		$(".wishlist-cart-items").on('click', '.number-spinner button', function () {
 			var btn = $(this),
 				input = btn.closest('.number-spinner').find('input'),
+				textarea=btn.closest('.number-spinner').find('textarea'),
 				oldValue = input.val().trim(),
 				newVal = 0;
 
@@ -76,20 +80,24 @@ $.extend(shopping_cart, {
 			} else {
 				if (oldValue > 1) {
 					newVal = parseInt(oldValue) - 1;
-				}
+				}	
 			}
 			input.val(newVal);
+			var notes = $(this).find('textarea').val();
+			var additional_notes=btn.data('additional-notes');
+			console.log('notes 1',additional_notes)
 			var item_code = input.attr("data-item-code");
-			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal});
+			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes});
 		});
 	},
 
-	bind_change_notes: function() {
+	wishlist_bind_change_notes: function() {
 		$('.wishlist-cart-items').on('change', 'textarea', function() {
 			const $textarea = $(this);
 			const item_code = $textarea.attr('data-item-code');
 			const qty = $textarea.closest('tr').find('.cart-qty').val();
 			const notes = $textarea.val();
+			console.log('bind_change_notes',item_code,qty,$textarea.closest('tr'),$textarea.closest('tr').find('.cart-qty'),notes)
 			shopping_cart.wishlist_shopping_cart_update({
 				item_code,
 				qty,

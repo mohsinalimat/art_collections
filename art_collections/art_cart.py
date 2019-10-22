@@ -62,7 +62,8 @@ def get_product_info_for_website(item_code):
 def set_cart_count(quotation=None):
 	if cint(frappe.db.get_singles_value("Shopping Cart Settings", "enabled")):
 		if not quotation:
-			quotation = _get_cart_quotation()
+			party = get_party()
+			quotation = _get_cart_quotation(party,order_type='Shopping Cart Wish List')
 		wishlist_cart_count = cstr(len(quotation.get("items")))
 
 		if hasattr(frappe.local, "cookie_manager"):

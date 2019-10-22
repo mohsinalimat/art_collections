@@ -6,6 +6,9 @@ frappe.ui.form.on('Catalogue Directory Art', {
 		frm.set_value('is_group', 1)
 		frm.set_df_property('parent_catalogue_directory_art', 'reqd', 1)
 	},
+	onload_post_render: function(frm) {
+		frm.get_field("items_in_universe").grid.set_multiple_add("item");
+	},
 	onload: function (frm) {
 		frm.list_route = "Tree/Catalogue Directory Art";
 		frm.fields_dict['parent_catalogue_directory_art'].get_query = function (doc, cdt, cdn) {
@@ -34,13 +37,7 @@ frappe.ui.form.on('Catalogue Directory Art', {
 		frm.add_custom_button(__("Catalogue Directory Art Tree"), function () {
 			frappe.set_route("Tree", "Catalogue Directory Art");
 		});
-		if (!frm.is_new()) {
-			frm.add_custom_button(__("Items"), function () {
-				frappe.set_route("List", "Item", {
-					'catalogue_directory_art': frm.doc.name
-				})
-			});
-		}
+
 	},
 	set_root_readonly: function (frm) {
 		// read-only for root item group

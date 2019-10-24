@@ -31,7 +31,8 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                 slideshow=frappe.get_doc('Website Slideshow', item_slideshow)
                 for slideshow_item in slideshow.get('slideshow_items') or []:
                         slideshow_image=slideshow_item.image
-                        file_list.append(slideshow_image)
+                        if slideshow_image!=main_image:
+                                file_list.append(slideshow_image)
 
         public_files_path = frappe.get_site_path('public', 'files')
         si_zip_folder = os.path.join(public_files_path, "si_zip_folder")

@@ -174,7 +174,7 @@ def _get_cart_quotation(party=None,order_type=None):
 		qdoc = frappe.get_doc({
 			"doctype": "Quotation",
 			"naming_series": get_shopping_cart_settings().quotation_series or "QTN-CART-",
-			"title":party.customer_name,
+			"title":party.customer_name or party.name,
 			"quotation_to": party.doctype,
 			"company": company,
 			"order_type": order_type,

@@ -6,12 +6,15 @@
 {% if cart_settings.show_wishlist_art | int %}
 	<div class="div-wishlist" ></div>
 	{% endif %}
-	<!-- {% if cart_settings.show_preorder_art | int %}
+
+	{% set allow_preorders_art = frappe.db.get_value('Item',doc.name,'allow_preorders_art') %}	
+{% set in_stock = shopping_cart.product_info.in_stock %}
+{% if (cart_settings.show_preorder_art | int) and (in_stock == 0) and (allow_preorders_art == 1) %}
 	<button class="btn btn-link btn-inquiry" data-item-code="{{ doc.name }}">
 		{{ _('Pr Order') }}
 	</button>
-	{% endif %}
-	<button class="btn btn-outline-primary btn-add-to-cart" onclick="window.history.back();">Go Back</button> -->
+{% endif %}
+		<!--<button class="btn btn-outline-primary btn-add-to-cart" onclick="window.history.back();">Go Back</button> -->
 </div>
 <script>
 {% include "templates/generators/item/item_add_to_wishlist_preorder.js" %}

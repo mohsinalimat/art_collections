@@ -1,10 +1,10 @@
 {% extends "templates/web.html" %}
 
-{% block title %} {{ _("Wish List Shopping Cart") }} {% endblock %}
+{% block title %} {{ _("Wish List") }} {% endblock %}
 
 {% block header %}
 <div></div>
-<h1><img src="/assets/art_collections/images/wishlist.svg" alt="Wish list"> {{ _("Wish List Shopping Cart") }}</h1>{% endblock %}
+<h1><img src="/assets/art_collections/images/wishlist.svg" alt="Wish list"> {{ _("Wish List") }}</h1>{% endblock %}
 
 {% block script %}
 <script>{% include "templates/includes/art_cart.js" %}</script>
@@ -35,7 +35,7 @@
 		</tbody>
 	</table>
 	{% else %}
-	<p class="text-muted">{{ _('Your wish list cart is Empty') }}</p>
+	<p class="text-muted">{{ _('No Items in wishlist.') }}</p>
 	{% endif %}
 
 </div>

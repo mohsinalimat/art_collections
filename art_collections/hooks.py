@@ -28,7 +28,8 @@ web_include_js = ["/assets/art_collections/js/shopping_cart.js"]
 # include js in doctype views
 doctype_js = {"Customer" : "public/js/customer.js",
 "Address" : "public/js/address.js",
-"Item" : "public/js/item.js"
+"Item" : "public/js/item.js",
+"Delivery Note":"public/js/delivery_note.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

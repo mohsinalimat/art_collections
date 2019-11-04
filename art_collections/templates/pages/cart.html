@@ -30,11 +30,11 @@
 {% endif %}
 {% if doc.items and cart_settings.enable_checkout  %}
 
-{% if doc.net_total < minimum_order_amount_art or ns.max_qty_alert==1%}
+{% if ns.max_qty_alert==1 or (minimum_order_amount_art and doc.net_total < minimum_order_amount_art) %}
 <button class="btn btn-primary btn-place-order text-right"" type="button" disabled>
 	{{ _("Place Order") }}
 </button>
-{% if doc.net_total < minimum_order_amount_art%}
+{% if minimum_order_amount_art and doc.net_total < minimum_order_amount_art %}
 <small class="text-danger ">{{ _('Order amount must be mimimum ')}} {{minimum_order_amount_art}}  {{_('to proceed.') }}</small>
 {% endif %}
 {% else %}

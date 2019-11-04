@@ -688,7 +688,7 @@
    "columns": 0,
    "creation": "2019-08-22 07:05:01.293166",
    "default": "0",
-   "depends_on": "eval:doc.qualifies_for_escompete_art==1",
+   "depends_on": "eval:doc.qualifies_for_escompte_art==1",
    "description": null,
    "docstatus": 0,
    "dt": "Customer",

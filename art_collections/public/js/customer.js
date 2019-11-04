@@ -8,7 +8,14 @@ frappe.ui.form.on('Customer', {
         var child = cur_frm.add_child("customer_sales_person");
         frappe.model.set_value(child.doctype, child.name, "address_title", address)
     },
-
+    qualifies_for_escompte_art: function (frm) {
+        if (frm.doc.qualifies_for_escompte_art==1 && frm.doc.taux_escompte_art==0) {
+            frm.set_value('taux_escompte_art', 2)
+        }
+        else if(frm.doc.qualifies_for_escompte_art==0 ){
+            frm.set_value('taux_escompte_art', 0)
+        }
+    },
     refresh: function (frm) {
         if (cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)

@@ -10,6 +10,29 @@ frappe.ready(function() {
 });
 
 $.extend(shopping_cart, {
+	shopping_cart_update: function({item_code, qty, cart_dropdown, additional_notes}) {
+		frappe.freeze();
+		shopping_cart.update_cart({
+			item_code,
+			qty,
+			additional_notes,
+			with_items: 1,
+			btn: this,
+			callback: function(r) {
+				frappe.unfreeze();
+				if(!r.exc) {
+					$(".cart-items").html(r.message.items);
+					$(".cart-tax-items").html(r.message.taxes);
+					if (cart_dropdown != true) {
+						$(".cart-icon").hide();
+					}
+					//  to enable - disable place order button based on amount
+					location.reload();
+				}
+			},
+		});
+	},
+
 	set_wishlist_cart_count: function() {
 		var wishlist_cart_count = frappe.get_cookie("wishlist_cart_count");
 		if(frappe.session.user==="Guest") {

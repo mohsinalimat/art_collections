@@ -13,12 +13,11 @@
    "in_list_view": 1,
    "label": "Matiere",
    "options": "Matiere",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   }
  ],
  "istable": 1,
- "modified": "2019-10-07 13:40:48.463201",
+ "modified": "2019-11-05 05:52:15.972793",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Skills Art",

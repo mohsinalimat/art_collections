@@ -86,7 +86,7 @@
    "modified_by": "Administrator",
    "name": "Purchase Order-minimum_order_amount_art",
    "no_copy": 0,
-   "options": null,
+   "options": "currency",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,

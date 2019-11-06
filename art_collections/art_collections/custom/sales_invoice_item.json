@@ -29,6 +29,7 @@
    "in_standard_filter": 0,
    "insert_after": "item_code",
    "label": "Credit Note Reason",
+   "length": 0,
    "modified": "2019-05-27 13:15:22.388481",
    "modified_by": "Administrator",
    "name": "Sales Invoice Item-art_credit_note_reason",
@@ -54,6 +55,30 @@
  ],
  "custom_perms": [],
  "doctype": "Sales Invoice Item",
- "property_setters": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2019-11-01 11:37:35.341906",
+   "default_value": null,
+   "doc_type": "Sales Invoice Item",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "barcode",
+   "idx": 0,
+   "modified": "2019-11-01 11:37:35.341906",
+   "modified_by": "Administrator",
+   "name": "Sales Invoice Item-barcode-hidden",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "hidden",
+   "property_type": "Check",
+   "value": "0"
+  }
+ ],
  "sync_on_migrate": 1
 }

@@ -13,75 +13,94 @@ from erpnext.accounts.utils import get_account_name
 from erpnext.utilities.product import get_qty_in_stock
 
 # imported by art_collections
-from erpnext.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,decorate_quotation_doc,apply_cart_settings,get_address_docs
+from erpnext.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,apply_cart_settings,get_address_docs
 from erpnext.shopping_cart.cart import get_applicable_shipping_rules
 
 class WebsitePriceListMissingError(frappe.ValidationError):
 	pass
 
+
+
+
 # called from individual item page to show or not to show heart after checking in quotation wishlist
-@frappe.whitelist(allow_guest=True)
-def get_product_info_for_website(item_code):
-	from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
-	import get_shopping_cart_settings, show_quantity_in_website
-	from erpnext.utilities.product import get_price, get_qty_in_stock
-	"""get product price / stock info for website"""
+#not used
+# @frappe.whitelist(allow_guest=True)
+# def get_product_info_for_website(item_code):
+# 	from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
+# 	import get_shopping_cart_settings, show_quantity_in_website
+# 	from erpnext.utilities.product import get_price, get_qty_in_stock
+# 	"""get product price / stock info for website"""
 
-	cart_settings = get_shopping_cart_settings()
-	if not cart_settings.enabled:
-		return frappe._dict()
+# 	cart_settings = get_shopping_cart_settings()
+# 	if not cart_settings.enabled:
+# 		return frappe._dict()
 
-	cart_quotation = _get_cart_quotation(order_type='Shopping Cart Wish List')
+# 	cart_quotation = _get_cart_quotation(order_type='Shopping Cart Wish List')
 
-	price = get_price(
-		item_code,
-		cart_quotation.selling_price_list,
-		cart_settings.default_customer_group,
-		cart_settings.company
-	)
+# 	price = get_price(
+# 		item_code,
+# 		cart_quotation.selling_price_list,
+# 		cart_settings.default_customer_group,
+# 		cart_settings.company
+# 	)
 
-	stock_status = get_qty_in_stock(item_code, "website_warehouse")
+# 	stock_status = get_qty_in_stock(item_code, "website_warehouse")
 
-	product_info = {
-		"price": price,
-		"stock_qty": stock_status.stock_qty,
-		"in_stock": stock_status.in_stock if stock_status.is_stock_item else 1,
-		"qty": 0,
-		"uom": frappe.db.get_value("Item", item_code, "stock_uom"),
-		"show_stock_qty": show_quantity_in_website(),
-		"sales_uom": frappe.db.get_value("Item", item_code, "sales_uom")
-	}
+# 	product_info = {
+# 		"price": price,
+# 		"stock_qty": stock_status.stock_qty,
+# 		"in_stock": stock_status.in_stock if stock_status.is_stock_item else 1,
+# 		"qty": 0,
+# 		"uom": frappe.db.get_value("Item", item_code, "stock_uom"),
+# 		"show_stock_qty": show_quantity_in_website(),
+# 		"sales_uom": frappe.db.get_value("Item", item_code, "sales_uom")
+# 	}
 
-	if product_info["price"]:
-		if frappe.session.user != "Guest":
-			item = cart_quotation.get({"item_code": item_code})
-			if item:
-				product_info["qty"] = item[0].qty
+# 	if product_info["price"]:
+# 		if frappe.session.user != "Guest":
+# 			item = cart_quotation.get({"item_code": item_code})
+# 			if item:
+# 				product_info["qty"] = item[0].qty
 
-	return frappe._dict({
-		"wishlist_product_info": product_info,
-		"cart_settings": cart_settings
-	})
+# 	return frappe._dict({
+# 		"wishlist_product_info": product_info,
+# 		"cart_settings": cart_settings
+# 	})
 
 #called internaly
 def set_cart_count(quotation=None):
 	if cint(frappe.db.get_singles_value("Shopping Cart Settings", "enabled")):
-		if not quotation:
-			party = get_party()
-			quotation = _get_cart_quotation(party,order_type='Shopping Cart Wish List')
-		wishlist_cart_count = cstr(len(quotation.get("items")))
-
+		# if not quotation:
+		party = get_party()
+		order_type='Shopping Cart Wish List'
+		quotations = frappe.get_all("Quotation", fields=["name"], filters={"party_name": party.name, "order_type": order_type, "docstatus": 0},order_by="modified desc")
+		wishlist_cart_count=0
+		for quotation in quotations:
+			doc = frappe.get_doc('Quotation', quotation)
+			wishlist_cart_count = (len(doc.get("items"))) + wishlist_cart_count
+		wishlist_cart_count=cstr(wishlist_cart_count)
 		if hasattr(frappe.local, "cookie_manager"):
 			frappe.local.cookie_manager.set_cookie("wishlist_cart_count", wishlist_cart_count)
 
+def decorate_quotation_doc(doc):
+	for d in doc.get("items", []):
+		print(type(d))
+		d.update(frappe.db.get_value("Item", d.item_code,
+			["thumbnail", "website_image", "description", "route"], as_dict=True))
+
+	return doc
+
 # called from art_cart.py for rendering art_cart.html
 @frappe.whitelist()
-def get_cart_quotation(doc=None):
+def get_cart_quotation(doc=None,wish_list_name=None):
 	
 	party = get_party()
+	wish_list_names=frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=False)
+	if not wish_list_name:
+		wish_list_name=wish_list_names[0]['wish_list_name']
 
 	if not doc:
-		quotation = _get_cart_quotation(party,order_type='Shopping Cart Wish List')
+		quotation = _get_cart_quotation(party,order_type='Shopping Cart Wish List',wish_list_name=wish_list_name)
 		doc = quotation
 		set_cart_count(quotation)
 
@@ -89,7 +108,6 @@ def get_cart_quotation(doc=None):
 
 	if not doc.customer_address and addresses:
 		update_cart_address("customer_address", addresses[0].name)
-
 	return {
 		"doc": decorate_quotation_doc(doc),
 		"shipping_addresses": [{"name": address.name, "display": address.display}
@@ -97,17 +115,33 @@ def get_cart_quotation(doc=None):
 		"billing_addresses": [{"name": address.name, "display": address.display}
 			for address in addresses],
 		"shipping_rules": get_applicable_shipping_rules(party),
-		"cart_settings": frappe.get_cached_doc("Shopping Cart Settings")
+		"cart_settings": frappe.get_cached_doc("Shopping Cart Settings"),
+		"wish_list_name":wish_list_names,
+		"selected_wish_list":wish_list_name
 	}
 
 
+def create_wish_list(wish_list_name):
+	party = get_party()
 
+	wish_list = frappe.get_all("Wish List Name", fields=["name"], filters=
+		{"customer": party.name, "wish_list_name": wish_list_name},
+		order_by="modified desc")
+	print(wish_list_name,wish_list)
+	if not wish_list:	
+		doc = frappe.get_doc({
+		'doctype': 'Wish List Name',
+		'wish_list_name': wish_list_name,
+		'customer':party.name
+		})
+		doc.insert()
 
 #  main update wishlist cart function - called from heart icon on item detail / and on 'add to cart' from wishlist items page
 @frappe.whitelist()
-def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, with_items=False):
-	quotation = _get_cart_quotation(order_type='Shopping Cart Wish List')
-	print('-------------quotationquotation',quotation)
+def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, with_items=False,wish_list_name=None):
+	create_wish_list(wish_list_name)
+	quotation = _get_cart_quotation(order_type='Shopping Cart Wish List',wish_list_name=wish_list_name)
+	print('-------------quotationquotation',quotation,len(wish_list_name),wish_list_name)
 	empty_card = False
 	qty = flt(qty)
 	if qty == 0:
@@ -124,7 +158,7 @@ def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, wit
 				"doctype": "Quotation Item",
 				"item_code": item_code,
 				"qty": qty,
-				"additional_notes": additional_notes
+				"additional_notes": additional_notes,
 			})
 		else:
 			quotation_items[0].qty = qty
@@ -158,13 +192,13 @@ def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, wit
 			'shopping_cart_menu': get_shopping_cart_menu(context)
 		}
 
-def _get_cart_quotation(party=None,order_type=None):
+def _get_cart_quotation(party=None,order_type=None,wish_list_name=None):
 	'''Return the open Quotation of type "Shopping Cart" or make a new one'''
 	if not party:
 		party = get_party()
 
 	quotation = frappe.get_all("Quotation", fields=["name"], filters=
-		{"party_name": party.name, "order_type": order_type, "docstatus": 0},
+		{"party_name": party.name, "order_type": order_type, "docstatus": 0,"wish_list_name":wish_list_name},
 		order_by="modified desc", limit_page_length=1)
 
 	if quotation:
@@ -181,7 +215,8 @@ def _get_cart_quotation(party=None,order_type=None):
 			"status": "Draft",
 			"docstatus": 0,
 			"__islocal": 1,
-			"party_name": party.name
+			"party_name": party.name,
+			"wish_list_name":wish_list_name
 		})
 
 		qdoc.contact_person = frappe.db.get_value("Contact", {"email_id": frappe.session.user})

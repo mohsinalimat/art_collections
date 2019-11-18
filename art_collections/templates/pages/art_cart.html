@@ -18,6 +18,23 @@
 
 <div class="cart-container">
 	<div id="cart-error" class="alert alert-danger" style="display: none;"></div>
+	<div class="row">
+	<div class="col-sm-4">
+<label for="wish_list_name" class="control-label text-muted small">{{ ("Selected Wish List") }}</label>
+	<select class="form-control" name="wish_list_name" id="wish_list_name" data-fieldtype="Select" onchange="selected_wish_list(this.value);">
+
+		{% for d in wish_list_name %}
+		{% if  selected_wish_list and d.wish_list_name==selected_wish_list %}
+		<option value="{{d.wish_list_name}}" selected>{{d.wish_list_name}}</option>
+		{% elif  loop.first %}
+		<option value="{{d.wish_list_name}}" selected>{{d.wish_list_name}}</option>
+	{% else %}  
+	<option value="{{d.wish_list_name}}">{{d.wish_list_name}}</option>
+{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
 	{% if doc.items %}
 	<table class="table table-bordered mt-3">
 		<thead>
@@ -51,4 +68,15 @@
 <script type="text/javascript" src="/assets/js/control.min.js"></script>
 <script type="text/javascript" src="/assets/js/dialog.min.js"></script>
 <script type="text/javascript" src="/assets/js/bootstrap-4-web.min.js"></script>
+<script>
+function selected_wish_list(value)
+{
+	var sel = document.getElementById('wish_list_name');
+	console.log( sel.value );
+	if (value) {
+						window.location.search = 'wish_list=' + value;
+					} 
+}
+		
+</script>
 {% endblock %}

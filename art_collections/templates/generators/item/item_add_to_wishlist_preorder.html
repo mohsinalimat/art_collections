@@ -1,10 +1,28 @@
 {% if shopping_cart and shopping_cart.cart_settings.enabled %}
 {% set cart_settings = shopping_cart.cart_settings %}
+
 {% set product_info = shopping_cart.wishlist_product_info %}
 
 <div class="row mt-3">
 {% if cart_settings.show_wishlist_art | int %}
-	<div class="div-wishlist" ></div>
+{% set ns = namespace (wish_list_name_list = '') %}
+{% for d in shopping_cart.wish_list_name %}
+{% if not loop.last %}
+{% set ns.wish_list_name_list = ns.wish_list_name_list + d.wish_list_name|string+'\\n'|string  %}
+
+{% else %}
+{% set ns.wish_list_name_list = ns.wish_list_name_list + d.wish_list_name|string +'\\ncreate new..'|string %}
+
+{% endif %}
+{% endfor %}
+{% if not shopping_cart.wish_list_name %}
+{% set ns.wish_list_name_list = '\\ncreate new..'|string %}
+	{% endif %}	
+	{% if shopping_cart.is_item_in_wishlist == False %}
+	<button class="btn btn-inquiry btn-wishlist-name" data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><img class="standard-image" src="/assets/art_collections/images/heart_empty.svg"></button>
+	{% else %}
+	<button class="btn btn-inquiry btn-wishlist-name" data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <img class="standard-image" src="/assets/art_collections/images/heart_filled.svg"></button>
+	{% endif %}
 	{% endif %}
 
 	{% set allow_preorders_art = frappe.db.get_value('Item',doc.name,'allow_preorders_art') %}	
@@ -14,6 +32,8 @@
 		{{ _('Pr Order') }}
 	</button>
 {% endif %}
+
+
 		<!--<button class="btn btn-outline-primary btn-add-to-cart" onclick="window.history.back();">Go Back</button> -->
 </div>
 <script>

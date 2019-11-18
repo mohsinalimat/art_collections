@@ -56,6 +56,7 @@
 				const item_code = $btn.data('item-code');
 				const additional_notes=$btn.data('additional-notes');
 				const qty= $btn.data('qty') || 1;
+				const wish_list_name="{{selected_wish_list}}"
 
 				erpnext.shopping_cart.update_cart({
 					item_code,
@@ -84,7 +85,8 @@
 										item_code: item_code,
 										qty: 0,
 										additional_notes: additional_notes !== undefined ? additional_notes : undefined,
-										with_items: with_items || 0
+										with_items: with_items || 0,
+										wish_list_name:wish_list_name
 									},
 									btn: this,
 									callback: function(r) {

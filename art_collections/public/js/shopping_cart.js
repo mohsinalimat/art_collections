@@ -62,7 +62,7 @@ $.extend(shopping_cart, {
 	},
 
 	// called from art_cart.js
-	wishlist_shopping_cart_update: function({item_code, qty, cart_dropdown, additional_notes}) {
+	wishlist_shopping_cart_update: function({item_code, qty, cart_dropdown, additional_notes,wish_list_name}) {
 		console.log('wishlist_shopping_cart_update---')
 		frappe.freeze();
 		shopping_cart.wishlist_update_cart({
@@ -70,6 +70,7 @@ $.extend(shopping_cart, {
 			qty,
 			additional_notes,
 			with_items: 1,
+			wish_list_name,
 			btn: this,
 			callback: function(r) {
 				frappe.unfreeze();
@@ -99,7 +100,8 @@ $.extend(shopping_cart, {
 					item_code: opts.item_code,
 					qty: opts.qty,
 					additional_notes: opts.additional_notes !== undefined ? opts.additional_notes : undefined,
-					with_items: opts.with_items || 0
+					with_items: opts.with_items || 0,
+					wish_list_name:opts.wish_list_name
 				},
 				btn: opts.btn,
 				callback: function(r) {

@@ -8,4 +8,9 @@ import frappe
 from art_collections.art_cart import get_cart_quotation
 
 def get_context(context):
-	context.update(get_cart_quotation())
+	if frappe.form_dict:
+		print('frappe.form_dict.wish_list',frappe.form_dict.wish_list)
+		context.update(get_cart_quotation(wish_list_name=frappe.form_dict.wish_list))
+		# context.update({'selected_wish_list':frappe.form_dict.wish_list})
+	else:
+		context.update(get_cart_quotation())

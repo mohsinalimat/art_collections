@@ -95,3 +95,66 @@ def get_children(doctype, parent='', **filters):
 		order_by='name')
 
 	return data
+
+#not used
+@frappe.whitelist()
+def get_wish_list_names():
+	from erpnext.shopping_cart.cart import get_party
+	party = get_party()
+	return frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=True)
+
+@frappe.whitelist()
+def update_cart(item_code, qty, additional_notes=None, with_items=False):
+	from erpnext.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation,_get_cart_quotation,get_shopping_cart_menu
+	from frappe.utils import cint, flt
+	quotation = _get_cart_quotation()
+
+	empty_card = False
+	qty = flt(qty)
+	if qty == 0:
+		quotation_items = quotation.get("items", {"item_code": ["!=", item_code]})
+		if quotation_items:
+			quotation.set("items", quotation_items)
+		else:
+			empty_card = True
+
+	else:
+		quotation_items = quotation.get("items", {"item_code": item_code})
+		if not quotation_items:
+			quotation.append("items", {
+				"doctype": "Quotation Item",
+				"item_code": item_code,
+				"qty": qty,
+				"additional_notes": additional_notes
+			})
+		else:
+# quantity is cumulated
+			quotation_items[0].qty = quotation_items[0].qty + qty
+			quotation_items[0].additional_notes = additional_notes
+
+	apply_cart_settings(quotation=quotation)
+
+	quotation.flags.ignore_permissions = True
+	quotation.payment_schedule = []
+	if not empty_card:
+		quotation.save()
+	else:
+		quotation.delete()
+		quotation = None
+
+	set_cart_count(quotation)
+
+	context = get_cart_quotation(quotation)
+
+	if cint(with_items):
+		return {
+			"items": frappe.render_template("templates/includes/cart/cart_items.html",
+				context),
+			"taxes": frappe.render_template("templates/includes/order/order_taxes.html",
+				context),
+		}
+	else:
+		return {
+			'name': quotation.name,
+			'shopping_cart_menu': get_shopping_cart_menu(context)
+		}	

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
+from frappe import _
 
 app_name = "art_collections"
 app_title = "Art Collections"
@@ -124,10 +125,13 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 # before_tests = "art_collections.install.before_tests"
 
+standard_portal_menu_items = [
+	{"title": _("Manage Wish List Name"), "route": "/wish-list-name", "reference_doctype": "Wish List Name", "role": "Customer"}
+]
+
 # Overriding Whitelisted Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "art_collections.event.get_events"
-# }
-
+override_whitelisted_methods = {
+	"erpnext.shopping_cart.cart.update_cart": "art_collections.api.update_cart"
+}

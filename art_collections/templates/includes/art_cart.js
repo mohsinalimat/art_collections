@@ -20,7 +20,8 @@ $.extend(shopping_cart, {
 			var newVal = $(this).val();
 			var btn = $(this)
 			var additional_notes=btn.data('additional-notes');
-			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes});
+			var wish_list_name="{{selected_wish_list}}"
+			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes,wish_list_name});
 		});
 
 		$(".wishlist-cart-items").on('click', '.number-spinner button', function () {
@@ -39,7 +40,8 @@ $.extend(shopping_cart, {
 			input.val(newVal);
 			var additional_notes=btn.data('additional-notes');
 			var item_code = input.attr("data-item-code");
-			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes});
+			var wish_list_name="{{selected_wish_list}}"
+			shopping_cart.wishlist_shopping_cart_update({item_code, qty: newVal,additional_notes: additional_notes,wish_list_name});
 		});
 	},
 
@@ -49,10 +51,12 @@ $.extend(shopping_cart, {
 			const item_code = $textarea.attr('data-item-code');
 			const qty = $textarea.closest('tr').find('.cart-qty').val();
 			const notes = $textarea.val();
+			const wish_list_name="{{selected_wish_list}}"
 			shopping_cart.wishlist_shopping_cart_update({
 				item_code,
 				qty,
-				additional_notes: notes
+				additional_notes: notes,
+				wish_list_name:wish_list_name
 			});
 		});
 	},

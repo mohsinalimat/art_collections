@@ -5,7 +5,8 @@ import frappe
 from erpnext.shopping_cart.cart import _get_cart_quotation,get_party
 from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
     import get_shopping_cart_settings, show_quantity_in_website
-from erpnext.utilities.product import get_price, get_qty_in_stock
+from erpnext.utilities.product import get_price
+from art_collections.api import get_qty_in_stock
 from erpnext.shopping_cart import product_info,cart
 from erpnext.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation
 

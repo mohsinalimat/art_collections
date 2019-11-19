@@ -158,3 +158,32 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 			'name': quotation.name,
 			'shopping_cart_menu': get_shopping_cart_menu(context)
 		}	
+
+#Helper for finding item qty
+def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
+	from erpnext.utilities.product import get_price, adjust_qty_for_expired_items
+	in_stock, stock_qty = 0, ''
+	template_item_code, is_stock_item = frappe.db.get_value("Item", item_code, ["variant_of", "is_stock_item"])
+
+	if not warehouse:
+		warehouse = frappe.db.get_value("Item", item_code, item_warehouse_field)
+
+	if not warehouse and template_item_code and template_item_code != item_code:
+		warehouse = frappe.db.get_value("Item", template_item_code, item_warehouse_field)
+	if warehouse:
+		p_warehouse = frappe.get_doc("Warehouse", warehouse)
+		print(item_code, p_warehouse.lft, p_warehouse.rgt)
+		stock_qty = frappe.db.sql("""
+			select GREATEST(S.actual_qty - S.reserved_qty - S.reserved_qty_for_production - S.reserved_qty_for_sub_contract, 0) / IFNULL(C.conversion_factor, 1)
+			from tabBin S
+			inner join `tabItem` I on S.item_code = I.Item_code
+			left join `tabUOM Conversion Detail` C on I.sales_uom = C.uom and C.parent = I.Item_code
+			where S.item_code=%s and S.warehouse in ( select name from `tabWarehouse`
+			where lft >= %s and rgt <= %s )
+			""",(item_code, p_warehouse.lft, p_warehouse.rgt))
+		if stock_qty:
+			stock_qty = adjust_qty_for_expired_items(item_code, stock_qty, warehouse)
+			in_stock = stock_qty[0][0] > 0 and 1 or 0
+
+	return frappe._dict({"in_stock": in_stock, "stock_qty": stock_qty, "is_stock_item": is_stock_item})
+		

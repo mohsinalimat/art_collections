@@ -199,6 +199,7 @@ var start_processing=function(frm) {
 			}
 			console.log(r)
 			frm.refresh();
+			frm.reload_doc()
 		}
 	});	
 }

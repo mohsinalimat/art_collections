@@ -161,6 +161,7 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 
 #Helper for finding item qty
 def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
+	print(item_code, item_warehouse_field, warehouse)
 	from erpnext.utilities.product import get_price, adjust_qty_for_expired_items
 	in_stock, stock_qty = 0, ''
 	template_item_code, is_stock_item = frappe.db.get_value("Item", item_code, ["variant_of", "is_stock_item"])
@@ -174,7 +175,7 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 		p_warehouse = frappe.get_doc("Warehouse", warehouse)
 		print(item_code, p_warehouse.lft, p_warehouse.rgt)
 		stock_qty = frappe.db.sql("""
-			select GREATEST(S.actual_qty - S.reserved_qty - S.reserved_qty_for_production - S.reserved_qty_for_sub_contract, 0) / IFNULL(C.conversion_factor, 1)
+			select SUM(GREATEST(S.actual_qty - S.reserved_qty - S.reserved_qty_for_production - S.reserved_qty_for_sub_contract, 0) / IFNULL(C.conversion_factor, 1))
 			from tabBin S
 			inner join `tabItem` I on S.item_code = I.Item_code
 			left join `tabUOM Conversion Detail` C on I.sales_uom = C.uom and C.parent = I.Item_code

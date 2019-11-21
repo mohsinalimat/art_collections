@@ -8,4 +8,4 @@ from frappe.model.document import Document
 
 class WishListName(Document):
 	def autoname(self):
-		self.name = self.wish_list_name +" "+ self.customer	
+		self.name = self.wish_list_name +" "+ self.customer

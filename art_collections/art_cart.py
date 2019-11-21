@@ -83,8 +83,13 @@ def set_cart_count(quotation=None):
 			frappe.local.cookie_manager.set_cookie("wishlist_cart_count", wishlist_cart_count)
 
 def decorate_quotation_doc(doc):
+	from art_collections.api import get_qty_in_stock
 	for d in doc.get("items", []):
-		print(type(d))
+		stock_status =get_qty_in_stock(d.item_code, "website_warehouse") 
+		qty_in_stock=stock_status.stock_qty
+		if qty_in_stock:
+			d.update({'qty_in_stock':flt(qty_in_stock[0][0])})
+
 		d.update(frappe.db.get_value("Item", d.item_code,
 			["thumbnail", "website_image", "description", "route"], as_dict=True))
 
@@ -97,7 +102,10 @@ def get_cart_quotation(doc=None,wish_list_name=None):
 	party = get_party()
 	wish_list_names=frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=False)
 	if not wish_list_name:
-		wish_list_name=wish_list_names[0]['wish_list_name']
+		if wish_list_names:
+			wish_list_name=wish_list_names[0]['wish_list_name']
+		else:
+			wish_list_name=None
 
 	if not doc:
 		quotation = _get_cart_quotation(party,order_type='Shopping Cart Wish List',wish_list_name=wish_list_name)

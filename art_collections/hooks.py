@@ -35,6 +35,7 @@ doctype_js = {
 "Sales Order" : "public/js/sales_order.js",
 "Purchase Order" : "public/js/purchase_order.js",
 "Issue" : "public/js/issue.js",
+"Pricing Rule" : "public/js/pricing_rule.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -91,13 +92,10 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Item": { "validate": "art_collections.api.update_flag_table"},
+	"Pricing Rule": { "validate": "art_collections.api.update_flag_table_from_pricing_rule"}
+}
 
 # Scheduled Tasks
 # ---------------

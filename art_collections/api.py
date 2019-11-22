@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 import functools
+from frappe.utils import nowdate,add_days
 
 @frappe.whitelist()
 def get_sales_person_based_on_address(address=None):
@@ -188,3 +189,61 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 
 	return frappe._dict({"in_stock": in_stock, "stock_qty": stock_qty, "is_stock_item": is_stock_item})
 		
+
+def update_flag_table(self,method):
+	# get new flag values from shopping cart
+	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field')
+	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days')
+
+	# check if existing
+	for image in self.website_item_flags_art:
+		if image.flag==new_arrival_field:
+			return
+	# new flag field not found
+	row = self.append('website_item_flags_art', {})
+	row.flag=new_arrival_field
+	row.valid_from=nowdate()
+	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
+
+def update_flag_table_from_pricing_rule(self,method):
+	if self.item_flag_icon_art:
+		flag=self.item_flag_icon_art
+		valid_from=self.valid_from
+		valid_to=self.valid_upto
+		if self.apply_on=='Item Code' and self.items:
+			for item in self.items:
+				doc = frappe.get_doc('Item', item.item_code)
+				found=False
+				for image in doc.website_item_flags_art:
+					if image.flag==flag and image.reference == self.name:
+						found=True
+				if found == False:
+					row = doc.append('website_item_flags_art', {})
+					row.flag=flag
+					row.valid_from=valid_from
+					row.valid_to=valid_to
+					row.reference=self.name
+					doc.save(ignore_permissions=True)		
+		elif self.apply_on=='Item Group' and self.item_groups:
+			for item_groups in self.item_groups:
+				items=frappe.db.get_list('Item', filters={'item_group': ['=', item_groups.item_group]})
+				for item in items:
+					print('---',item.name)
+					doc = frappe.get_doc('Item', item.name)
+					found=False
+					for image in doc.website_item_flags_art:
+						if image.flag==flag and image.reference == self.name:
+							print('found')
+							found=True
+					if found == False:
+						print('not found')
+						row = doc.append('website_item_flags_art', {})
+						row.flag=flag
+						row.valid_from=valid_from
+						row.valid_to=valid_to
+						row.reference=self.name
+						doc.save(ignore_permissions=True)					
+		else:
+			return
+	else:
+		return

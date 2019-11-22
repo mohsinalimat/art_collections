@@ -24,6 +24,18 @@
 	<!-- add variant to cart -->
 	{% include "templates/generators/item/item_add_to_cart.html" %}
 {% endif %}
+
+{% set today_date = frappe.utils.formatdate(frappe.utils.nowdate(), 'yyyy-mm-dd') %}
+{% for image in doc.website_item_flags_art %}
+
+	{% set valid_from = frappe.utils.formatdate(image.valid_from, 'yyyy-mm-dd') %}
+	{% set valid_to = frappe.utils.formatdate(image.valid_to, 'yyyy-mm-dd') %}
+	{% if (today_date >= valid_from and (today_date <= valid_to) )%}
+		{% set show_image = frappe.db.get_value('Flag Icon Art', image.flag, 'flag__icon') %}
+		<img class="standard-image" src="{{show_image}}">
+	{% endif  %}
+{% endfor %}
+
 <!-- art collection : add wishlist and preorder button -->
 {% include "templates/generators/item/item_add_to_wishlist_preorder.html" %}
 </div>

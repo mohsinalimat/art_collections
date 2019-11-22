@@ -196,12 +196,12 @@ def update_flag_table(self,method):
 	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
 	# check if existing
-	if self.website_item_flags_art:
-		for image in self.website_item_flags_art:
+	if self.website_item_flag_icon_art:
+		for image in self.website_item_flag_icon_art:
 			if image.flag==new_arrival_field:
 				return
 	# new flag field not found
-	row = self.append('website_item_flags_art', {})
+	row = self.append('website_item_flag_icon_art', {})
 	row.flag=new_arrival_field
 	row.valid_from=nowdate()
 	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
@@ -215,12 +215,12 @@ def update_flag_table_from_pricing_rule(self,method):
 			for item in self.items:
 				doc = frappe.get_doc('Item', item.item_code)
 				found=False
-				if doc.website_item_flags_art:
-					for image in doc.website_item_flags_art:
+				if doc.website_item_flag_icon_art:
+					for image in doc.website_item_flag_icon_art:
 						if image.flag==flag and image.reference == self.name:
 							found=True
 				if found == False:
-					row = doc.append('website_item_flags_art', {})
+					row = doc.append('website_item_flag_icon_art', {})
 					row.flag=flag
 					row.valid_from=valid_from
 					row.valid_to=valid_to
@@ -233,13 +233,13 @@ def update_flag_table_from_pricing_rule(self,method):
 					print('---',item.name)
 					doc = frappe.get_doc('Item', item.name)
 					found=False
-					for image in doc.website_item_flags_art:
+					for image in doc.website_item_flag_icon_art:
 						if image.flag==flag and image.reference == self.name:
 							print('found')
 							found=True
 					if found == False:
 						print('not found')
-						row = doc.append('website_item_flags_art', {})
+						row = doc.append('website_item_flag_icon_art', {})
 						row.flag=flag
 						row.valid_from=valid_from
 						row.valid_to=valid_to

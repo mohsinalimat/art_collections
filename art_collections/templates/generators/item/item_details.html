@@ -26,7 +26,7 @@
 {% endif %}
 
 {% set today_date = frappe.utils.formatdate(frappe.utils.nowdate(), 'yyyy-mm-dd') %}
-{% for image in doc.website_item_flags_art %}
+{% for image in doc.website_item_flag_icon_art %}
 
 	{% set valid_from = frappe.utils.formatdate(image.valid_from, 'yyyy-mm-dd') %}
 	{% set valid_to = frappe.utils.formatdate(image.valid_to, 'yyyy-mm-dd') %}

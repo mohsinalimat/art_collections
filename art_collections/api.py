@@ -192,13 +192,14 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 
 def update_flag_table(self,method):
 	# get new flag values from shopping cart
-	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field')
-	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days')
+	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
+	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
 	# check if existing
-	for image in self.website_item_flags_art:
-		if image.flag==new_arrival_field:
-			return
+	if self.website_item_flags_art:
+		for image in self.website_item_flags_art:
+			if image.flag==new_arrival_field:
+				return
 	# new flag field not found
 	row = self.append('website_item_flags_art', {})
 	row.flag=new_arrival_field
@@ -214,9 +215,10 @@ def update_flag_table_from_pricing_rule(self,method):
 			for item in self.items:
 				doc = frappe.get_doc('Item', item.item_code)
 				found=False
-				for image in doc.website_item_flags_art:
-					if image.flag==flag and image.reference == self.name:
-						found=True
+				if doc.website_item_flags_art:
+					for image in doc.website_item_flags_art:
+						if image.flag==flag and image.reference == self.name:
+							found=True
 				if found == False:
 					row = doc.append('website_item_flags_art', {})
 					row.flag=flag

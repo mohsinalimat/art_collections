@@ -40,6 +40,7 @@
 	</td>
 	{% endif %}
 	<td class="text-right">
+			{% if cart_settings.show_stock_availability %}
 			{% if d.qty_in_stock  %}
 			<span class="text-success">
 					{{ _('In stock') }}
@@ -49,7 +50,8 @@
 				<span class="text-danger">
 						{{ _('Not in stock') }}
 					</span>
-				{% endif %}
+			{% endif %}
+			{% endif %}				
 			{%- set qty = d.get_formatted('qty') %}
 				<button	data-item-code="{{d.item_code}}" data-qty="{{qty}}" data-additional-notes="{{d.additional_notes or ''}}" class="btn btn-outline-primary btn-add-to-cart ">
 					{{ _("Add to Cart") }}

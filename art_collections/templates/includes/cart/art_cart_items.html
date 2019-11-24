@@ -44,7 +44,7 @@
 			{% if d.qty_in_stock  %}
 			<span class="text-success">
 					{{ _('In stock') }}
-					{{d.qty_in_stock}}
+					{% if cart_settings.show_quantity_in_website %}	{{d.qty_in_stock}}{% endif %}
 				</span>
 				{% else %}
 				<span class="text-danger">

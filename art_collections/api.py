@@ -248,3 +248,10 @@ def update_flag_table_from_pricing_rule(self,method):
 			return
 	else:
 		return
+
+
+def autoname_issue_type(self,method):
+	if self.category_art:
+		existing_issue=frappe.db.get_list('Issue Type',filters={'category_art': self.category_art,'name':self.name})
+		if existing_issue:
+			frappe.throw(_('Duplicate record'))

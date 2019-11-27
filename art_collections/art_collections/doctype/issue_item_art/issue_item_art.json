@@ -1,0 +1,31 @@
+{
+ "creation": "2019-11-27 06:18:10.219816",
+ "description": "To link multiple Items with the Issue Doctype",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item"
+ ],
+ "fields": [
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-11-27 06:18:10.219816",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Issue Item Art",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

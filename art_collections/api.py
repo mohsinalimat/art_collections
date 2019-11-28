@@ -194,6 +194,9 @@ def update_flag_table(self,method):
 	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
 	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
+	if self.show_in_website==0:
+		return
+		
 	# check if existing
 	if self.website_item_flag_icon_art:
 		for image in self.website_item_flag_icon_art:

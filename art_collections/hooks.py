@@ -94,7 +94,7 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 doc_events = {
 	"Item": { "validate": "art_collections.api.update_flag_table"},
-	"Pricing Rule": { "validate": "art_collections.api.update_flag_table_from_pricing_rule"},
+	"Pricing Rule": { "on_update": "art_collections.api.update_flag_table_from_pricing_rule"},
 	"Issue Type":{ "autoname": "art_collections.api.autoname_issue_type"},
 }
 

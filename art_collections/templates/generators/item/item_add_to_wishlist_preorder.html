@@ -18,10 +18,12 @@
 {% if not shopping_cart.wish_list_name %}
 {% set ns.wish_list_name_list = '\\ncreate new..'|string %}
 	{% endif %}	
+	
 	{% if shopping_cart.is_item_in_wishlist == False %}
-	<button class="btn btn-inquiry btn-wishlist-name" data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><img class="standard-image" src="/assets/art_collections/images/heart_empty.svg"></button>
+	
+	<button class="btn btn-inquiry btn-wishlist-name" data-in_stock="{{shopping_cart.product_info.in_stock}}" data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }}"><img class="standard-image" src="/assets/art_collections/images/heart_empty.svg"></button>
 	{% else %}
-	<button class="btn btn-inquiry btn-wishlist-name" data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <img class="standard-image" src="/assets/art_collections/images/heart_filled.svg"></button>
+	<button class="btn btn-inquiry btn-wishlist-name" data-in_stock="{{shopping_cart.product_info.in_stock}}"  data-wish_list_name_list="{{ns.wish_list_name_list}}"  data-item-code="{{ doc.name }}" data-item-name="{{ doc.item_name }} " > <img class="standard-image" src="/assets/art_collections/images/heart_filled.svg"></button>
 	{% endif %}
 	{% endif %}
 

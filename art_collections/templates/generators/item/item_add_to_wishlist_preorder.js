@@ -25,7 +25,6 @@
 // 	}
 	
 	frappe.ready(() => {
-console.log("{{ns.wish_list_name_list}}")
 
 		const d = new frappe.ui.Dialog({
 			title: __('Wish List'),
@@ -42,12 +41,19 @@ console.log("{{ns.wish_list_name_list}}")
 				label: __('item_code'),
 				fieldname: 'item_code',
 				hidden: 1
-			},{
+				},
+				{
+				fieldtype: 'Data',
+				label: __('in_stock'),
+				fieldname: 'in_stock',
+				hidden: 1
+				},
+				{
 				fieldtype: 'Data',
 				label: __('New Wish List Name'),
 				fieldname: 'new_wish_list_name',
 				hidden: 1
-			}
+				}
 			],
 			primary_action: set_wishlist,
 			primary_action_label: __('Set')
@@ -55,7 +61,6 @@ console.log("{{ns.wish_list_name_list}}")
 		function set_wishlist() {
 			const values = d.get_values();
 			const doc = Object.assign({}, values);
-			console.log(doc,values,values.wish_list_name.len)
 
 			d.hide();
 			let additional_notes
@@ -81,7 +86,8 @@ console.log("{{ns.wish_list_name_list}}")
 					qty: 1,
 					additional_notes: additional_notes !== undefined ? additional_notes : undefined,
 					with_items: with_items || 0,
-					wish_list_name:wish_list_name
+					wish_list_name:wish_list_name,
+					is_stock_available:values.in_stock
 				},
 				btn: this,
 				callback: function(r) {
@@ -98,7 +104,7 @@ console.log("{{ns.wish_list_name_list}}")
 		$('.btn-wishlist-name').on('click', (e) => {
 			const $btn = $(e.currentTarget);
 			const item_code = $btn.data('item-code');
-			console.log(item_code,'item_code')
+			const in_stock=$btn.data('in_stock');
 			const wish_list_name_list= $btn.data('wish_list_name_list');
 			// alert(wish_list_name_list)
 			d.set_value('new_wish_list_name', '');
@@ -106,7 +112,6 @@ console.log("{{ns.wish_list_name_list}}")
 			d.set_df_property("new_wish_list_name","reqd",0)
 			d.fields_dict["wish_list_name"].df.onchange = () => {
 				var wish_list_name = d.fields_dict.wish_list_name.input.value;
-				console.log(wish_list_name)
 				if (wish_list_name=='create new..'){
 					d.set_df_property("new_wish_list_name","hidden",0)
 					d.set_df_property("new_wish_list_name","reqd",1)
@@ -116,6 +121,7 @@ console.log("{{ns.wish_list_name_list}}")
 				}
 			}
 			d.set_value('item_code', item_code);
+			d.set_value('in_stock', in_stock);
 			d.show();
 		});
 

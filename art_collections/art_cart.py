@@ -135,7 +135,6 @@ def create_wish_list(wish_list_name):
 	wish_list = frappe.get_all("Wish List Name", fields=["name"], filters=
 		{"customer": party.name, "wish_list_name": wish_list_name},
 		order_by="modified desc")
-	print(wish_list_name,wish_list)
 	if not wish_list:	
 		doc = frappe.get_doc({
 		'doctype': 'Wish List Name',
@@ -146,10 +145,9 @@ def create_wish_list(wish_list_name):
 
 #  main update wishlist cart function - called from heart icon on item detail / and on 'add to cart' from wishlist items page
 @frappe.whitelist()
-def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, with_items=False,wish_list_name=None):
+def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, with_items=False,wish_list_name=None,is_stock_available=None):
 	create_wish_list(wish_list_name)
 	quotation = _get_cart_quotation(order_type='Shopping Cart Wish List',wish_list_name=wish_list_name)
-	print('-------------quotationquotation',quotation,len(wish_list_name),wish_list_name)
 	empty_card = False
 	qty = flt(qty)
 	if qty == 0:
@@ -167,6 +165,7 @@ def update_cart_for_wishlist_preorder(item_code, qty, additional_notes=None, wit
 				"item_code": item_code,
 				"qty": qty,
 				"additional_notes": additional_notes,
+				"is_stock_available_art":is_stock_available
 			})
 		else:
 			quotation_items[0].qty = qty

@@ -8,6 +8,8 @@ from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings
 from erpnext.utilities.product import get_price
 from art_collections.api import get_qty_in_stock
 from erpnext.shopping_cart import product_info,cart
+from erpnext.stock.doctype.item import item_dashboard
+
 from erpnext.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation
 
 def patch_method(obj, method, override):
@@ -87,4 +89,57 @@ def is_item_in_wishlist(item_code):
 	else:
 		return found
 
+def get_data():
+	from frappe import _
+	return {
+		'heatmap': True,
+		'heatmap_message': _('This is based on stock movement. See {0} for details')\
+			.format('<a href="#query-report/Stock Ledger">' + _('Stock Ledger') + '</a>'),
+		'fieldname': 'item_code',
+		'non_standard_fieldnames': {
+			'Work Order': 'production_item',
+			'Product Bundle': 'new_item_code',
+			'BOM': 'item',
+			'Batch': 'item',
+			'Issue':'item'
+		},
+		'transactions': [
+			{
+				'label': _('Groups'),
+				'items': ['BOM', 'Product Bundle', 'Item Alternative']
+			},
+			{
+				'label': _('Pricing'),
+				'items': ['Item Price', 'Pricing Rule']
+			},
+			{
+				'label': _('Sell'),
+				'items': ['Quotation', 'Sales Order', 'Delivery Note', 'Sales Invoice']
+			},
+			{
+				'label': _('Buy'),
+				'items': ['Material Request', 'Supplier Quotation', 'Request for Quotation',
+					'Purchase Order', 'Purchase Receipt', 'Purchase Invoice']
+			},
+			{
+				'label': _('Traceability'),
+				'items': ['Serial No', 'Batch']
+			},
+			{
+				'label': _('Move'),
+				'items': ['Stock Entry']
+			},
+			{
+				'label': _('Manufacture'),
+				'items': ['Production Plan', 'Work Order', 'Item Manufacturer']
+			},
+			{
+				'label': _('Support'),
+				'items': ['Issue']
+			}			
+		]
+	}
+
+
 patch_method(product_info,"get_product_info_for_website", get_product_info_for_website)
+patch_method(item_dashboard,"get_data", get_data)

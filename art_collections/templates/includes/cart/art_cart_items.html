@@ -41,10 +41,11 @@
 	{% endif %}
 	<td class="text-right">
 			{% if cart_settings.show_stock_availability %}
-			{% if d.qty_in_stock  %}
+			{%- set is_stock_item = frappe.db.get_value("Item", d.item_code, ["is_stock_item"]) %}
+			{% if d.qty_in_stock or is_stock_item == 0 %}
 			<span class="text-success">
 					{{ _('In stock') }}
-					{% if cart_settings.show_quantity_in_website %}	{{d.qty_in_stock}}{% endif %}
+					{% if cart_settings.show_quantity_in_website and is_stock_item == 1 %}	{{d.qty_in_stock}}{% endif %}
 				</span>
 				{% else %}
 				<span class="text-danger">

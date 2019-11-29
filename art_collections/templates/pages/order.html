@@ -12,8 +12,10 @@
 {% endblock %}
 
 {% block header_actions %}
+{% if doc.doctype == 'Sales Invoice'  %}
 <a href="#" onclick="get_zip();">{{ _("Download Photo") }}</a>
 <br>
+{% endif %}
 <a href='/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}' target="_blank" rel="noopener noreferrer">{{ _("Print") }}</a>
 {% endblock %}
 {% block page_content %}

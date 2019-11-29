@@ -279,7 +279,7 @@ def stock_availability_notification(self,method):
 						args={
 							"url":url,
 							"item_name":item_name,
-							"customer":customer
+							"customer":doc.customer_name
 						}
 						message = frappe.render_template(email_template.response, args)
 						email_to = frappe.db.get_value('Contact', get_default_contact('customer', customer), 'email_id')

@@ -97,7 +97,10 @@ doc_events = {
 	"Pricing Rule": { "on_update": "art_collections.api.update_flag_table_from_pricing_rule"},
 	"Issue Type":{ "autoname": "art_collections.api.autoname_issue_type"},
 	"Purchase Receipt": { "on_submit": "art_collections.api.stock_availability_notification"},
-	"Sales Order":{"on_submit":"art_collections.api.sales_order_from_shopping_cart" }
+	"Sales Order":{"on_submit":"art_collections.api.sales_order_from_shopping_cart" },
+	"Purchase Order":{"on_submit":"art_collections.api.purchase_order_update_delivery_date_of_item" ,
+	"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item"
+	}
 }
 
 # Scheduled Tasks

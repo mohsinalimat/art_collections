@@ -295,3 +295,11 @@ def stock_availability_notification(self,method):
 def sales_order_from_shopping_cart(self,method):
 	if self.order_type=='Shopping Cart':
 		frappe.db.set_value(self.doctype, self.name, "workflow_state", "To Deliver and Bill")
+
+def purchase_order_update_delivery_date_of_item(self,method):
+	from frappe.utils import add_days
+	for item in self.get("items"):
+		if item.expected_delivery_date:
+			lag_days=45
+			availability_date=add_days(item.expected_delivery_date, lag_days)
+			frappe.db.set_value('Item', item.item_code, 'availability_date_art', availability_date)

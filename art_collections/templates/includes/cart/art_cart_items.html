@@ -48,8 +48,9 @@
 					{% if cart_settings.show_quantity_in_website and is_stock_item == 1 %}	{{d.qty_in_stock}}{% endif %}
 				</span>
 				{% else %}
+				{% set availability_date = frappe.utils.formatdate(frappe.db.get_value('Item',d.item_code, 'availability_date_art'), 'yyyy-mm-dd') %}
 				<span class="text-danger">
-						{{ _('Not in stock') }}
+						{{ _('Not in stock') }}{% if availability_date %}<br><span class="text-success">{{ _('  Get by ') }}{{availability_date}}{% endif %}</span>
 					</span>
 			{% endif %}
 			{% endif %}				

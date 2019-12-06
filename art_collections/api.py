@@ -291,4 +291,7 @@ def stock_availability_notification(self,method):
 							"now": True,
 							}
 						enqueue(method=frappe.sendmail, queue='short', timeout=300, is_async=True, **email_args)						
-			
+
+def sales_order_from_shopping_cart(self,method):
+	if self.order_type=='Shopping Cart':
+		frappe.db.set_value(self.doctype, self.name, "workflow_state", "To Deliver and Bill")

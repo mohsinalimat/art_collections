@@ -1,4 +1,7 @@
 frappe.ui.form.on('Issue', {
+	validate: function (frm) {
+		frm.set_value('subject', frm.doc.issue_type_art)
+	},
     issue_type_category_art: function (frm) {
 
 		frm.set_query('issue_type', function(doc) {
@@ -8,7 +11,10 @@ frappe.ui.form.on('Issue', {
 				}
 			};
 		});
-
+	},
+		issue_type_art: function (frm) {
+			frm.set_value('subject', frm.doc.issue_type_art)	
+		}
 		// if (frm.doc.issue_type_category_art) {
 		// 	frappe.db.get_value('Issue Type', {'category_art': frm.doc.issue_type_category_art}, ['name'])
 		// 	.then(({ message }) => {
@@ -18,5 +24,5 @@ frappe.ui.form.on('Issue', {
 		// 		}
 		// 	});	
 		// }
-    }
+   
  });

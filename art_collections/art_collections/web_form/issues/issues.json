@@ -19,7 +19,7 @@
  "is_standard": 1,
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2019-12-09 08:59:39.692310",
+ "modified": "2019-12-10 09:48:12.339981",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "issues",
@@ -48,8 +48,21 @@
    "show_in_filter": 0
   },
   {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "issue_type_art",
+   "allow_read_on_all_link_options": 1,
+   "fieldname": "issue_type_category_art",
+   "fieldtype": "Link",
+   "hidden": 0,
+   "label": "Issue Type Category",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "Issue Type Category Art",
+   "read_only": 0,
+   "reqd": 1,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 1,
+   "fieldname": "issue_type",
    "fieldtype": "Link",
    "hidden": 0,
    "label": "Issue Type",

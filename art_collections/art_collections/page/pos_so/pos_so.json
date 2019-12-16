@@ -1,0 +1,36 @@
+{
+ "content": null,
+ "creation": "2019-12-12 11:53:06.269285",
+ "docstatus": 0,
+ "doctype": "Page",
+ "icon": "fa fa-th",
+ "idx": 0,
+ "modified": "2019-12-12 11:53:06.269285",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "pos-so",
+ "owner": "Administrator",
+ "page_name": "POS SO",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Sales Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "POS for Sales Order"
+}

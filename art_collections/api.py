@@ -303,3 +303,7 @@ def purchase_order_update_delivery_date_of_item(self,method):
 			lag_days=45
 			availability_date=add_days(item.expected_delivery_date, lag_days)
 			frappe.db.set_value('Item', item.item_code, 'availability_date_art', availability_date)
+
+@frappe.whitelist()
+def pos_so_get_series():
+	return frappe.get_meta("Sales Order").get_field("naming_series").options or ""			

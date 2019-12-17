@@ -640,6 +640,10 @@ bind_numeric_keypad: function() {
 		me.update_so_type(so_type='order')
 		me.create_invoice();
 		me.submit_invoice();
+		if (frappe.flags.is_online == true){
+			me.sync_sales_invoice()
+		}
+		
 		// me.make_payment();
 	})
 	$(this.numeric_keypad).find('.pos-so-bon-de-commande').click(function(){
@@ -648,6 +652,9 @@ bind_numeric_keypad: function() {
 		me.update_so_type(so_type='bon_de_commande')
 		me.create_invoice();
 		me.submit_invoice();
+		if (frappe.flags.is_online == true){
+			me.sync_sales_invoice()
+		}
 		// me.make_payment();
 	})		
 },

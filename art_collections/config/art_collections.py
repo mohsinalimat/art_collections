@@ -30,6 +30,16 @@ def get_data():
 					"description": _("Create Catalogue.")
 				}
 			]
+		},		{
+			"label": _("Sales"),
+			"items": [
+				{
+					"type": "page",
+					"name": "pos-so",
+					"label": _("POS for Offline Sales Order"),
+					"icon": "fa fa-bar-chart",
+				}
+			]
 		}
 		]
 	return config

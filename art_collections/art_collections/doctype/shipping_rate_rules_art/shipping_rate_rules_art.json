@@ -1,0 +1,95 @@
+{
+ "allow_import": 1,
+ "autoname": "SRRA.####",
+ "creation": "2019-12-30 06:24:45.392376",
+ "description": "Shipping Rule Rates Information to choose the best transporter in Delivery Note",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "from_department",
+  "column_break_2",
+  "to_department",
+  "section_break_4",
+  "shipping_rate_rules_detail_art"
+ ],
+ "fields": [
+  {
+   "fieldname": "from_department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From Department",
+   "options": "French Department Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To Department",
+   "options": "French Department Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "shipping_rate_rules_detail_art",
+   "fieldtype": "Table",
+   "label": "Shipping Rate Rules Detail Art",
+   "options": "Shipping Rate Rules Detail Art",
+   "reqd": 1
+  }
+ ],
+ "modified": "2019-12-30 06:26:27.662431",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Shipping Rate Rules Art",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -67,7 +67,7 @@ def get_product_info_for_website(item_code):
 	return frappe._dict({
 		"product_info": product_info,
 		"cart_settings": cart_settings,
-		"wish_list_name":frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=False),
+		"wish_list_name":frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=False) || None,
         "is_item_in_wishlist":is_item_in_wishlist(item_code)
 	})
 

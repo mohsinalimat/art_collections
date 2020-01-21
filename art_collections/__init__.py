@@ -63,11 +63,12 @@ def get_product_info_for_website(item_code):
 			if item:
 				product_info["qty"] = item[0].qty
     # wish_list_name and is_item_in_wishlist parameters are added
-	if frappe.db.exists('Wish List Name'):
+	party = get_party()
+	if frappe.db.exists("DocType", 'Wish List Name'):
 		wish_list_name=frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=False)
 	else:
-		wish_list_name=None	
-	party = get_party()
+		wish_list_name=None
+
 	return frappe._dict({
 		"product_info": product_info,
 		"cart_settings": cart_settings,

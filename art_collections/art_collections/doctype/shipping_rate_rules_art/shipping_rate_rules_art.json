@@ -7,32 +7,16 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "from_department",
+  "from_county",
   "column_break_2",
-  "to_department",
+  "to_county",
   "section_break_4",
   "shipping_rate_rules_detail_art"
  ],
  "fields": [
   {
-   "fieldname": "from_department",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "From Department",
-   "options": "French Department Art",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "to_department",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "To Department",
-   "options": "French Department Art",
-   "reqd": 1
   },
   {
    "fieldname": "section_break_4",
@@ -44,9 +28,25 @@
    "label": "Shipping Rate Rules Detail Art",
    "options": "Shipping Rate Rules Detail Art",
    "reqd": 1
+  },
+  {
+   "fieldname": "from_county",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From County",
+   "options": "County",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_county",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To County",
+   "options": "County",
+   "reqd": 1
   }
  ],
- "modified": "2019-12-30 06:26:27.662431",
+ "modified": "2020-01-21 10:57:55.971410",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Shipping Rate Rules Art",

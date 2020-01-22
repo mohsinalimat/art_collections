@@ -746,7 +746,7 @@ render_list_customers: function () {
 					sr: i + 1,
 					name: key,
 					customer: data[key].customer,
-					title:  me.frm.doc.title,
+					title:  data[key].title,
 					paid_amount:1000,
 					grand_total: format_currency(data[key].grand_total, me.frm.doc.currency),
 					data: me.get_doctype_status(data[key])

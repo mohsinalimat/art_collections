@@ -331,7 +331,8 @@ create_new: function () {
 	this.load_data(true);
 	this.frm.doc.offline_pos_name = '';
 	this.setup();
-	this.set_default_customer()
+	this.set_default_customer();
+	this.frm.doc.title='';
 	// this.set_default_delivery_date()
 },
 
@@ -420,8 +421,60 @@ make_control: function() {
 	this.bind_numeric_keypad();
 	this.set_default_delivery_date();
 	this.make_delivery_date();
+	this.make_title();
+	this.make_cycle_status();
 
 
+},
+make_cycle_status: function () {
+	var me = this;
+	this.cycle_status_art = frappe.ui.form.make_control({
+		df: {
+			"fieldtype": "Select",
+			"options": "\nImplantation\nRestocking",
+			"label": __("Cycle Status"),
+			"fieldname": "cycle_status_art",
+			"placeholder": __("Cycle Status"),
+			change: () => {
+				var cycle_status_art = this.cycle_status_art.get_value();
+				me.frm.doc.cycle_status_art =cycle_status_art
+				console.log('on change me.frm.doc.cycle_status_art',me.frm.doc.cycle_status_art)
+			}
+
+		},
+		parent: this.wrapper.find(".so-cycle_status_art"),
+		only_input: true,
+	});
+
+	this.cycle_status_art.make_input();	
+	this.cycle_status_art.$input.val(me.frm.doc.cycle_status_art);
+	// me.frm.doc.delivery_date =this.delivery_date.$input.val()
+	console.log('inside make me.frm.doc.cycle_status_art',me.frm.doc.cycle_status_art)
+},
+make_title: function () {
+	var me = this;
+	// var default_date=frappe.datetime.add_days(frappe.datetime.get_today(), 5)
+	this.title = frappe.ui.form.make_control({
+		df: {
+			"fieldtype": "Data",
+			"label": __("Title"),
+			"fieldname": "title",
+			"placeholder": __("Title"),
+			change: () => {
+				var title = this.title.get_value();
+				me.frm.doc.title =title
+				console.log('on change me.frm.doc.title',me.frm.doc.title)
+			}
+
+		},
+		parent: this.wrapper.find(".so-title"),
+		only_input: true,
+	});
+
+	this.title.make_input();	
+	this.title.$input.val(me.frm.doc.title);
+	// me.frm.doc.delivery_date =this.delivery_date.$input.val()
+	console.log('inside make me.frm.doc.title',me.frm.doc.title)
 },
 make_delivery_date: function () {
 	var me = this;
@@ -635,6 +688,7 @@ bind_numeric_keypad: function() {
 		me.make_payment();
 	})
 	$(this.numeric_keypad).find('.pos-so').click(function(){
+		frappe.confirm(__("Are you sure?"), function () {
 		me.validate();
 		// me.update_paid_amount_status(true);
 		me.update_so_type(so_type='order')
@@ -645,6 +699,7 @@ bind_numeric_keypad: function() {
 		}
 		
 		// me.make_payment();
+	})
 	})
 	$(this.numeric_keypad).find('.pos-so-bon-de-commande').click(function(){
 		me.validate();
@@ -687,11 +742,12 @@ render_list_customers: function () {
 	if(this.si_docs.length) {
 		this.si_docs.forEach(function (data, i) {
 			for (var key in data) {
-				html += frappe.render_template("pos_invoice_list", {
+				html += frappe.render_template("pos_so_list", {
 					sr: i + 1,
 					name: key,
 					customer: data[key].customer,
-					paid_amount: 1000,
+					title:  me.frm.doc.title,
+					paid_amount:1000,
 					grand_total: format_currency(data[key].grand_total, me.frm.doc.currency),
 					data: me.get_doctype_status(data[key])
 				});

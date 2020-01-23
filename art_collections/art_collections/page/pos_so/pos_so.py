@@ -411,6 +411,8 @@ def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
 					si_doc.offline_pos_name_art = name
 					si_doc.pos_profile_art=doc.get('pos_profile')
 					si_doc.delivery_date=doc.get('delivery_date')
+					for item in doc.get('items'):
+						item['delivery_date']=doc.get('delivery_date')
 					if doc.get('title'):
 						si_doc.title=doc.get('title')
 					si_doc.update(doc)

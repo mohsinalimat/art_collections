@@ -238,10 +238,10 @@ get_doctype_status: function (doc) {
 set_missing_values: function () {
 	var me = this;
 	doc = JSON.parse(localStorage.getItem('doc'))
-	if (this.frm.doc.payments.length == 0) {
-		this.frm.doc.payments = doc.payments;
-		this.calculate_outstanding_amount();
-	}
+	// if (this.frm.doc.payments.length == 0) {
+	// 	this.frm.doc.payments = doc.payments;
+	// 	this.calculate_outstanding_amount();
+	// }
 
 	this.set_customer_value_in_party_field();
 

@@ -333,7 +333,7 @@ create_new: function () {
 	this.setup();
 	this.set_default_customer();
 	this.frm.doc.title='';
-	// this.set_default_delivery_date()
+	this.set_default_delivery_date()
 },
 
 load_data: function (load_doc) {
@@ -688,6 +688,12 @@ bind_numeric_keypad: function() {
 		me.make_payment();
 	})
 	$(this.numeric_keypad).find('.pos-so').click(function(){
+		if (!me.frm.doc.delivery_date) {
+			frappe.throw(__('Please enter Delivery Date'))
+		}
+		if (me.frm.doc.delivery_date <  frappe.datetime.get_today()) {
+			frappe.throw(__('Delivery Date cann\'t be less than today\'s date.'))
+		}	
 		frappe.confirm(__("Are you sure?"), function () {
 		me.validate();
 		// me.update_paid_amount_status(true);
@@ -702,6 +708,12 @@ bind_numeric_keypad: function() {
 	})
 	})
 	$(this.numeric_keypad).find('.pos-so-bon-de-commande').click(function(){
+		if (!me.frm.doc.delivery_date) {
+			frappe.throw(__('Please enter Delivery Date'))
+		}
+		if (me.frm.doc.delivery_date <  frappe.datetime.get_today()) {
+			frappe.throw(__('Delivery Date cann\'t be less than today\'s date.'))
+		}		
 		me.validate();
 		// me.update_paid_amount_status(true);
 		me.update_so_type(so_type='bon_de_commande')

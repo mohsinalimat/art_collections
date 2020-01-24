@@ -115,7 +115,7 @@ make_menu_list: function () {
 		})
 	});
 
-	this.page.add_menu_item(__("Sync Offline Invoices"), function () {
+	this.page.add_menu_item(__("Sync Offline Orders"), function () {
 		me.freeze_screen = true;
 		me.sync_sales_invoice()
 	});
@@ -159,7 +159,7 @@ send_action: function() {
 
 update_email_queue: function () {
 	try {
-		localStorage.setItem('email_queue', JSON.stringify(this.email_queue));
+		localStorage.setItem('so_email_queue', JSON.stringify(this.email_queue));
 	} catch (e) {
 		frappe.throw(__("LocalStorage is full, did not save"))
 	}
@@ -167,7 +167,7 @@ update_email_queue: function () {
 
 get_email_queue: function () {
 	try {
-		return JSON.parse(localStorage.getItem('email_queue')) || {};
+		return JSON.parse(localStorage.getItem('so_email_queue')) || {};
 	} catch (e) {
 		return {}
 	}
@@ -175,7 +175,7 @@ get_email_queue: function () {
 
 get_customers_details: function () {
 	try {
-		return JSON.parse(localStorage.getItem('customer_details')) || {};
+		return JSON.parse(localStorage.getItem('so_customer_details')) || {};
 	} catch (e) {
 		return {}
 	}
@@ -237,7 +237,7 @@ get_doctype_status: function (doc) {
 
 set_missing_values: function () {
 	var me = this;
-	doc = JSON.parse(localStorage.getItem('doc'))
+	doc = JSON.parse(localStorage.getItem('so_doc'))
 	// if (this.frm.doc.payments.length == 0) {
 	// 	this.frm.doc.payments = doc.payments;
 	// 	this.calculate_outstanding_amount();
@@ -279,7 +279,7 @@ get_data_from_server: function (callback) {
 		freeze: true,
 		freeze_message: __("Master data syncing, it might take some time"),
 		callback: function (r) {
-			localStorage.setItem('doc', JSON.stringify(r.message.doc));
+			localStorage.setItem('so_doc', JSON.stringify(r.message.doc));
 			me.init_master_data(r)
 			me.set_interval_for_si_sync();
 			me.check_internet_connection();
@@ -295,7 +295,7 @@ get_data_from_server: function (callback) {
 
 init_master_data: function (r) {
 	var me = this;
-	this.doc = JSON.parse(localStorage.getItem('doc'));
+	this.doc = JSON.parse(localStorage.getItem('so_doc'));
 	this.meta = r.message.meta;
 	this.item_data = r.message.items;
 	this.item_groups = r.message.item_groups;
@@ -343,7 +343,7 @@ load_data: function (load_doc) {
 	this.actual_qty_dict = {};
 
 	if (load_doc) {
-		this.frm.doc = JSON.parse(localStorage.getItem('doc'));
+		this.frm.doc = JSON.parse(localStorage.getItem('so_doc'));
 	}
 
 	$.each(this.meta, function (i, data) {
@@ -1881,7 +1881,7 @@ update_invoice: function () {
 
 update_localstorage: function () {
 	try {
-		localStorage.setItem('sales_invoice_doc', JSON.stringify(this.si_docs));
+		localStorage.setItem('sales_order_doc', JSON.stringify(this.si_docs));
 	} catch (e) {
 		frappe.throw(__("LocalStorage is full , did not save"))
 	}
@@ -1889,7 +1889,7 @@ update_localstorage: function () {
 
 get_doc_from_localstorage: function () {
 	try {
-		return JSON.parse(localStorage.getItem('sales_invoice_doc')) || [];
+		return JSON.parse(localStorage.getItem('sales_order_doc')) || [];
 	} catch (e) {
 		return []
 	}
@@ -2245,7 +2245,7 @@ get_actual_qty: function (item) {
 update_customer_in_localstorage: function() {
 	var me = this;
 	try {
-		localStorage.setItem('customer_details', JSON.stringify(this.customer_details));
+		localStorage.setItem('so_customer_details', JSON.stringify(this.customer_details));
 	} catch (e) {
 		frappe.throw(__("LocalStorage is full , did not save"))
 	}

@@ -42,7 +42,7 @@ def get_pos_data():
 	customers = get_customers_list(pos_profile)
 
 	doc.plc_conversion_rate = update_plc_conversion_rate(doc, pos_profile)
-
+	bin_data,bin_data_for_virtual_stock=get_bin_data_for_virtual_stock(pos_profile)
 	return {
 		'doc': doc,
 		'default_customer': pos_profile.get('customer'),
@@ -57,7 +57,8 @@ def get_pos_data():
 		'tax_data': get_item_tax_data(),
 		'price_list_data': get_price_list_data(doc.selling_price_list, doc.plc_conversion_rate),
 		'customer_wise_price_list': get_customer_wise_price_list(),
-		'bin_data': get_bin_data(pos_profile),
+		'bin_data': bin_data,
+		'bin_data_for_virtual_stock': bin_data_for_virtual_stock,
 		'pricing_rules': get_pricing_rule_data(doc),
 		'print_template': print_template,
 		'pos_profile': pos_profile,
@@ -178,7 +179,7 @@ def get_items_list(pos_profile, company):
 			i.name, i.item_code, i.item_name, i.description, i.item_group, i.has_batch_no,
 			i.has_serial_no, i.is_stock_item, i.brand, i.stock_uom, i.image,
 			id.expense_account, id.selling_cost_center, id.default_warehouse,
-			i.sales_uom, c.conversion_factor
+			i.sales_uom, c.conversion_factor,i.availability_date_art
 		from
 			`tabItem` i
 		left join `tabItem Default` id on id.parent = i.name and id.company = %s
@@ -374,6 +375,26 @@ def get_bin_data(pos_profile):
 
 	return itemwise_bin_data
 
+def get_bin_data_for_virtual_stock(pos_profile):
+	itemwise_bin_data_for_virtual_stock = {}
+	itemwise_bin_data={}
+	cond = "1=1"
+
+	bin_data = frappe.db.sql(""" select item_code, sum(ifnull(actual_qty,0)) as actual_qty,
+sum(ifnull(actual_qty,0)) - SUM(ifnull(reserved_qty,0))  as virtual_stock
+		from `tabBin`
+		where actual_qty > 0 and {cond}""".format(cond=cond), as_dict=1)
+
+	for bins in bin_data:
+		if bins.item_code not in itemwise_bin_data_for_virtual_stock:
+			itemwise_bin_data_for_virtual_stock.setdefault(bins.item_code, {})
+		itemwise_bin_data_for_virtual_stock[bins.item_code]= bins.virtual_stock
+
+	for bins in bin_data:
+		if bins.item_code not in itemwise_bin_data:
+			itemwise_bin_data.setdefault(bins.item_code, {})
+		itemwise_bin_data[bins.item_code]= bins.actual_qty
+	return itemwise_bin_data,itemwise_bin_data_for_virtual_stock
 
 def get_pricing_rule_data(doc):
 	pricing_rules = ""
@@ -600,7 +621,8 @@ def validate_item(doc):
 def submit_invoice(si_doc, name, doc, name_list,so_type):
 	try:
 		print(so_type,'before so_type------------',si_doc.delivery_date)
-		si_doc.insert()	
+		# si_doc.insert()	
+		si_doc.submit()
 		print(so_type,'after so_type------------',si_doc.delivery_date)
 		if so_type=='order':
 			frappe.db.set_value('Sales Order', si_doc.name, "needs_confirmation_art", 0)
@@ -610,8 +632,8 @@ def submit_invoice(si_doc, name, doc, name_list,so_type):
 			frappe.db.set_value('Sales Order', si_doc.name, "needs_confirmation_art", 1)
 			frappe.db.set_value('Sales Order', si_doc.name, "status", "Bon de Commande")
 			frappe.db.set_value('Sales Order', si_doc.name, "workflow_state", "Bon de Commande")
-		# si_doc.submit()
 		frappe.db.commit()
+		print('--------',si_doc.docstatus)
 		print('-----------------------------------')
 		print('si_doc',si_doc)
 		print('si_doc.name',si_doc.name)

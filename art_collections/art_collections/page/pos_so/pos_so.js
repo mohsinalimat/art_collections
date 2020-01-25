@@ -309,6 +309,7 @@ init_master_data: function (r) {
 	this.price_list_data = r.message.price_list_data;
 	this.customer_wise_price_list = r.message.customer_wise_price_list
 	this.bin_data = r.message.bin_data;
+	this.bin_data_for_virtual_stock=r.message.bin_data_for_virtual_stock;
 	this.pricing_rules = r.message.pricing_rules;
 	this.print_template = r.message.print_template;
 	this.pos_profile_data = r.message.pos_profile;
@@ -341,6 +342,7 @@ load_data: function (load_doc) {
 
 	this.items = this.item_data;
 	this.actual_qty_dict = {};
+	this.virtual_stock_dict={};
 
 	if (load_doc) {
 		this.frm.doc = JSON.parse(localStorage.getItem('so_doc'));
@@ -1193,9 +1195,8 @@ make_item_list: function (customer) {
 			} else {
 				item_price = format_currency(me.price_list_data[obj.name], me.frm.doc.currency);
 			}
-			console.log('me.frm.doc.delivery_date11',me.default_delivery_date)
 			if(index < me.page_len) {
-				$(frappe.render_template("pos_item", {
+				$(frappe.render_template("pos_so_item", {
 					item_code: obj.name,
 					delivery_date:me.default_delivery_date,
 					prevdoc_docname:'',
@@ -1204,7 +1205,9 @@ make_item_list: function (customer) {
 					item_price: item_price,
 					item_name: obj.name === obj.item_name ? "" : obj.item_name,
 					item_image: obj.image,
-					item_stock: __('Stock Qty') + ": " + me.get_actual_qty(obj),
+					item_stock: __('Stock') + ": " + me.get_actual_qty(obj),
+					item_virtual_stock:__('Virtual') + ": " + me.get_virtual_stock(obj),
+					item_availability_date_art : obj.availability_date_art ? obj.availability_date_art: "",
 					item_uom: obj.stock_uom,
 					color: frappe.get_palette(obj.item_name),
 					abbr: frappe.get_abbr(obj.item_name)
@@ -2233,13 +2236,24 @@ validate_warehouse: function () {
 get_actual_qty: function (item) {
 	this.actual_qty = 0.0;
 
-	var warehouse = this.pos_profile_data['warehouse'] || item.default_warehouse;
-	if (warehouse && this.bin_data[item.item_code]) {
-		this.actual_qty = this.bin_data[item.item_code][warehouse] || 0;
+	// var warehouse = this.pos_profile_data['warehouse'] || item.default_warehouse;
+	if (this.bin_data[item.item_code]) {
+		this.actual_qty = this.bin_data[item.item_code] || 0;
 		this.actual_qty_dict[item.item_code] = this.actual_qty
 	}
 
 	return this.actual_qty
+},
+get_virtual_stock: function (item) {
+	this.virtual_stock = 0.0;
+
+	// var warehouse = this.pos_profile_data['warehouse'] || item.default_warehouse;
+	if (this.bin_data_for_virtual_stock[item.item_code]) {
+		this.virtual_stock = this.bin_data_for_virtual_stock[item.item_code] || 0;
+		this.virtual_stock_dict[item.item_code] = this.virtual_stock
+	}
+
+	return this.virtual_stock
 },
 
 update_customer_in_localstorage: function() {

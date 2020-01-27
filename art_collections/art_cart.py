@@ -247,3 +247,51 @@ def clear_wishlist_cart_count(login_manager):
 	from erpnext.shopping_cart.utils import  show_cart_count
 	if show_cart_count():
 		frappe.local.cookie_manager.delete_cookie("wishlist_cart_count")
+
+
+@frappe.whitelist()
+def place_bon_de_commande_order():
+	from erpnext.shopping_cart.cart import _get_cart_quotation
+	from erpnext.utilities.product import get_qty_in_stock
+	quotation = _get_cart_quotation()
+	cart_settings = frappe.db.get_value("Shopping Cart Settings", None,
+		["company", "allow_items_not_in_stock"], as_dict=1)
+	quotation.company = cart_settings.company
+
+	quotation.flags.ignore_permissions = True
+	quotation.submit()
+
+	if quotation.quotation_to == 'Lead' and quotation.party_name:
+		# company used to create customer accounts
+		frappe.defaults.set_user_default("company", quotation.company)
+
+	from erpnext.selling.doctype.quotation.quotation import _make_sales_order
+	sales_order = frappe.get_doc(_make_sales_order(quotation.name, ignore_permissions=True))
+	sales_order.payment_schedule = []
+
+	if not cint(cart_settings.allow_items_not_in_stock):
+		for item in sales_order.get("items"):
+			item.reserved_warehouse, is_stock_item = frappe.db.get_value("Item",
+				item.item_code, ["website_warehouse", "is_stock_item"])
+
+			if is_stock_item:
+				item_stock = get_qty_in_stock(item.item_code, "website_warehouse")
+				if item.qty > item_stock.stock_qty[0][0]:
+					throw(_("Only {0} in stock for item {1}").format(item_stock.stock_qty[0][0], item.item_code))
+# bon_de_commande
+	sales_order.needs_confirmation_art=1
+	sales_order.flags.ignore_permissions = True
+	sales_order.insert()
+	sales_order.submit()
+	frappe.db.set_value('Sales Order', sales_order.name, 'workflow_state', 'Bon de Commande')
+
+	if hasattr(frappe.local, "cookie_manager"):
+		frappe.local.cookie_manager.delete_cookie("cart_count")
+
+	return sales_order.name
+
+@frappe.whitelist()
+def convert_bon_de_commande_to_confirm_order(sales_order_name):
+	frappe.db.set_value('Sales Order', sales_order_name, 'needs_confirmation_art', 0)
+	frappe.db.set_value('Sales Order', sales_order_name, 'workflow_state', 'To Deliver and Bill')
+	return True

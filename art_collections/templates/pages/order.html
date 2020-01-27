@@ -19,9 +19,16 @@
 <a href='/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}' target="_blank" rel="noopener noreferrer">{{ _("Print") }}</a>
 {% endblock %}
 {% block page_content %}
-
 <div class="row transaction-subheading">
 	<div class="col-6">
+		<span class="indicator {{ 'green' if doc.needs_confirmation_art==0 else 'blue' }}">
+			{{ _("Confirmed Order") if doc.needs_confirmation_art==0 else _("Bon De Commande Order") }}
+		</span>
+		{% if doc.needs_confirmation_art==1 %}
+		<button type="button" class="btn btn-secondary btn-xs btn-convert-bon-de-commande-to-confirm-order" data-title= "{{ doc.name }}">{{ _("Confirm it") }}
+		</button>		
+		{% endif %}
+		<br>
 		<span class="indicator {{ doc.indicator_color or ("blue" if doc.docstatus==1 else "darkgrey") }}">
 			{{ _(doc.get('indicator_title')) or _(doc.status) or _("Submitted") }}
 		</span>
@@ -188,4 +195,23 @@
 			currency: '{{ doc.currency }}'
 		}
 	</script>
+	<script>
+		frappe.ready(function() {
+			$(".btn-convert-bon-de-commande-to-confirm-order").on("click", function() {
+				console.log('1')
+				var so_name =  $(this).attr("data-title");
+				frappe.call({
+						method: "art_collections.art_cart.convert_bon_de_commande_to_confirm_order",
+						args: {
+							sales_order_name: so_name,
+						},
+						callback: function(r) {
+							if(r.message) {
+								window.location.reload();
+							}
+						}
+				})
+			});
+		})
+	</script>	
 {% endblock %}

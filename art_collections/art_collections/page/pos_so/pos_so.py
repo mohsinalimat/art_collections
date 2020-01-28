@@ -378,7 +378,7 @@ def get_bin_data(pos_profile):
 def get_bin_data_for_virtual_stock(pos_profile):
 	itemwise_bin_data_for_virtual_stock = {}
 	itemwise_bin_data={}
-	cond = "1=1"
+	cond = "1=1 group by item_code"
 
 	bin_data = frappe.db.sql(""" select item_code, sum(ifnull(actual_qty,0)) as actual_qty,
 sum(ifnull(actual_qty,0)) - SUM(ifnull(reserved_qty,0))  as virtual_stock

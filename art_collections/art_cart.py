@@ -15,57 +15,12 @@ from erpnext.utilities.product import get_qty_in_stock
 # imported by art_collections
 from erpnext.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,apply_cart_settings,get_address_docs
 from erpnext.shopping_cart.cart import get_applicable_shipping_rules
+from frappe.utils.user import get_user_fullname
 
 class WebsitePriceListMissingError(frappe.ValidationError):
 	pass
 
 
-
-
-# called from individual item page to show or not to show heart after checking in quotation wishlist
-#not used
-# @frappe.whitelist(allow_guest=True)
-# def get_product_info_for_website(item_code):
-# 	from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
-# 	import get_shopping_cart_settings, show_quantity_in_website
-# 	from erpnext.utilities.product import get_price, get_qty_in_stock
-# 	"""get product price / stock info for website"""
-
-# 	cart_settings = get_shopping_cart_settings()
-# 	if not cart_settings.enabled:
-# 		return frappe._dict()
-
-# 	cart_quotation = _get_cart_quotation(order_type='Shopping Cart Wish List')
-
-# 	price = get_price(
-# 		item_code,
-# 		cart_quotation.selling_price_list,
-# 		cart_settings.default_customer_group,
-# 		cart_settings.company
-# 	)
-
-# 	stock_status = get_qty_in_stock(item_code, "website_warehouse")
-
-# 	product_info = {
-# 		"price": price,
-# 		"stock_qty": stock_status.stock_qty,
-# 		"in_stock": stock_status.in_stock if stock_status.is_stock_item else 1,
-# 		"qty": 0,
-# 		"uom": frappe.db.get_value("Item", item_code, "stock_uom"),
-# 		"show_stock_qty": show_quantity_in_website(),
-# 		"sales_uom": frappe.db.get_value("Item", item_code, "sales_uom")
-# 	}
-
-# 	if product_info["price"]:
-# 		if frappe.session.user != "Guest":
-# 			item = cart_quotation.get({"item_code": item_code})
-# 			if item:
-# 				product_info["qty"] = item[0].qty
-
-# 	return frappe._dict({
-# 		"wishlist_product_info": product_info,
-# 		"cart_settings": cart_settings
-# 	})
 
 #called internaly
 def set_cart_count(quotation=None):
@@ -283,8 +238,10 @@ def place_bon_de_commande_order():
 	sales_order.flags.ignore_permissions = True
 	sales_order.insert()
 	sales_order.submit()
+	user=get_user_fullname(frappe.session.user) or frappe.session.user
+	sales_order.add_comment('Edit', "{0} created and submited it via portal".format(user))
 	frappe.db.set_value('Sales Order', sales_order.name, 'workflow_state', 'Bon de Commande')
-
+	sales_order.add_comment('Edit', "{0} changed to Bon de Commande via portal".format(user))
 	if hasattr(frappe.local, "cookie_manager"):
 		frappe.local.cookie_manager.delete_cookie("cart_count")
 
@@ -294,4 +251,7 @@ def place_bon_de_commande_order():
 def convert_bon_de_commande_to_confirm_order(sales_order_name):
 	frappe.db.set_value('Sales Order', sales_order_name, 'needs_confirmation_art', 0)
 	frappe.db.set_value('Sales Order', sales_order_name, 'workflow_state', 'To Deliver and Bill')
+	sales_order = frappe.get_doc('Sales Order', sales_order_name)
+	user=get_user_fullname(frappe.session.user) or frappe.session.user
+	sales_order.add_comment('Edit', "{0} changed to Deliver and Bill via portal ".format(user))
 	return True

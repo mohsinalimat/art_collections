@@ -187,7 +187,44 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 				if stock_qty[0][0]:
 					in_stock = stock_qty[0][0] > 0 and 1 or 0
 	return frappe._dict({"in_stock": in_stock, "stock_qty": stock_qty, "is_stock_item": is_stock_item})
-		
+
+
+def set_item_code_for_pre_item(self,method):
+	if self.is_pre_item_art==1:
+		pre_item_naming_series_art= self.meta.get_field("pre_item_naming_series_art").options
+		from frappe.model.naming import make_autoname
+		self.name=make_autoname(pre_item_naming_series_art, "", self)
+		self.item_code = self.name
+		self.is_stock_item=1
+		self.include_item_in_manufacturing=0
+		self.is_sales_item=0
+
+def purchase_order_convert_preorder_item(self,method):
+	purchase_order_items=self.get("items")
+	for item in purchase_order_items:	
+		item_doc=frappe.get_doc('Item',item.item_code)
+		if item_doc.is_pre_item_art==1:
+			from art_collections.ean import calc_check_digit,compact
+			from stdnum import ean
+			from frappe.model.rename_doc import rename_doc
+			# id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
+			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '7%'""")[0][0]
+			id=str(int(id))
+			new=rename_doc('Item',old=item_doc.name,new=id, merge=False)
+			# new
+			item_doc=frappe.get_doc('Item',new)
+			item_doc.is_pre_item_art=0
+			item_doc.is_stock_item=1
+			item_doc.is_sales_item=1
+			domain='3700091'
+			code_brut=compact(item_doc.item_code+domain)
+			key=calc_check_digit(code_brut)
+			barcode=code_brut+key
+			if (ean.is_valid(str(barcode))==True):
+				row = item_doc.append('barcodes', {})
+				row.barcode=barcode
+				row.barcode_type='EAN'
+				item_doc.save(ignore_permissions=True)
 
 def update_flag_table(self,method):
 	# get new flag values from shopping cart
@@ -297,6 +334,7 @@ def sales_order_from_shopping_cart(self,method):
 		frappe.db.set_value(self.doctype, self.name, "workflow_state", "To Deliver and Bill")
 
 def purchase_order_update_delivery_date_of_item(self,method):
+	print('purchase_order_update_delivery_date_of_item---------------')
 	from frappe.utils import add_days
 	for item in self.get("items"):
 		if item.expected_delivery_date:
@@ -306,4 +344,20 @@ def purchase_order_update_delivery_date_of_item(self,method):
 
 @frappe.whitelist()
 def pos_so_get_series():
-	return frappe.get_meta("Sales Order").get_field("naming_series").options or ""			
+	return frappe.get_meta("Sales Order").get_field("naming_series").options or ""
+
+@frappe.whitelist()
+def get_color_code_of_item(item_code):
+	color="orange"
+	disabled=frappe.db.get_value('Item', item_code, 'disabled')
+	if disabled==1:
+		color="red"
+		return color
+	else:
+		count=frappe.db.count('Purchase Order Item', {'item_code': item_code})
+		if count>0:
+			color="green"
+			return color
+		else:
+			color="orange"
+			return color

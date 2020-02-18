@@ -37,6 +37,7 @@ doctype_js = {
 "Issue" : "public/js/issue.js",
 "Pricing Rule" : "public/js/pricing_rule.js",
 "POS Profile": "public/js/pos_profile.js",
+"Supplier Quotation": "public/js/supplier_quotation.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -94,13 +95,18 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 # Hook on document methods and events
 
 doc_events = {
-	"Item": { "validate": "art_collections.api.update_flag_table"},
+	"Item": { 
+		"validate": "art_collections.api.update_flag_table",
+		"autoname": "art_collections.api.set_item_code_for_pre_item"
+		},
 	"Pricing Rule": { "on_update": "art_collections.api.update_flag_table_from_pricing_rule"},
 	"Issue Type":{ "autoname": "art_collections.api.autoname_issue_type"},
 	"Purchase Receipt": { "on_submit": "art_collections.api.stock_availability_notification"},
 	"Sales Order":{"on_submit":"art_collections.api.sales_order_from_shopping_cart" },
-	"Purchase Order":{"on_submit":"art_collections.api.purchase_order_update_delivery_date_of_item" ,
-	"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item"
+	"Purchase Order":{
+		"on_submit":["art_collections.api.purchase_order_convert_preorder_item" ,
+		"art_collections.api.purchase_order_update_delivery_date_of_item" ],
+		"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item"
 	}
 }
 

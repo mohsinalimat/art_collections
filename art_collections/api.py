@@ -217,7 +217,7 @@ def purchase_order_convert_preorder_item(self,method):
 			item_doc.is_stock_item=1
 			item_doc.is_sales_item=1
 			domain='3700091'
-			code_brut=compact(item_doc.item_code+domain)
+			code_brut=compact(domain+item_doc.item_code)
 			key=calc_check_digit(code_brut)
 			barcode=code_brut+key
 			if (ean.is_valid(str(barcode))==True):

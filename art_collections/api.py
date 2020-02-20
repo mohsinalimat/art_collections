@@ -199,16 +199,15 @@ def set_item_code_for_pre_item(self,method):
 		self.include_item_in_manufacturing=0
 		self.is_sales_item=0
 
-def purchase_order_convert_preorder_item(self,method):
-	purchase_order_items=self.get("items")
-	for item in purchase_order_items:	
-		item_doc=frappe.get_doc('Item',item.item_code)
-		if item_doc.is_pre_item_art==1:
-			from art_collections.ean import calc_check_digit,compact
-			from stdnum import ean
-			from frappe.model.rename_doc import rename_doc
-			# id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
-			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '7%'""")[0][0]
+@frappe.whitelist()
+def convert_pre_to_normal_item(item_name):
+	item_doc=frappe.get_doc('Item',item_name)
+	if item_doc.is_pre_item_art==1:
+		from art_collections.ean import calc_check_digit,compact
+		from stdnum import ean
+		from frappe.model.rename_doc import rename_doc
+		id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0]
+		if id:
 			id=str(int(id))
 			new=rename_doc('Item',old=item_doc.name,new=id, merge=False)
 			# new
@@ -225,6 +224,39 @@ def purchase_order_convert_preorder_item(self,method):
 				row.barcode=barcode
 				row.barcode_type='EAN'
 				item_doc.save(ignore_permissions=True)
+			return new
+
+
+def purchase_order_convert_preorder_item(self,method):
+	purchase_order_items=self.get("items")
+	for item in purchase_order_items:	
+		item_doc=frappe.get_doc('Item',item.item_code)
+		if item_doc.is_pre_item_art==1:
+			from art_collections.ean import calc_check_digit,compact
+			from stdnum import ean
+			from frappe.model.rename_doc import rename_doc
+			# id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
+			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0]
+			if id:
+				id=str(int(id))
+				new=rename_doc('Item',old=item_doc.name,new=id, merge=False)
+				# new
+				item_doc=frappe.get_doc('Item',new)
+				item_doc.is_pre_item_art=0
+				item_doc.is_stock_item=1
+				item_doc.is_sales_item=1
+				domain='3700091'
+				code_brut=compact(domain+item_doc.item_code)
+				key=calc_check_digit(code_brut)
+				barcode=code_brut+key
+				if (ean.is_valid(str(barcode))==True):
+					row = item_doc.append('barcodes', {})
+					row.barcode=barcode
+					row.barcode_type='EAN'
+					item_doc.save(ignore_permissions=True)
+			else:
+				frappe.throw(_('Conversion failed for Pre Item. New id not found.'))
+
 
 def update_flag_table(self,method):
 	# get new flag values from shopping cart

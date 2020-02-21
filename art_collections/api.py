@@ -206,7 +206,7 @@ def convert_pre_to_normal_item(item_name):
 		from art_collections.ean import calc_check_digit,compact
 		from stdnum import ean
 		from frappe.model.rename_doc import rename_doc
-		id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0]
+		id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0] or 79000
 		if id:
 			id=str(int(id))
 			new=rename_doc('Item',old=item_doc.name,new=id, merge=False)
@@ -236,7 +236,7 @@ def purchase_order_convert_preorder_item(self,method):
 			from stdnum import ean
 			from frappe.model.rename_doc import rename_doc
 			# id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
-			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0]
+			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0] or 79000
 			if id:
 				id=str(int(id))
 				new=rename_doc('Item',old=item_doc.name,new=id, merge=False)

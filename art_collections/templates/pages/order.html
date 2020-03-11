@@ -21,6 +21,8 @@
 {% block page_content %}
 <div class="row transaction-subheading">
 	<div class="col-6">
+		
+		{% if doc.doctype == 'Sales Order' %}
 		<span class="indicator {{ 'green' if doc.needs_confirmation_art==0 else 'blue' }}">
 			{{ _("Confirmed Order") if doc.needs_confirmation_art==0 else _("Bon De Commande Order") }}
 		</span>
@@ -29,6 +31,8 @@
 		</button>		
 		{% endif %}
 		<br>
+		{% endif %}
+		
 		<span class="indicator {{ doc.indicator_color or ("blue" if doc.docstatus==1 else "darkgrey") }}">
 			{{ _(doc.get('indicator_title')) or _(doc.status) or _("Submitted") }}
 		</span>

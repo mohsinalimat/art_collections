@@ -28,7 +28,9 @@ frappe.ui.form.on('Item', {
                }
             });
 			});
-		}
+		}else{
+         frm.set_df_property('is_pre_item_art', 'read_only', 1)
+      }
 	},
    is_pre_item_art: function (frm) {
       if (frm.doc.is_pre_item_art==1 && frm.doc.item_name==undefined) {

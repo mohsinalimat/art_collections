@@ -25,7 +25,8 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
         doc = frappe.get_doc('Sales Invoice', sales_invoice_name)
         for si_item in doc.get("items") or []:
                 main_image=si_item.image
-                file_list.append(main_image)
+                if main_image!=None:
+                        file_list.append(main_image)
                 item_code=si_item.item_code
                 item_slideshow=frappe.get_value('Item', item_code, 'slideshow')
                 if item_slideshow!=None:

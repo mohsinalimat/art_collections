@@ -56,12 +56,12 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                 for file_name in file_list or []:
                         try:
                                 is_file_in_file_doctype=len(frappe.db.exists({'doctype': 'File',"file_url": file_name}))
-                                if is_file_in_file_doctype==1 :
+                                if is_file_in_file_doctype==1 and file_name :
                                         file_doc = frappe.get_doc('File', {"file_url": file_name})
                                         file_path = file_doc.get_full_path()
                                         file_list_with_path.append(file_path)
                                         tar_handle.add(file_path,arcname=file_doc.file_name or file_name)
-                                else:   
+                                elif is_file_in_file_doctype!=1 and file_name :   
                                         remove_slash=file_name.startswith("/")
                                         if remove_slash:
                                                 file_name = file_name.replace("/", "", 1)

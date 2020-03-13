@@ -3,6 +3,7 @@ frappe.ui.form.on('Item', {
       if(frm.is_new()==undefined && frm.doc.disabled==0 && frm.doc.is_pre_item_art==1 && 
          frm.doc.name.lastIndexOf("P", 1) == 0
 		) {
+         frm.set_df_property('is_pre_item_art', 'read_only', 1)
 			frm.add_custom_button(__('Convert Pre to Normal Item'), () => {
             frappe.call({
                method:"art_collections.api.convert_pre_to_normal_item",
@@ -28,7 +29,10 @@ frappe.ui.form.on('Item', {
                }
             });
 			});
-		}else{
+      }
+      if(frm.is_new()==undefined && frm.doc.disabled==0 && frm.doc.is_pre_item_art==0 && 
+      frm.doc.name.lastIndexOf("P", 1) != 0)
+      {
          frm.set_df_property('is_pre_item_art', 'read_only', 1)
       }
 	},

@@ -49,6 +49,7 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
         zip_file_with_path=os.path.join(si_zip_folder,zip_file_name)
         with tarfile.open(zip_file_with_path, "w:gz") as tar_handle:
                 print(file_list,'file_list')
+                # print(os.path.basename('/files/item_pics/20171103-NicolasBroquedis-1169.jpg'))
                 for file_name in file_list or []:
                         try:
                                 is_file_in_file_doctype=len(frappe.db.exists({'doctype': 'File',"file_url": file_name}))
@@ -56,6 +57,7 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                         file_doc = frappe.get_doc('File', {"file_url": file_name})
                                         file_path = file_doc.get_full_path()
                                         file_list_with_path.append(file_path)
+                                        tar_handle.add(file_path,arcname=file_doc.file_name or file_name)
                                 else:   
                                         print('else',file_name)
                                         remove_slash=file_name.startswith("/")
@@ -64,7 +66,7 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                         file_path=os.path.join(public_folder_path, file_name)
                                         print('file_path',file_path)
                                         file_list_with_path.append(file_path)
-                                tar_handle.add(file_path,arcname=file_doc.file_name or file_name)
+                                        tar_handle.add(file_path,arcname=os.path.basename(file_name))
                         except frappe.DoesNotExistError:
                                 continue
         tar_handle.close()

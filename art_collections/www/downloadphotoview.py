@@ -37,6 +37,7 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                         file_list.append(slideshow_image)
 
         public_files_path = frappe.get_site_path('public', 'files')
+        public_folder_path=frappe.get_site_path('public')
         si_zip_folder = os.path.join(public_files_path, "si_zip_folder")
         frappe.create_folder(si_zip_folder, with_init=False)
         #del old failed tar files other than last 2
@@ -50,9 +51,16 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                 for file_name in file_list or []:
                         try:
                                 file_doc = frappe.get_doc('File', {"file_url": file_name})
-                                file_path = file_doc.get_full_path()
-                                file_list_with_path.append(file_path)
-                                tar_handle.add(file_path,arcname=file_doc.file_name)
+                                if file_doc :
+                                        file_path = file_doc.get_full_path()
+                                        file_list_with_path.append(file_path)
+                                else:   
+                                        remove_slash=file_name.startswith("/")
+                                        if remove_slash:
+                                                file_name = file_name.replace("/", "", 1)
+                                        file_path=os.path.join(public_folder_path, file_name)
+                                        file_list_with_path.append(file_path)
+                                tar_handle.add(file_path,arcname=file_doc.file_name or file_name)
                         except frappe.DoesNotExistError:
                                 continue
         tar_handle.close()

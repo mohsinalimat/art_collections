@@ -14,6 +14,10 @@ no_cache = 1
 @frappe.whitelist()
 def get_zip(name):
     zip_file_with_path,zip_file=get_image_list_for_sales_invoice(name)
+     #for empty it is 69 
+    if os.stat(zip_file_with_path).st_size==69:
+        frappe.respond_as_web_page(_("No Photos"), _("No files for download in this sales invoice"),indicator_color='orange')
+        return
     with open(zip_file_with_path, 'rb') as fileobj:
         filedata = fileobj.read()
         frappe.local.response.filename = zip_file
@@ -49,8 +53,6 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
 
         zip_file_with_path=os.path.join(si_zip_folder,zip_file_name)
         with tarfile.open(zip_file_with_path, "w:gz") as tar_handle:
-                print(file_list,'file_list')
-                # print(os.path.basename('/files/item_pics/20171103-NicolasBroquedis-1169.jpg'))
                 for file_name in file_list or []:
                         try:
                                 is_file_in_file_doctype=len(frappe.db.exists({'doctype': 'File',"file_url": file_name}))
@@ -60,12 +62,10 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                         file_list_with_path.append(file_path)
                                         tar_handle.add(file_path,arcname=file_doc.file_name or file_name)
                                 else:   
-                                        print('else',file_name)
                                         remove_slash=file_name.startswith("/")
                                         if remove_slash:
                                                 file_name = file_name.replace("/", "", 1)
                                         file_path=os.path.join(public_folder_path, file_name)
-                                        print('file_path',file_path)
                                         file_list_with_path.append(file_path)
                                         tar_handle.add(file_path,arcname=os.path.basename(file_name))
                         # except frappe.DoesNotExistError:
@@ -73,9 +73,6 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                 print('filenotfound error raised for',file_name)
                                 continue
         tar_handle.close()
-        #print(os.stat(zip_file_with_path).st_size)
-        #for empty it is 69 
-        print(zip_file_with_path,zip_file_name)
         return zip_file_with_path,zip_file_name
 
 

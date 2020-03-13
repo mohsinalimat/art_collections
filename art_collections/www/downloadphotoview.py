@@ -51,8 +51,9 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                 print(file_list,'file_list')
                 for file_name in file_list or []:
                         try:
-                                file_doc = frappe.get_doc('File', {"file_url": file_name})
-                                if file_doc :
+                                is_file_in_file_doctype=len(frappe.db.exists({'doctype': 'File',"file_url": file_name}))
+                                if is_file_in_file_doctype==1 :
+                                        file_doc = frappe.get_doc('File', {"file_url": file_name})
                                         file_path = file_doc.get_full_path()
                                         file_list_with_path.append(file_path)
                                 else:   

@@ -7,6 +7,7 @@ import frappe, os
 from frappe import _
 import tarfile
 from frappe import scrub
+from frappe.exceptions import FileNotFoundError
 
 no_cache = 1
 
@@ -67,7 +68,9 @@ def get_image_list_for_sales_invoice(sales_invoice_name):
                                         print('file_path',file_path)
                                         file_list_with_path.append(file_path)
                                         tar_handle.add(file_path,arcname=os.path.basename(file_name))
-                        except frappe.DoesNotExistError:
+                        # except frappe.DoesNotExistError:
+                        except (FileNotFoundError, OSError):
+                                print('filenotfound error raised for',file_name)
                                 continue
         tar_handle.close()
         #print(os.stat(zip_file_with_path).st_size)

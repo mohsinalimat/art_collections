@@ -47,6 +47,13 @@ frappe.ui.form.on('Item', {
       if (frm.doc.is_pre_item_art==1) {
          frm.set_value('item_code', 'pre')
       }
+      console.log('1',frm.doc.barcodes.length,frm.doc.barcodes[0].barcode,frm.doc.barcodes[0].barcode_type)
+      if (frm.doc.barcodes.length==1) {
+         if (frm.doc.barcodes[0].barcode==undefined && frm.doc.barcodes[0].barcode_type!="") {
+            console.log('2')
+            frm.doc.barcodes=[]
+         }
+      }
    },
     refresh: function (frm) {
      if (frm.doc.__islocal==1) 

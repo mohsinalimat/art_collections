@@ -145,6 +145,7 @@ def get_data():
 		]
 	}
 
-
-patch_method(product_info,"get_product_info_for_website", get_product_info_for_website)
-patch_method(item_dashboard,"get_data", get_data)
+app_name='art_collections'
+if (app_name in frappe.get_installed_apps()):
+	patch_method(product_info,"get_product_info_for_website", get_product_info_for_website)
+	patch_method(item_dashboard,"get_data", get_data)

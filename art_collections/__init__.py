@@ -28,7 +28,7 @@ def patch_method(obj, method, override):
     setattr(obj, method, __fn)
 
 @frappe.whitelist(allow_guest=True)
-def get_product_info_for_website(item_code):
+def get_product_info_for_website(item_code,skip_quotation_creation=False):
 	from erpnext.shopping_cart.cart import get_party
 	"""get product price / stock info for website"""
 
@@ -147,5 +147,5 @@ def get_data():
 
 app_name='art_collections'
 # if (app_name in frappe.get_installed_apps()):
-# 	patch_method(product_info,"get_product_info_for_website", get_product_info_for_website)
-# 	patch_method(item_dashboard,"get_data", get_data)
+patch_method(product_info,"get_product_info_for_website", get_product_info_for_website)
+patch_method(item_dashboard,"get_data", get_data)

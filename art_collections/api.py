@@ -393,3 +393,27 @@ def get_color_code_of_item(item_code):
 		else:
 			color="orange"
 			return color
+
+@frappe.whitelist()
+def get_average_daily_outgoing_art(item_code=None):
+    if item_code:
+        average_daily_outgoing_art=frappe.db.sql("""select ROUND(sum(qty) /DATEDIFF(CURRENT_DATE,min(tso.posting_date)),2) as average_daily_outgoing_art from `tabSales Invoice` tso 
+inner join `tabSales Invoice Item` as tsi
+on tso.name = tsi.parent
+and tso.docstatus = 1
+and tsi.item_code =%s""",item_code,as_dict=True)
+        return average_daily_outgoing_art[0] if average_daily_outgoing_art else None
+    else:
+        return None			
+
+@frappe.whitelist()
+def get_actual_delivery_delay_days_art(supplier=None):
+    if supplier:
+        actual_delivery_delay_days_art=frappe.db.sql("""select AVG(delay_days) as actual_delivery_delay_days from  (
+select po.name,DATEDIFF(min(pr.posting_date), po.transaction_date)as delay_days from `tabPurchase Order` po  
+inner join `tabPurchase Receipt Item` pri on po.name = pri.purchase_order and po.docstatus = 1 and po.supplier = %s
+inner join `tabPurchase Receipt`  pr on pr.name = pri.parent and pr.docstatus = 1  
+group by po.name ) t""",supplier,as_dict=True)
+        return actual_delivery_delay_days_art[0] if actual_delivery_delay_days_art else None
+    else:
+        return None			

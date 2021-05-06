@@ -397,7 +397,8 @@ def get_color_code_of_item(item_code):
 @frappe.whitelist()
 def get_average_daily_outgoing_art(item_code=None):
     if item_code:
-        average_daily_outgoing_art=frappe.db.sql("""select ROUND(sum(qty) /DATEDIFF(CURRENT_DATE,min(tso.posting_date)),2) as average_daily_outgoing_art from `tabSales Invoice` tso 
+        average_daily_outgoing_art=frappe.db.sql("""select ROUND(sum(qty) /DATEDIFF(DATE_ADD(CURRENT_DATE,INTERVAL 1 DAY),min(tso.posting_date)),2) as average_daily_outgoing_art
+from `tabSales Invoice` tso 
 inner join `tabSales Invoice Item` as tsi
 on tso.name = tsi.parent
 and tso.docstatus = 1

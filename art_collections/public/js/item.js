@@ -1,7 +1,7 @@
 frappe.ui.form.on('Item', {
    onload: function (frm) {
       if (frm.doc.item_code && frm.doc.is_pre_item_art == 0) {
-         frm.trigger('set_average_daily_outgoing_art')
+         frm.trigger('set_average_values')
       }
       if (frm.is_new() == undefined && frm.doc.disabled == 0 && frm.doc.is_pre_item_art == 1 &&
          frm.doc.name.lastIndexOf("P", 1) == 0
@@ -65,26 +65,37 @@ frappe.ui.form.on('Item', {
          }, 100);
       }
    },
-   set_average_daily_outgoing_art: function (frm) {
+   set_average_values: function (frm) {
       frappe.call({
-         method: "art_collections.api.get_average_daily_outgoing_art",
+         method: "art_collections.api.get_average_values_for_item",
          args: {
             item_code: frm.doc.item_code,
          },
          callback: function (r) {
             if (!r.exc) {
                console.log(r)
+               let dirty = false
                if (r.message) {
+                  if (r.message.average_delivery_days != null && r.message.average_delivery_days != 0) {
+                     frm.set_value('average_delivery_days_art', r.message.average_delivery_days)
+                     dirty = true
+                  } else {
+                     frm.set_value('average_delivery_days_art', 0)
+                     dirty = true
+                  }
                   if (r.message.average_daily_outgoing_art != null && r.message.average_daily_outgoing_art != 0) {
                      frm.set_value('average_daily_outgoing_art', r.message.average_daily_outgoing_art)
-                     frm.save()
+                     dirty = true
                   } else {
                      frm.set_value('average_daily_outgoing_art', 0)
+                     dirty = true
+                  }
+                  if (dirty == true) {
                      frm.save()
                   }
                }
             }
          }
       });
-   }
+   },
 });

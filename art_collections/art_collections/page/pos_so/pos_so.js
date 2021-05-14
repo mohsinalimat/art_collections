@@ -465,7 +465,6 @@ make_title: function () {
 			change: () => {
 				var title = this.title.get_value();
 				me.frm.doc.title =title
-				console.log('on change me.frm.doc.title',me.frm.doc.title)
 			}
 
 		},
@@ -1649,6 +1648,7 @@ show_items_in_item_cart: function () {
 	$.each(this.frm.doc.items || [], function (i, d) {
 		$(frappe.render_template("pos_bill_item_new", {
 			item_code: d.item_code,
+			title: d.item_code === d.item_name ? d.item_code : d.item_name,
 			item_name: (d.item_name === d.item_code || !d.item_name) ? "" : ("<br>" + d.item_name),
 			qty: d.qty,
 			discount_percentage: d.discount_percentage || 0.0,

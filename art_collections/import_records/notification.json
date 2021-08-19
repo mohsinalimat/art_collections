@@ -1,0 +1,45 @@
+[
+ {
+  "attach_print": 0,
+  "channel": "Email",
+  "condition": "doc.status == \"Unpaid\" and doc.total > 10000",
+  "date_changed": "due_date",
+  "days_in_advance": 5,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Sales Invoice",
+  "enabled": 0,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "Please pay your dues.\n{{doc.name}}",
+  "method": null,
+  "modified": "2021-08-12 16:28:17.758789",
+  "module": null,
+  "name": "Payment Reminder For Escompte Eligible Customers",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "print_format": null,
+  "property_value": null,
+  "recipients": [
+   {
+    "bcc": null,
+    "cc": null,
+    "condition": null,
+    "parent": "Payment Reminder For Escompte Eligible Customers",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": "contact_email",
+    "receiver_by_role": null
+   }
+  ],
+  "send_system_notification": 0,
+  "send_to_all_assignees": 0,
+  "sender": null,
+  "sender_email": null,
+  "set_property_after_alert": null,
+  "slack_webhook_url": null,
+  "subject": "Payment Reminder",
+  "value_changed": null
+ }
+]

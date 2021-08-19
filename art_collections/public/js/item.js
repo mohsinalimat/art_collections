@@ -1,4 +1,9 @@
 frappe.ui.form.on('Item', {
+   validate:function (frm) {
+      if (frm.doc.nb_selling_packs_in_outer_art!=0 && frm.doc.nb_selling_packs_in_inner_art!=0) {
+         frm.doc.nb_inner_in_outer_art=flt(frm.doc.nb_selling_packs_in_outer_art/frm.doc.nb_selling_packs_in_inner_art)
+      }
+   },
    onload: function (frm) {
       if (frm.doc.item_code && frm.doc.is_pre_item_art == 0) {
          frm.trigger('set_average_values')

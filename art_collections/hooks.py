@@ -69,6 +69,7 @@ doctype_js = {
 
 # before_install = "art_collections.install.before_install"
 # after_install = "art_collections.install.after_install"
+after_migrate="art_collections.migrations.after_migrations"
 
 # Desk Notifications
 # ------------------
@@ -147,3 +148,14 @@ standard_portal_menu_items = [
 override_whitelisted_methods = {
 	"erpnext.shopping_cart.cart.update_cart": "art_collections.api.update_cart"
 }
+
+fixtures = [
+      {
+        "dt": "Workflow", 
+        "filters": [["name", "in", ["BDC"]]]
+      },
+      {
+        "dt": "Notification", 
+        "filters": [["name", "in", ["Payment Reminder For Escompte Eligible Customers"]]]
+      },			
+]

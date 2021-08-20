@@ -14,3 +14,17 @@ frappe.ui.form.on('Purchase Order', {
 		}
     }
  });
+
+
+ frappe.ui.form.on("Purchase Order Item", {
+	item_code: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		if (row.item_code) {
+			frappe.db.get_value('Item', row.item_code, 'min_order_qty')
+			.then(r => {
+					row.min_order_qty_cf=r.message.min_order_qty
+			})			
+			
+		}
+	}
+});

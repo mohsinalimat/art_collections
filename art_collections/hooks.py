@@ -98,17 +98,24 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 doc_events = {
 	"Item": { 
-		"validate": "art_collections.api.update_flag_table",
-		"autoname": "art_collections.api.set_item_code_for_pre_item"
+		"validate": "art_collections.item_controller.item_custom_validation",
+		"autoname": "art_collections.item_controller.set_item_code_for_pre_item"
 		},
 	"Pricing Rule": { "on_update": "art_collections.api.update_flag_table_from_pricing_rule"},
 	"Issue Type":{ "autoname": "art_collections.api.autoname_issue_type"},
 	"Purchase Receipt": { "on_submit": "art_collections.api.stock_availability_notification"},
-	"Sales Order":{"on_submit":"art_collections.api.sales_order_from_shopping_cart" },
+	"Sales Order":{
+		"on_submit":"art_collections.api.sales_order_from_shopping_cart" ,
+		"validate": "art_collections.sales_order_controller.sales_order_custom_validation",
+		},
 	"Purchase Order":{
 		"on_submit":["art_collections.api.purchase_order_convert_preorder_item" ,
 		"art_collections.api.purchase_order_update_delivery_date_of_item" ],
-		"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item"
+		"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item",
+		"validate": "art_collections.purchase_order_controller.purchase_order_custom_validation"
+	},
+	"Supplier Quotation":{
+		"validate": "art_collections.supplier_quotation_controller.supplier_quotation_custom_validation"
 	}
 }
 
@@ -157,5 +164,9 @@ fixtures = [
       {
         "dt": "Notification", 
         "filters": [["name", "in", ["Payment Reminder For Escompte Eligible Customers"]]]
-      },			
+      },	
+      {
+        "dt": "Property Setter", 
+        "filters": [["name", "in", ["Sales Order-delivery_date-no_copy"]]]
+      },					
 ]

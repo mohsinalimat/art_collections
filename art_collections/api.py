@@ -189,15 +189,7 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 	return frappe._dict({"in_stock": in_stock, "stock_qty": stock_qty, "is_stock_item": is_stock_item})
 
 
-def set_item_code_for_pre_item(self,method):
-	if self.is_pre_item_art==1:
-		pre_item_naming_series_art= self.meta.get_field("pre_item_naming_series_art").options
-		from frappe.model.naming import make_autoname
-		self.name=make_autoname(pre_item_naming_series_art, "", self)
-		self.item_code = self.name
-		self.is_stock_item=1
-		self.include_item_in_manufacturing=0
-		self.is_sales_item=0
+
 
 @frappe.whitelist()
 def convert_pre_to_normal_item(item_name):
@@ -258,24 +250,7 @@ def purchase_order_convert_preorder_item(self,method):
 				frappe.throw(_('Conversion failed for Pre Item. New id not found.'))
 
 
-def update_flag_table(self,method):
-	# get new flag values from shopping cart
-	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
-	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
-	if self.show_in_website==0:
-		return
-		
-	# check if existing
-	if self.website_item_flag_icon_art:
-		for image in self.website_item_flag_icon_art:
-			if image.flag==new_arrival_field:
-				return
-	# new flag field not found
-	row = self.append('website_item_flag_icon_art', {})
-	row.flag=new_arrival_field
-	row.valid_from=nowdate()
-	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
 
 def update_flag_table_from_pricing_rule(self,method):
 	if self.item_flag_icon_art:

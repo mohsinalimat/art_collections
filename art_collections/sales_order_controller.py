@@ -5,8 +5,25 @@ from frappe.utils import get_link_to_form
 
 
 def sales_order_custom_validation(self, method):
+    validate_minimum_order_amount_as_per_customer_group(self)
     valiate_payment_terms_and_credit_limit_for_customer(self)
 
+def validate_minimum_order_amount_as_per_customer_group(self):
+    if self.customer:
+        customer = frappe.get_doc("Customer", self.customer)
+        customer_group=frappe.db.get_value("Customer", self.customer, 'customer_group')
+        if customer_group:
+            minimum_order_amount_art=frappe.db.get_value("Customer Group", customer_group, 'minimum_order_amount_art')
+            if minimum_order_amount_art and self.base_net_total<minimum_order_amount_art:
+               frappe.throw(
+                _(
+                    "For customer group {0} minimum order amount required is {1}.<br>The sales order amount is {2}. Please set higher order value to continue...".format(
+                        frappe.bold(customer_group),
+                         frappe.bold(minimum_order_amount_art),
+                         frappe.bold(self.base_net_total)
+                    )
+                )
+            )             
 
 def valiate_payment_terms_and_credit_limit_for_customer(self):
     if self.customer:

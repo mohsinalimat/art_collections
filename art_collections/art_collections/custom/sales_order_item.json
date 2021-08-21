@@ -18,7 +18,7 @@
    "docstatus": 0,
    "dt": "Sales Order Item",
    "fetch_from": "item_code.facing_required_art",
-   "fetch_if_empty": 0,
+   "fetch_if_empty": 1,
    "fieldname": "facing_required_art",
    "fieldtype": "Check",
    "hidden": 0,

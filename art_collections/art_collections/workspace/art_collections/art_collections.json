@@ -74,9 +74,26 @@
    "link_type": "Page",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Art Collections Settings",
+   "link_to": "Art Collections Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2021-08-04 08:18:42.893395",
+ "modified": "2021-08-21 12:58:25.281880",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

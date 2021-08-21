@@ -39,6 +39,7 @@ doctype_js = {
 "Pricing Rule" : "public/js/pricing_rule.js",
 "POS Profile": "public/js/pos_profile.js",
 "Supplier Quotation": "public/js/supplier_quotation.js",
+"Pick List": "public/js/pick_list.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 
@@ -119,6 +120,9 @@ doc_events = {
 	},
 	"Supplier Quotation":{
 		"validate": "art_collections.supplier_quotation_controller.supplier_quotation_custom_validation"
+	},
+	"Address":{
+		"autoname":"art_collections.address_controller.set_address_title_based_on_customer"
 	}
 }
 

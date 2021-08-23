@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import frappe
+import datetime
 from frappe import _
 from frappe.utils import get_link_to_form
 
@@ -63,6 +64,9 @@ def make_sales_invoice(names):
         for d in frappe.db.get_all("Sales Order", {"name": name, "docstatus": 1}):
             si = make_sales_invoice(d.name)
             si = si.insert()
+            for item in si.get("payment_schedule"):
+                if isinstance(item.get("due_date"), datetime.date):
+                    item.due_date = item.get("due_date").strftime("%Y-%m-%d")
             si.submit()
 
 

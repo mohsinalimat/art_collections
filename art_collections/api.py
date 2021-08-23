@@ -164,8 +164,8 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 	from erpnext.utilities.product import get_price, adjust_qty_for_expired_items
 	in_stock, stock_qty = 0, ''
-	template_item_code, is_stock_item = frappe.db.get_value("Item", item_code, ["variant_of", "is_stock_item"])
-
+	is_stock_item = frappe.db.get_value("Item", item_code,"is_stock_item")
+	template_item_code= frappe.db.get_value("Item", item_code,"variant_of")
 	if not warehouse:
 		warehouse = frappe.db.get_value("Item", item_code, item_warehouse_field)
 

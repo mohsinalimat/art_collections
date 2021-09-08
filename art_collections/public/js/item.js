@@ -52,9 +52,9 @@ frappe.ui.form.on('Item', {
       }
    },
    before_save: function (frm) {
-      if (frm.doc.is_pre_item_art == 1) {
-         frm.set_value('item_code', 'pre')
-      }
+      // if (frm.doc.is_pre_item_art == 1) {
+      //    frm.set_value('item_code', 'pre')
+      // }
       if (frm.doc.barcodes && frm.doc.barcodes.length == 1) {
          if (frm.doc.barcodes[0].barcode == undefined && frm.doc.barcodes[0].barcode_type != "") {
             console.log('2')

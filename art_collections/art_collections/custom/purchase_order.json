@@ -101,7 +101,7 @@
    "name": "Purchase Order-minimum_order_amount_art",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "currency",
+   "options": "",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,

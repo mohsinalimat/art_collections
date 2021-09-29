@@ -136,7 +136,7 @@ def get_product_list_for_group(product_group=None, start=0, limit=10, search=Non
 			I.has_batch_no
 		from `tabItem` I
 		left join tabBin S on I.item_code = S.item_code and I.website_warehouse = S.warehouse
-		where I.show_in_website = 1
+		where I.published_in_website = 1
 			and I.disabled = 0
 			and (I.end_of_life is null or I.end_of_life='0000-00-00' or I.end_of_life > %(today)s)
 			and (I.variant_of = '' or I.variant_of is null)
@@ -192,7 +192,7 @@ on Univ.item=Item.name
 where Univ.parent=%s
 and Univ.parentfield='items_in_universe'
 and Univ.parenttype='Catalogue Directory Art'
-and Item.show_in_website=1
+and Item.published_in_website=1
 order by Univ.idx
 limit %s
 offset %s""",(parent,limit,start),as_dict=1)
@@ -234,7 +234,7 @@ def get_item_for_list_in_html(context):
 def get_group_item_count(item_group):
 	child_groups = ", ".join(['"' + i[0] + '"' for i in get_child_groups(item_group)])
 	return frappe.db.sql("""select count(*) from `tabItem`
-		where docstatus = 0 and show_in_website = 1
+		where docstatus = 0 and published_in_website = 1
 		and (item_group in (%s)
 			or name in (select parent from `tabWebsite Item Group`
 				where item_group in (%s))) """ % (child_groups, child_groups))[0][0]

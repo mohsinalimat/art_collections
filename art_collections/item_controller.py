@@ -16,7 +16,7 @@ def update_flag_table(self):
 	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
 	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
-	if self.show_in_website==0:
+	if self.published_in_website==0:
 		return
 		
 	# check if existing
@@ -46,8 +46,6 @@ def get_item_art_dashboard_data(item_code):
 	total_in_stock=frappe.db.sql("""select COALESCE(sum(actual_qty),0) from tabBin where item_code = %s """,(item_code))[0][0]
 	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
-	print('-'*100)
-	print(total_in_stock,sold_qty_to_deliver==None)
 	if sold_qty_to_deliver!=None:
 		total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
 	else:

@@ -113,9 +113,15 @@ doc_events = {
 		"validate": "art_collections.sales_order_controller.sales_order_custom_validation",
 		},
 	"Purchase Order":{
-		"on_submit":["art_collections.api.purchase_order_convert_preorder_item" ,
-		"art_collections.api.purchase_order_update_delivery_date_of_item" ],
-		"on_update_after_submit":"art_collections.api.purchase_order_update_delivery_date_of_item",
+		"on_submit":[
+			"art_collections.api.purchase_order_convert_preorder_item" ,
+			"art_collections.api.purchase_order_update_delivery_date_of_item" ,
+			"art_collections.api.purchase_order_update_schedule_date_of_item"
+			],
+		"on_update_after_submit":[
+			"art_collections.api.purchase_order_update_delivery_date_of_item",
+			"art_collections.api.purchase_order_update_schedule_date_of_item"
+		],
 		"validate": "art_collections.purchase_order_controller.purchase_order_custom_validation"
 	},
 	"Supplier Quotation":{

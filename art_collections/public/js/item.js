@@ -5,10 +5,12 @@ frappe.ui.form.on('Item', {
       }else{
          frm.doc.nb_inner_in_outer_art=flt(0.0)
       }
+      frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
    },
    onload: function (frm) {
       if (frm.doc.item_code && frm.doc.is_pre_item_art == 0) {
-         frm.trigger('set_average_values')
+      //  temp disable
+         // frm.trigger('set_average_values')
       }
       if (frm.is_new() == undefined && frm.doc.disabled == 0 && frm.doc.is_pre_item_art == 1 &&
          frm.doc.name.lastIndexOf("P", 1) == 0
@@ -70,6 +72,19 @@ frappe.ui.form.on('Item', {
             frm.set_value('country_of_origin', 'China')
          }, 100);
       }
+      if (frm.doc.__islocal == undefined && frm.doc.has_variants==0 && frm.doc.variant_of==undefined && frm.doc.is_fixed_asset==0 && frm.doc.is_stock_item==1) {
+         frappe.call({
+            method: "art_collections.item_controller.get_item_art_dashboard_data",
+            args: {
+               item_code: frm.doc.name,
+            },
+            callback: function (r) {
+               if (!r.exc) {
+                  console.log(r)
+                  if (r.message) {
+                     frm.set_intro(r.message,false)
+                  }}}})
+      }      
    },
    set_average_values: function (frm) {
       frappe.call({
@@ -104,4 +119,33 @@ frappe.ui.form.on('Item', {
          }
       });
    },
+   populate_website_specifications_art: function (frm) {
+      let row1_desc,row2_desc,row3_desc=undefined
+
+      if (frm.doc.qty_in_selling_pack_art) {
+            row1_desc=frm.doc.qty_in_selling_pack_art+__(' qty per pack for this item in ')+ frm.doc.item_group + __(' group')
+      }
+      if (frm.doc.main_design_color_art) {
+            row2_desc=frm.doc.main_design_color_art+__(' is the main color')
+      }
+      if (frm.doc.length_art) {
+            row3_desc=(frm.doc.length_art || 0 )+ __('L x ') + (frm.doc.width_art || 0 )+ __('W x ') +(frm.doc.thickness_art || 0 ) +__('T')
+      }
+      if(row1_desc){
+         let row1=frm.add_child('website_specifications')
+         row1.label=__('Qty per pack')
+         row1.description=row1_desc
+      }
+      if(row2_desc){
+         let row2=frm.add_child('website_specifications')
+         row2.label=__('Main Color')
+         row2.description=row2_desc
+      }
+      if(row3_desc){
+         let row3=frm.add_child('website_specifications')
+         row3.label=__('Product Dimension')
+         row3.description=row3_desc
+      }    
+      frm.refresh_field('website_specifications')        
+   }
 });

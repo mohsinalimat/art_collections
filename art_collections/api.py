@@ -3,6 +3,7 @@ import frappe
 from frappe import _
 import functools
 from frappe.utils import nowdate,add_days
+from frappe.utils import getdate
 
 @frappe.whitelist()
 def get_sales_person_based_on_address(address=None):
@@ -340,8 +341,17 @@ def sales_order_from_shopping_cart(self,method):
 	if self.order_type=='Shopping Cart':
 		frappe.db.set_value(self.doctype, self.name, "workflow_state", "To Deliver and Bill")
 
+def purchase_order_update_schedule_date_of_item(self,method):
+	if (method=='on_update_after_submit' and self.docstatus==1 ) or method=='on_submit':
+		for item in self.get("items"):
+			availability_date =frappe.db.get_value('Item',item.item_code, 'availability_date_art')
+			if availability_date and getdate(availability_date) > getdate(item.schedule_date):
+				old_schedule_date=item.schedule_date
+				frappe.db.set_value('Item', item.item_code, 'schedule_date', availability_date)
+				frappe.msgprint(_("Required By date changed from {0} to {1} for item {2} based on availability date.".format(old_schedule_date,frappe.bold(availability_date),item.item_name)), indicator='orage',alert=True)
+
+
 def purchase_order_update_delivery_date_of_item(self,method):
-	print('purchase_order_update_delivery_date_of_item---------------')
 	from frappe.utils import add_days
 	for item in self.get("items"):
 		if item.expected_delivery_date:

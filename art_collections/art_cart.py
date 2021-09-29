@@ -10,11 +10,15 @@ from frappe.contacts.doctype.address.address import get_address_display
 from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings import get_shopping_cart_settings
 from frappe.utils.nestedset import get_root_of
 from erpnext.accounts.utils import get_account_name
-from erpnext.utilities.product import get_qty_in_stock
+# from erpnext.utilities.product import get_qty_in_stock
+# mostly get_qty_in_stock and get_web_item_qty_in_stock same
+from erpnext.utilities.product import get_web_item_qty_in_stock
 
 # imported by art_collections
-from erpnext.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,apply_cart_settings,get_address_docs
-from erpnext.shopping_cart.cart import get_applicable_shipping_rules
+# from erpnext.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,apply_cart_settings,get_address_docs
+from erpnext.e_commerce.shopping_cart.cart import get_party,update_cart_address,get_shopping_cart_menu,apply_cart_settings,get_address_docs
+# from erpnext.shopping_cart.cart import get_applicable_shipping_rules
+from erpnext.e_commerce.shopping_cart.cart import get_applicable_shipping_rules
 from frappe.utils.user import get_user_fullname
 
 class WebsitePriceListMissingError(frappe.ValidationError):
@@ -192,21 +196,24 @@ def _get_cart_quotation(party=None,order_type=None,wish_list_name=None):
 
 # called from hook
 def set_wishlist_cart_count(login_manager):
-	from erpnext.shopping_cart.utils import  show_cart_count , check_customer_or_supplier
+	from erpnext.e_commerce.shopping_cart.utils import show_cart_count , check_customer_or_supplier
+	# from erpnext.shopping_cart.utils import  show_cart_count , check_customer_or_supplier
 	role, parties = check_customer_or_supplier()
 	if role == 'Supplier': return
 	if show_cart_count():
 		set_cart_count()
 
 def clear_wishlist_cart_count(login_manager):
-	from erpnext.shopping_cart.utils import  show_cart_count
+	from erpnext.e_commerce.shopping_cart.utils import show_cart_count
+	# from erpnext.shopping_cart.utils import  show_cart_count
 	if show_cart_count():
 		frappe.local.cookie_manager.delete_cookie("wishlist_cart_count")
 
 
 @frappe.whitelist()
 def place_bon_de_commande_order():
-	from erpnext.shopping_cart.cart import _get_cart_quotation
+	# from erpnext.shopping_cart.cart import _get_cart_quotation
+	from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation
 	from erpnext.utilities.product import get_qty_in_stock
 	quotation = _get_cart_quotation()
 	cart_settings = frappe.db.get_value("Shopping Cart Settings", None,

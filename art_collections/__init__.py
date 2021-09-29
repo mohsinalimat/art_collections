@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 __version__ = '0.0.1'
 import frappe
 from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation,get_party
-from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings \
-    import get_shopping_cart_settings, show_quantity_in_website
+from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings import get_shopping_cart_settings, show_quantity_in_website
 from erpnext.utilities.product import get_price
 from art_collections.api import get_qty_in_stock
+
 # from erpnext.e_commerce.shopping_cart.product_info import  product_info,cart
+
 from erpnext.stock.doctype.item import item_dashboard
 
 from erpnext.e_commerce.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation

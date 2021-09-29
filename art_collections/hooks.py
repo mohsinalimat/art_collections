@@ -166,7 +166,8 @@ standard_portal_menu_items = [
 # ------------------------------
 #
 override_whitelisted_methods = {
-	"erpnext.shopping_cart.cart.update_cart": "art_collections.api.update_cart"
+	" erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
+	"erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website":"art_collections.api.get_product_info_for_website",
 }
 
 fixtures = [

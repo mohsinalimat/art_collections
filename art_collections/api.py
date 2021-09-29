@@ -101,13 +101,15 @@ def get_children(doctype, parent='', **filters):
 #not used
 @frappe.whitelist()
 def get_wish_list_names():
-	from erpnext.shopping_cart.cart import get_party
+	from erpnext.e_commerce.shopping_cart.cart import get_party
+	# from erpnext.shopping_cart.cart import get_party
 	party = get_party()
 	return frappe.db.get_all('Wish List Name',filters={'customer':party.name},fields='wish_list_name', order_by='wish_list_name asc',as_list=True)
 
 @frappe.whitelist()
 def update_cart(item_code, qty, additional_notes=None, with_items=False):
-	from erpnext.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation,_get_cart_quotation,get_shopping_cart_menu
+	# from erpnext.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation,_get_cart_quotation,get_shopping_cart_menu
+	from erpnext.e_commerce.shopping_cart.cart import apply_cart_settings,set_cart_count,get_cart_quotation,_get_cart_quotation,get_shopping_cart_menu
 	from frappe.utils import cint, flt
 	quotation = _get_cart_quotation()
 

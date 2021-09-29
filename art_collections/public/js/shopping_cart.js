@@ -2,8 +2,10 @@
 // License: GNU General Public License v3. See license.txt
 
 // shopping cart
-frappe.provide("erpnext.shopping_cart");
-var shopping_cart = erpnext.shopping_cart;
+// frappe.provide("erpnext.shopping_cart");
+frappe.provide("erpnext.e_commerce.shopping_cart");
+// var shopping_cart = erpnext.shopping_cart;
+var shopping_cart = erpnext.e_commerce.shopping_cart;
 
 frappe.ready(function() {
 	shopping_cart.set_wishlist_cart_count();

@@ -3,7 +3,7 @@ import frappe
 from frappe import _
 import functools
 from frappe.utils import nowdate,add_days
-from frappe.utils import getdate
+from frappe.utils import getdate,format_date
 
 @frappe.whitelist()
 def get_sales_person_based_on_address(address=None):
@@ -349,8 +349,9 @@ def purchase_order_update_schedule_date_of_item(self,method):
 			availability_date =frappe.db.get_value('Item',item.item_code, 'availability_date_art')
 			if availability_date and getdate(availability_date) > getdate(item.schedule_date):
 				old_schedule_date=item.schedule_date
-				frappe.db.set_value('Item', item.item_code, 'schedule_date', availability_date)
-				frappe.msgprint(_("Required By date changed from {0} to {1} for item {2} based on availability date.".format(old_schedule_date,frappe.bold(availability_date),item.item_name)), indicator='orage',alert=True)
+				frappe.db.set_value('Purchase Order Item', item.name, 'schedule_date', availability_date)
+				frappe.msgprint(_("Required By date changed from {0} to {1} for item {2} based on availability date."
+				.format(frappe.bold(format_date(old_schedule_date)),frappe.bold(format_date(availability_date)),item.item_name)), indicator='orage',alert=True)
 
 
 def purchase_order_update_delivery_date_of_item(self,method):

@@ -1,4 +1,37 @@
 frappe.ui.form.on('Sales Order', {
+	customer: function (frm) {
+		if (frm.doc.customer) {
+			const default_company = frappe.defaults.get_default('company');
+			let found_credit_limit=false
+			let found_payment_terms=false
+			frappe.db.get_doc('Customer', frm.doc.customer)
+			.then(doc => {
+					if (!doc.payment_terms) {
+						for (var i in doc.credit_limits || []) {
+							var item = doc.credit_limits[i];
+							if (item.company==default_company && item.credit_limit>0) {
+								console.log('item.credit_limit',item.credit_limit)
+								found_credit_limit=true
+								break;
+							}							
+						}						
+					}else{
+						found_payment_terms=true
+						console.log('doc.payment_terms',doc.payment_terms)
+					}
+					if (found_payment_terms==false && found_credit_limit==false) {
+						frappe.msgprint({
+							title: __('Missing payment terms and credit limit'),
+							indicator: 'orange',
+							message: __("Customer <u>{0}</u> has no payment terms or credit limit defined.",
+								[							frappe.utils.get_form_link("Customer",frm.doc.customer,true)])
+						});						
+					}
+
+			})					
+		}
+
+	},	
 	refresh: function (frm) {
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 	},

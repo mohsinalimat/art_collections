@@ -345,13 +345,12 @@ def sales_order_from_shopping_cart(self,method):
 
 def purchase_order_update_schedule_date_of_item(self,method):
 	if (method=='on_update_after_submit' and self.docstatus==1 ) or method=='on_submit':
-		for item in self.get("items"):
-			availability_date =frappe.db.get_value('Item',item.item_code, 'availability_date_art')
-			if availability_date and getdate(availability_date) > getdate(item.schedule_date):
-				old_schedule_date=item.schedule_date
-				frappe.db.set_value('Purchase Order Item', item.name, 'schedule_date', availability_date)
-				frappe.msgprint(_("Required By date changed from {0} to {1} for item {2} based on availability date."
-				.format(frappe.bold(format_date(old_schedule_date)),frappe.bold(format_date(availability_date)),item.item_name)), indicator='orage',alert=True)
+		for po_item in self.get("items"):
+			availability_date =frappe.db.get_value('Item',po_item.item_code, 'availability_date_art')
+			if availability_date==None or getdate(availability_date) < getdate(po_item.schedule_date):
+				frappe.db.set_value('Item', po_item.item_code, 'availability_date_art', po_item.schedule_date)
+				frappe.msgprint(_("Availability date for item {0} is changed to {1} based on latest required by date."
+				.format(po_item.item_name,frappe.bold(format_date(po_item.schedule_date)))), indicator='orage',alert=True)
 
 
 def purchase_order_update_delivery_date_of_item(self,method):

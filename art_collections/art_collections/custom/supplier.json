@@ -701,7 +701,7 @@
    "name": "Supplier-port_of_loading_art",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "Port Of Loading",
+   "options": "Port Art",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,

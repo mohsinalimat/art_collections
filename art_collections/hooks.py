@@ -177,7 +177,7 @@ fixtures = [
       },
       {
         "dt": "Notification", 
-        "filters": [["name", "in", ["Payment Reminder For Escompte Eligible Customers"]]]
+        "filters": [["name", "in", ["Payment Reminder For Escompte Eligible Customers","validate_inner_qty_for_sales_order"]]]
       },	
       {
         "dt": "Property Setter", 

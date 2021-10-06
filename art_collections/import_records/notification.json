@@ -41,5 +41,48 @@
   "slack_webhook_url": null,
   "subject": "Payment Reminder",
   "value_changed": null
+ },
+ {
+  "attach_print": 0,
+  "channel": "Email",
+  "condition": null,
+  "date_changed": null,
+  "days_in_advance": 0,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Sales Order",
+  "enabled": 0,
+  "event": "Custom",
+  "is_standard": 0,
+  "message": "<h3>There is issue with selling ineer qty for {{ doc.name }}</h3>\n<h4>Details Below:</h4>\n",
+  "method": null,
+  "modified": "2021-10-06 14:07:18.655567",
+  "module": "Art Collections",
+  "name": "validate_inner_qty_for_sales_order",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "print_format": null,
+  "property_value": null,
+  "recipients": [
+   {
+    "bcc": null,
+    "cc": null,
+    "condition": null,
+    "parent": "validate_inner_qty_for_sales_order",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": null,
+    "receiver_by_role": "Purchase User"
+   }
+  ],
+  "send_system_notification": 1,
+  "send_to_all_assignees": 0,
+  "sender": null,
+  "sender_email": null,
+  "set_property_after_alert": null,
+  "slack_webhook_url": null,
+  "subject": "{{ doc.name }} sales order : verify inner selling packs qty",
+  "value_changed": null
  }
 ]

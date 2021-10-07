@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "creation": "2021-10-07 08:12:16.507090",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "customer_name",
+  "goal_amount",
+  "achieved_amount",
+  "cb_1",
+  "discount_percent",
+  "discount_amount",
+  "credit_journal_entry"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "goal_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Goal Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "achieved_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Achieved Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "discount_percent",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Discount Percent"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Discount Amount ",
+   "reqd": 1
+  },
+  {
+   "fieldname": "credit_journal_entry",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Credit Journal Entry",
+   "options": "Journal Entry"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2021-10-07 08:13:51.618623",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Customer Goal Achievement Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

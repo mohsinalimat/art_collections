@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2021-10-07 08:16:32.511073",
+ "description": "To process customer incentive based on the goal defined and achieved",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "fiscal_year",
+  "column_break_3",
+  "fetch_customer_incentive",
+  "customer_goal_achievement_detail_section",
+  "customer_goal_achievement_detail",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "ART-CIE-YY-.#",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fiscal_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fiscal Year",
+   "options": "Fiscal Year",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fetch_customer_incentive",
+   "fieldtype": "Button",
+   "label": "Fetch Customer Incentive"
+  },
+  {
+   "fieldname": "customer_goal_achievement_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Goal Achievement Detail"
+  },
+  {
+   "fieldname": "customer_goal_achievement_detail",
+   "fieldtype": "Table",
+   "options": "Customer Goal Achievement Detail"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Customer Incentive Entry Art",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2021-10-07 08:16:41.338520",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Customer Incentive Entry Art",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

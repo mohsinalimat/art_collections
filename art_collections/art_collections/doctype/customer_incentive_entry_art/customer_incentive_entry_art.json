@@ -10,6 +10,8 @@
   "naming_series",
   "fiscal_year",
   "column_break_3",
+  "company",
+  "posting_date",
   "fetch_customer_incentive",
   "customer_goal_achievement_detail_section",
   "customer_goal_achievement_detail",
@@ -28,6 +30,7 @@
    "fieldname": "fiscal_year",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Fiscal Year",
    "options": "Fiscal Year",
    "reqd": 1,
@@ -50,7 +53,8 @@
   {
    "fieldname": "customer_goal_achievement_detail",
    "fieldtype": "Table",
-   "options": "Customer Goal Achievement Detail"
+   "options": "Customer Goal Achievement Detail",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -60,12 +64,26 @@
    "options": "Customer Incentive Entry Art",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-10-07 08:16:41.338520",
+ "modified": "2021-10-07 08:39:12.706552",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Incentive Entry Art",

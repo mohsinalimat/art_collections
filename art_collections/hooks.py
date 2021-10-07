@@ -102,6 +102,9 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 # Hook on document methods and events
 
 doc_events = {
+	"Website Item":{
+		"on_change": "art_collections.website_item_controller.make_route_ascents_free"
+	},
 	"Item": { 
 		"validate": "art_collections.item_controller.item_custom_validation",
 		"autoname": "art_collections.item_controller.set_item_code_for_pre_item"

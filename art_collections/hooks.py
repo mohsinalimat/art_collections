@@ -39,7 +39,8 @@ doctype_js = {
 "Pricing Rule" : "public/js/pricing_rule.js",
 "POS Profile": "public/js/pos_profile.js",
 "Supplier Quotation": "public/js/supplier_quotation.js",
-"Pick List": "public/js/pick_list.js"
+"Pick List": "public/js/pick_list.js",
+"Sales Invoice" : "public/js/sales_invoice.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 

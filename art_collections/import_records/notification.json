@@ -13,7 +13,7 @@
   "is_standard": 0,
   "message": "Please pay your dues.\n{{doc.name}}",
   "method": null,
-  "modified": "2021-11-12 16:28:17.758789",
+  "modified": "2021-08-12 16:28:17.758789",
   "module": null,
   "name": "Payment Reminder For Escompte Eligible Customers",
   "parent": null,
@@ -56,7 +56,7 @@
   "is_standard": 0,
   "message": "<h3>There is issue with selling ineer qty for {{ doc.name }}</h3>\n<h4>Details Below:</h4>\n",
   "method": null,
-  "modified": "2021-11-06 14:07:20.655567",
+  "modified": "2021-10-11 09:08:42.694359",
   "module": "Art Collections",
   "name": "validate_inner_qty_for_sales_order",
   "parent": null,
@@ -74,6 +74,26 @@
     "parenttype": "Notification",
     "receiver_by_document_field": null,
     "receiver_by_role": "Purchase User"
+   },
+   {
+    "bcc": null,
+    "cc": null,
+    "condition": null,
+    "parent": "validate_inner_qty_for_sales_order",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": null,
+    "receiver_by_role": "Purchase Manager"
+   },
+   {
+    "bcc": null,
+    "cc": null,
+    "condition": null,
+    "parent": "validate_inner_qty_for_sales_order",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": null,
+    "receiver_by_role": "Purchase Master Manager"
    }
   ],
   "send_system_notification": 1,

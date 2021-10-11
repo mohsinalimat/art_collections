@@ -103,7 +103,8 @@ on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 doc_events = {
 	"Website Item":{
-		"on_change": "art_collections.website_item_controller.make_route_ascents_free"
+		"on_change": "art_collections.website_item_controller.make_route_ascents_free",
+		"after_insert": "art_collections.website_item_controller.make_route_ascents_free"
 	},
 	"Item": { 
 		"validate": "art_collections.item_controller.item_custom_validation",

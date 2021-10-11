@@ -56,7 +56,7 @@
   "is_standard": 0,
   "message": "<h3>There is issue with selling ineer qty for {{ doc.name }}</h3>\n<h4>Details Below:</h4>\n",
   "method": null,
-  "modified": "2021-10-06 14:07:18.655567",
+  "modified": "2021-11-06 14:07:18.655567",
   "module": "Art Collections",
   "name": "validate_inner_qty_for_sales_order",
   "parent": null,

@@ -16,6 +16,19 @@ frappe.ui.form.on('Customer', {
             frm.set_value('taux_escompte_art', 0)
         }
     },
+    validate: function (frm) {
+        let customer_target_art=frm.doc.customer_target_art
+        for (let index = 0; index < customer_target_art.length; index++) {
+            let discount_percent = customer_target_art[index].discount_percent;
+            if (discount_percent<=0) {
+                frappe.throw({
+                    title: __('Discount percentage should be > 0'),
+                    message:__('Discount percentage is {0} in Customer Target row {1}. Please correct it',[discount_percent,customer_target_art[index].idx])
+                });
+            }
+            
+        }
+    },
     refresh: function (frm) {
         if (cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)

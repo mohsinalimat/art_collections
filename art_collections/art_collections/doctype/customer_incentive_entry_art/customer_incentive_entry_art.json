@@ -41,9 +41,12 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval: (doc.fiscal_year && doc.company && doc.posting_date)",
+   "description": "on submit of document, journal entry will be created",
    "fieldname": "fetch_customer_incentive",
    "fieldtype": "Button",
-   "label": "Fetch Customer Incentive"
+   "label": "Fetch Customer Incentive",
+   "options": "fetch_customer_incentive"
   },
   {
    "fieldname": "customer_goal_achievement_detail_section",
@@ -83,7 +86,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-10-07 08:39:12.706552",
+ "modified": "2021-10-13 08:51:06.919461",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Incentive Entry Art",

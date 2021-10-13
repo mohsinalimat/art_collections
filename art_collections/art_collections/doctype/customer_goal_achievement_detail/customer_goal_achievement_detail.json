@@ -26,6 +26,7 @@
   },
   {
    "columns": 2,
+   "fetch_from": "customer.customer_name",
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -79,7 +80,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-10-07 08:23:15.808109",
+ "modified": "2021-10-13 06:45:12.048455",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Goal Achievement Detail",

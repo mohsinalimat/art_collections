@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2019-08-22 07:14:30.159310",
  "description": "Year-wise Customer Target ",
  "doctype": "DocType",
@@ -32,11 +33,14 @@
    "fieldname": "discount_percent",
    "fieldtype": "Percent",
    "in_list_view": 1,
-   "label": "Discount Percentage"
+   "label": "Discount Percentage",
+   "reqd": 1
   }
  ],
+ "index_web_pages_for_search": 1,
  "istable": 1,
- "modified": "2019-08-22 07:23:26.137827",
+ "links": [],
+ "modified": "2021-10-13 08:03:10.389388",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Target Art",

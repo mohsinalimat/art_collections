@@ -6,7 +6,8 @@ from art_collections.api import get_average_daily_outgoing_art,get_average_deliv
 
 def item_custom_validation(self,method):
 	sync_description_with_web_long_description(self)
-	update_flag_table(self)
+	# fix : shopping_cart
+	# update_flag_table(self)
 
 def sync_description_with_web_long_description(self):
 	self.web_long_description=self.description

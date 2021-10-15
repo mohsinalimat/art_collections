@@ -47,6 +47,8 @@ def get_item_art_dashboard_data(item_code):
 	total_in_stock=frappe.db.sql("""select COALESCE(sum(actual_qty),0) from tabBin where item_code = %s """,(item_code))[0][0]
 	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
 	if sold_qty_to_deliver!=None:
 		total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
 	else:
@@ -58,7 +60,9 @@ where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%
 
 	data=frappe.render_template("""<ul>
 	<li>Total in Stock : <b>{{ total_in_stock }}</b></li>
-	<li>Total Virtual Stock : <b>{{ total_virtual_stock }}</b></li>
+	<li>Qty Sold to Deliver : <b>{{ sold_qty_to_deliver | default('None')}}</b></li>
+	<li>Qty Sold Delivered : <b>{{ sold_qty_delivered | default('None')}}</b></li>
+	<li>Total Virtual Stock OR Qty available : <b>{{ total_virtual_stock }}</b></li>
 	<li>Avg. Qty sold per month : <b>{{ frappe.format(avg_qty_sold_per_month , {'fieldtype': 'Float'}) }}</b></li>
 	<li>Avg. Daily Outgoing : <b>{{ avg_daily_outgoing }}</b></li>
 	<li>Avg. Delivery Days : <b>{{ avg_delivery_days }}</b></li>	
@@ -66,6 +70,8 @@ where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%
 	</ul>
 """, dict(
 	total_in_stock = total_in_stock,
+	sold_qty_to_deliver=sold_qty_to_deliver,
+	sold_qty_delivered=sold_qty_delivered,
 	total_virtual_stock=total_virtual_stock,
 	avg_qty_sold_per_month=avg_qty_sold_per_month,
 	avg_daily_outgoing=avg_daily_outgoing,

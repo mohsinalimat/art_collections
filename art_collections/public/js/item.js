@@ -85,6 +85,15 @@ frappe.ui.form.on('Item', {
                      frm.set_intro(r.message,false)
                   }}}})
       }      
+      if (frm.doc.__islocal == undefined && frm.doc.is_stock_item){
+			frm.add_custom_button(__("Purchase History"), function() {
+				frappe.route_options = {
+					"item_code": frm.doc.name
+				}
+				frappe.set_route("query-report", "Item-wise Purchase History with-filter");
+			}, __("View"));         
+      }
+
    },
    set_average_values: function (frm) {
       frappe.call({

@@ -354,6 +354,8 @@ load_data: function (load_doc) {
 	})
 
 	this.print_template_data = frappe.render_template("print_template", {
+		lang:frappe.boot.lang,
+		layout_direction: frappe.utils.is_rtl() ? "rtl" : "ltr",
 		content: this.print_template,
 		title: "POS SO",
 		base_url: frappe.urllib.get_base_url(),
@@ -424,7 +426,7 @@ make_control: function() {
 	this.set_default_delivery_date();
 	this.make_delivery_date();
 	this.make_title();
-	this.make_cycle_status();
+	// this.make_cycle_status();
 
 
 },
@@ -927,8 +929,7 @@ make_customer: function () {
 			}
 		})
 		.on("awesomplete-selectcomplete", function (e) {
-			var item = me.party_field.awesomeplete
-				.get_item(e.originalEvent.text.value);
+			var item = me.party_field.awesomeplete.get_item(e.originalEvent.text.value);
 			// clear text input if item is action
 			if (item.action) {
 				$(this).val("");

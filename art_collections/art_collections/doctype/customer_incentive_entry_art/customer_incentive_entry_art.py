@@ -9,9 +9,21 @@ import erpnext
 
 class CustomerIncentiveEntryArt(Document):
 
+	def on_cancel(self):
+		for row in self.customer_goal_achievement_detail:
+			if row.credit_journal_entry:
+				credit_journal_entry=row.credit_journal_entry
+				frappe.db.set_value('Customer Goal Achievement Detail', row.name, 'credit_journal_entry',None)
+				doc = frappe.get_doc("Journal Entry", credit_journal_entry)
+				if doc.docstatus == 1:
+					doc.cancel()
+					frappe.msgprint(_("Journal Entry {0} is deleted.").format(credit_journal_entry), alert=True,indicator="red")
+
+
+
 	def on_submit(self):
 		for row in self.customer_goal_achievement_detail:
-			user_remark=_('Customer: {0}, Fiscal Year: {1}, Goal Amount: {2}, Achieved Amount: {3}, Incentive Entry Reference:{4}').format(row.customer,self.fiscal_year,row.goal_amount,row.achieved_amount,self.name)
+			user_remark=_('Customer: {0}, Fiscal Year: {1}, Total Achieved Amount: {3}, Discount %: {2}, Discount Amount: {5}, From Amount:{6}, To Amount:{7}, Incentive Entry Reference:{4}').format(row.customer_name,self.fiscal_year,row.discount_percent,row.achieved_amount,self.name, row.discount_amount,row.from_amount,row.to_amount)
 			jv_name=create_journal_entry(amount=row.discount_amount,company=self.company,customer=row.customer,posting_date=self.posting_date,user_remark=user_remark)
 			frappe.db.set_value('Customer Goal Achievement Detail', row.name, 'credit_journal_entry', jv_name)
 			# for UI
@@ -26,32 +38,34 @@ class CustomerIncentiveEntryArt(Document):
 
 	def calculate_customer_incentive_for_a_fiscal_year(self):
 			self.customer_goal_achievement_detail=[]
-			customers=frappe.db.get_list('Customer Target Art', filters={'fiscal_year': ['=', self.fiscal_year]},fields=['parent', 'goal_amount','discount_percent'],as_list=False)
+			customers=frappe.db.get_list('Customer Target Art', filters={'fiscal_year': ['=', self.fiscal_year]},fields=['parent','from_value','to_value','discount_percent'],as_list=False)
 			start_date, end_date = frappe.db.get_value('Fiscal Year', self.fiscal_year,['year_start_date', 'year_end_date'])
 			for customer in customers:
-				if customer.goal_amount>0:
-					customer_name=customer.parent
-					sales_invoices=frappe.db.get_list('Sales Invoice', 
-					filters={
-					'customer': ['=', customer_name],
-					'docstatus': ['=', 1],
-					'company':['=', self.company],
-					'posting_date':['between', [start_date,end_date]],
-					'outstanding_amount': ['=', 0],},fields=['name','base_net_total'],as_list=False)
-					total_achieved_amount=0
-					achieved_discount_amount=0
-					for sales_invoice in sales_invoices:
-						total_achieved_amount+=sales_invoice.base_net_total
-					achieved_discount_amount=(total_achieved_amount*customer.discount_percent)/100
+				customer_name=customer.parent
+				sales_invoices=frappe.db.get_list('Sales Invoice', 
+				filters={
+				'customer': ['=', customer_name],
+				'docstatus': ['=', 1],
+				'company':['=', self.company],
+				'posting_date':['between', [start_date,end_date]]
+				},fields=['name','base_net_total'],as_list=False)
+				total_achieved_amount=0
+				achieved_discount_amount=0
+				for sales_invoice in sales_invoices:
+					total_achieved_amount+=sales_invoice.base_net_total
+					
 
-					if total_achieved_amount>=customer.goal_amount:
-						self.append('customer_goal_achievement_detail',{
-						'customer':customer_name,
-						'customer_name':frappe.db.get_value('Customer', customer_name, 'customer_name'),
-						'goal_amount':customer.goal_amount,
-						'achieved_amount':total_achieved_amount,
-						'discount_percent':customer.discount_percent,
-						'discount_amount':achieved_discount_amount})
+				if total_achieved_amount>=customer.from_value and total_achieved_amount<=customer.to_value:
+					achieved_discount_amount=(total_achieved_amount*customer.discount_percent)/100
+					self.append('customer_goal_achievement_detail',{
+					'customer':customer_name,
+					'customer_name':frappe.db.get_value('Customer', customer_name, 'customer_name'),
+					'achieved_amount':total_achieved_amount,
+					'discount_amount':achieved_discount_amount,
+					'from_amount':customer.from_value,
+					'to_amount':customer.to_value,					
+					'discount_percent':customer.discount_percent
+					})							
 
 def create_journal_entry(amount,company,customer,posting_date,user_remark):
 	default_target_incentive_expense_account_art = frappe.db.get_value('Company', company, 'default_target_incentive_expense_account_art')

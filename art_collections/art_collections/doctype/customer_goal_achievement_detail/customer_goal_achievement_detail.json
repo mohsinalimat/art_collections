@@ -7,12 +7,13 @@
  "field_order": [
   "customer",
   "customer_name",
-  "goal_amount",
   "achieved_amount",
-  "cb_1",
   "discount_percent",
   "discount_amount",
-  "credit_journal_entry"
+  "credit_journal_entry",
+  "cb_1",
+  "from_amount",
+  "to_amount"
  ],
  "fields": [
   {
@@ -34,17 +35,11 @@
    "read_only": 1
   },
   {
-   "fieldname": "goal_amount",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Goal Amount",
-   "reqd": 1
-  },
-  {
    "fieldname": "cb_1",
    "fieldtype": "Column Break"
   },
   {
+   "columns": 2,
    "fieldname": "achieved_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -56,10 +51,11 @@
    "fieldname": "discount_percent",
    "fieldtype": "Percent",
    "in_list_view": 1,
-   "label": "Discount %"
+   "label": "Disc %",
+   "reqd": 1
   },
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -68,19 +64,32 @@
   },
   {
    "allow_on_submit": 1,
-   "columns": 1,
+   "columns": 2,
    "fieldname": "credit_journal_entry",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Credit Journal Entry",
    "options": "Journal Entry",
    "read_only": 1
+  },
+  {
+   "fieldname": "from_amount",
+   "fieldtype": "Currency",
+   "label": "From Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_amount",
+   "fieldtype": "Currency",
+   "label": "To Amount",
+   "read_only": 1,
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-10-13 06:45:12.048455",
+ "modified": "2021-10-21 08:35:15.071483",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Goal Achievement Detail",

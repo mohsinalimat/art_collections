@@ -18,16 +18,48 @@ frappe.ui.form.on('Customer', {
     },
     validate: function (frm) {
         let customer_target_art=frm.doc.customer_target_art
+
+        //  check (a) empty discount percentage (b) to value > from value
         for (let index = 0; index < customer_target_art.length; index++) {
             let discount_percent = customer_target_art[index].discount_percent;
+            let to_value = customer_target_art[index].to_value;
+            let from_value = customer_target_art[index].from_value;
             if (discount_percent<=0) {
                 frappe.throw({
                     title: __('Discount percentage should be > 0'),
                     message:__('Discount percentage is {0} in Customer Target row {1}. Please correct it',[discount_percent,customer_target_art[index].idx])
                 });
             }
-            
+            if (from_value>=to_value) {
+                frappe.throw({
+                    title: __('Incorrect "To" value '),
+                    message:__('To value {0} is incorrect for row {1}. It should be greater than From value. Please correct it',[to_value,customer_target_art[index].idx])
+                });
+            }            
+        }        
+
+        // check boundary condition
+        if (customer_target_art.length>1) {
+            for (let index = 0; index < customer_target_art.length; index++) {
+                let first_fiscal_year = customer_target_art[index].fiscal_year;
+                let first_to_value = customer_target_art[index].to_value;
+                let first_idx=customer_target_art[index].idx;
+                for (let index = 0; index < customer_target_art.length; index++) {
+                    let second_fiscal_year = customer_target_art[index].fiscal_year;
+                    let second_from_value = customer_target_art[index].from_value;
+                    let second_idx=customer_target_art[index].idx;
+                    if (first_idx!=second_idx && second_idx>first_idx && first_fiscal_year==second_fiscal_year && (first_to_value==second_from_value || first_to_value>second_from_value )) {
+                        frappe.throw({
+                            title: __('Boundary condition error'),
+                            message:__('Please correct from value {0} for row {1}',[second_from_value,second_idx])
+                        });
+                    }
+                }                
+                
+            }            
         }
+
+
     },
     refresh: function (frm) {
         if (cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {

@@ -86,13 +86,14 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-10-13 08:51:06.919461",
+ "modified": "2021-10-20 09:36:27.843684",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Incentive Entry Art",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,

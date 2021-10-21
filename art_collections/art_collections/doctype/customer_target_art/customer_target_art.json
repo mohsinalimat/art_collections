@@ -7,12 +7,13 @@
  "engine": "InnoDB",
  "field_order": [
   "fiscal_year",
-  "goal_amount",
+  "from_value",
+  "to_value",
   "discount_percent"
  ],
  "fields": [
   {
-   "columns": 3,
+   "columns": 2,
    "fieldname": "fiscal_year",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -21,26 +22,35 @@
    "reqd": 1
   },
   {
-   "columns": 4,
-   "fieldname": "goal_amount",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Goal Amount",
-   "reqd": 1
-  },
-  {
-   "columns": 3,
    "fieldname": "discount_percent",
    "fieldtype": "Percent",
    "in_list_view": 1,
    "label": "Discount Percentage",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "from_value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "to_value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "To",
    "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-10-13 08:03:10.389388",
+ "modified": "2021-10-20 06:15:34.007158",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Customer Target Art",

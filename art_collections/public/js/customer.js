@@ -30,7 +30,7 @@ frappe.ui.form.on('Customer', {
                     message:__('Discount percentage is {0} in Customer Target row {1}. Please correct it',[discount_percent,customer_target_art[index].idx])
                 });
             }
-            if (from_value>=to_value) {
+            if (from_value>=to_value && to_value!=0) {
                 frappe.throw({
                     title: __('Incorrect "To" value '),
                     message:__('To value {0} is incorrect for row {1}. It should be greater than From value. Please correct it',[to_value,customer_target_art[index].idx])

@@ -55,7 +55,7 @@ class CustomerIncentiveEntryArt(Document):
 					total_achieved_amount+=sales_invoice.base_net_total
 					
 
-				if total_achieved_amount>=customer.from_value and total_achieved_amount<=customer.to_value:
+				if total_achieved_amount>=customer.from_value and (total_achieved_amount<=customer.to_value or customer.to_value==0):
 					achieved_discount_amount=(total_achieved_amount*customer.discount_percent)/100
 					self.append('customer_goal_achievement_detail',{
 					'customer':customer_name,

@@ -1,13 +1,27 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import nowdate,add_days,flt
+from frappe.utils import nowdate,add_days,flt,cstr
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 
 def item_custom_validation(self,method):
-	sync_description_with_web_long_description(self)
+	set_custom_item_name(self)
 	# fix : shopping_cart
+	# sync_description_with_web_long_description(self)
 	# update_flag_table(self)
+
+def set_custom_item_name(self):
+	list_of_item_name_values= [self.qty_in_selling_pack_art,self.item_group,self.main_design_color_art,self.length_art,self.width_art,self.thickness_art]
+	custom_item_name = []
+	for d in list_of_item_name_values:
+		if d:
+			custom_item_name.append(cstr(d))
+	custom_item_name = " ".join(custom_item_name)	
+	if not self.item_name:
+		self.item_name=custom_item_name
+	elif self.item_name!=custom_item_name:
+		self.item_name=custom_item_name
+
 
 def sync_description_with_web_long_description(self):
 	self.web_long_description=self.description

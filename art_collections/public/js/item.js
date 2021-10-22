@@ -127,34 +127,5 @@ frappe.ui.form.on('Item', {
             }
          }
       });
-   },
-   populate_website_specifications_art: function (frm) {
-      let row1_desc,row2_desc,row3_desc=undefined
-
-      if (frm.doc.qty_in_selling_pack_art) {
-            row1_desc=frm.doc.qty_in_selling_pack_art+__(' qty per pack for this item in ')+ frm.doc.item_group + __(' group')
-      }
-      if (frm.doc.main_design_color_art) {
-            row2_desc=frm.doc.main_design_color_art+__(' is the main color')
-      }
-      if (frm.doc.length_art) {
-            row3_desc=(frm.doc.length_art || 0 )+ __('L x ') + (frm.doc.width_art || 0 )+ __('W x ') +(frm.doc.thickness_art || 0 ) +__('T')
-      }
-      if(row1_desc){
-         let row1=frm.add_child('website_specifications')
-         row1.label=__('Qty per pack')
-         row1.description=row1_desc
-      }
-      if(row2_desc){
-         let row2=frm.add_child('website_specifications')
-         row2.label=__('Main Color')
-         row2.description=row2_desc
-      }
-      if(row3_desc){
-         let row3=frm.add_child('website_specifications')
-         row3.label=__('Product Dimension')
-         row3.description=row3_desc
-      }    
-      frm.refresh_field('website_specifications')        
    }
 });

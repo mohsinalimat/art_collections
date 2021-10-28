@@ -1,0 +1,119 @@
+{
+ "add_total_row": 0,
+ "columns": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "width": 0
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "width": 0
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Group",
+   "options": "Item Group",
+   "width": 0
+  },
+  {
+   "fieldname": "total_in_stock",
+   "fieldtype": "Float",
+   "label": "Total Stock",
+   "width": 0
+  },
+  {
+   "fieldname": "sold_qty_to_deliver",
+   "fieldtype": "Float",
+   "label": "Qty Sold: to Deliver",
+   "width": 0
+  },
+  {
+   "fieldname": "sold_qty_delivered",
+   "fieldtype": "Float",
+   "label": "Qty Sold: Delivered",
+   "width": 0
+  },
+  {
+   "fieldname": "total_virtual_stock",
+   "fieldtype": "Float",
+   "label": "Qty available",
+   "width": 0
+  },
+  {
+   "fieldname": "avg_qty_sold_per_month",
+   "fieldtype": "Float",
+   "label": "Avg. Qty sold per month",
+   "width": 0
+  },
+  {
+   "fieldname": "avg_daily_outgoing",
+   "fieldtype": "Float",
+   "label": "Avg. Daily Outgoing",
+   "width": 0
+  },
+  {
+   "fieldname": "avg_delivery_days",
+   "fieldtype": "Float",
+   "label": "Avg. Delivery Days",
+   "width": 0
+  },
+  {
+   "fieldname": "day_remaining_with_the_stock",
+   "fieldtype": "Float",
+   "label": "Days remaining with Stock",
+   "width": 0
+  }
+ ],
+ "creation": "2021-10-28 12:26:41.197722",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2021-10-28 12:31:18.226619",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Artyfetes Item Quick Info",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Item",
+ "report_name": "Artyfetes Item Quick Info",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Item Manager"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Purchase User"
+  },
+  {
+   "role": "Maintenance User"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "All"
+  }
+ ]
+}

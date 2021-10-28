@@ -53,19 +53,19 @@ class CustomerIncentiveEntryArt(Document):
 				achieved_discount_amount=0
 				for sales_invoice in sales_invoices:
 					total_achieved_amount+=sales_invoice.base_net_total
-					
 
-				if total_achieved_amount>=customer.from_value and (total_achieved_amount<=customer.to_value or customer.to_value==0) and total_achieved_amount>0 and achieved_discount_amount>0 :
+				if total_achieved_amount>0:	
 					achieved_discount_amount=(total_achieved_amount*customer.discount_percent)/100
-					self.append('customer_goal_achievement_detail',{
-					'customer':customer_name,
-					'customer_name':frappe.db.get_value('Customer', customer_name, 'customer_name'),
-					'achieved_amount':total_achieved_amount,
-					'discount_amount':achieved_discount_amount,
-					'from_amount':customer.from_value,
-					'to_amount':customer.to_value,					
-					'discount_percent':customer.discount_percent
-					})							
+					if total_achieved_amount>=customer.from_value and (total_achieved_amount<=customer.to_value or customer.to_value==0) and  achieved_discount_amount>0 :
+						self.append('customer_goal_achievement_detail',{
+						'customer':customer_name,
+						'customer_name':frappe.db.get_value('Customer', customer_name, 'customer_name'),
+						'achieved_amount':total_achieved_amount,
+						'discount_amount':achieved_discount_amount,
+						'from_amount':customer.from_value,
+						'to_amount':customer.to_value,					
+						'discount_percent':customer.discount_percent
+						})							
 
 def create_journal_entry(amount,company,customer,posting_date,user_remark):
 	default_target_incentive_expense_account_art = frappe.db.get_value('Company', company, 'default_target_incentive_expense_account_art')

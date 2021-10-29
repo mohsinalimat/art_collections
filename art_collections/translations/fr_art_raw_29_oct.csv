@@ -1,0 +1,409 @@
+  Get by 
+#<b>{3}</b> : Item {0} : max allowed no. of selling packs in inner is <b>{1}</b>. It is <b>{2}</b>
+ART-CIE-YY-.#
+About
+Account
+Accounts Manager
+Accounts User
+Achieved Amount
+Action
+Add Child
+Add notes
+Add to Cart
+Address Line 1
+Address Line 2
+Address Name
+Address Title
+Address Title is mandatory.
+Alert
+All
+All Item Groups
+All Products
+All Territories
+Allow Less
+Alt Image
+Amended From
+Amount
+An item exists with same name ({0}), please change the node name or rename the item
+Are you sure you want to save this document?
+Are you sure?
+Art Collections
+Art Collections Settings
+Art Work Attachment
+Art Work Name
+Artyfetes Event
+At least one order has to be selected.
+Attachments
+Back
+Background Jobs
+Based On
+Batch No
+Bon De Commande
+Bon De Commande Order
+Bon de Commande
+Boundary condition error
+Buy
+Cancelled
+Cannot select charge type as 'On Previous Row Amount' or 'On Previous Row Total' for first row
+Cart
+Catalogue
+Catalogue Directory Art
+Catalogue Directory Art Tree
+Catalogue Type
+Catalogues
+Check Error Log
+City
+Company
+Confirm
+Confirm it
+Confirmed Order
+Consider Accounting Dimensions
+Contact Number
+Conversion failed for Pre Item. New id not found.
+Convert Pre to Normal Item
+Cost Center
+Country
+County
+Create Catalogue.
+Create New
+Create a new Customer
+Creating {0}
+Credit Journal Entry
+Credit Note Reason
+Credit Note Reason used in Sales Invoice
+Currency
+Customer
+Customer <u>{0}</u> has no payment terms or credit limit defined.
+Customer Goal Achievement Detail
+Customer Incentive Entry Art
+Customer Item Directive
+Customer Item Specific Directive
+Customer Name
+Customer POS Id
+Customer Sales Person
+Customer Target Art
+Customer: {0}, Fiscal Year: {1}, Total Achieved Amount: {3}, Discount %: {2}, Discount Amount: {5}, From Amount:{6}, To Amount:{7}, Incentive Entry Reference:{4}
+Customers in Queue
+Cycle Status
+Default warehouse is required for selected item
+Del
+Delete permanently?
+Delivered
+Delivery Date
+Description
+Design Color
+Design Color MS
+Design Image
+Detail
+Disc
+Disc %
+Discount
+Discount Amount 
+Discount Percentage
+Discount amount cannot be greater than 100%
+Discount percentage is {0} in Customer Target row {1}. Please correct it
+Discount percentage should be > 0
+Documentation
+Documents
+Download Failed Files
+Download Photo
+Draft
+Duplicate record
+Email
+Email Id
+Enter value must be positive
+Event Name
+Ex 2019
+Ex. 2019
+Existing Product Art Work
+Failed Files #
+Failed Folder is Empty, Nothing to Download.
+Festif
+Fetch Customer Incentive
+File Photo Upload Failure
+Finance Book
+Fiscal Year
+Flag
+Flag  Icon
+Flag Icon Art
+Flag Name
+Folder Status
+From
+From Amount
+From County
+From Date
+From Weigth
+Front
+Full Name
+Grand Total
+Group by
+Group by Account
+Group by Party
+Group by Voucher
+Group by Voucher (Consolidated)
+Groups
+Home
+In stock
+Include Default Book Entries
+Incorrect "To" value 
+Inner Pack Multiply Limit
+Is A Group
+Is Group
+Issue Category
+Issue Item Art
+Issue Type Category Art
+Item
+Item Cart
+Item Code
+Item Components Art
+Item Event Art
+Item Flag Icon Art
+Item Manager
+Item Name
+Item Page # {0} is not between {1} - {2}
+Item Universe Page Art
+Item's in Universe
+Journal Entry {0} is deleted.
+Keyboard Shortcuts
+L x 
+Last Run On:
+Left
+LocalStorage is full , did not save
+LocalStorage is full, did not save
+Logout
+Main
+Main Color
+Make Sales Invoice
+Manage Wish List Name
+Manufacture
+Master data syncing, it might take some time
+Matiere
+Max qty allowed is
+Maximum {0} qty allowed for {1} in sales order.
+Message
+Missing payment terms and credit limit
+Missing universe page number
+More details
+Move
+My Profile
+My Settings
+Net Total
+New
+New Cart
+New Sales Order
+New Wish List Name
+New {0}
+Next
+No Customers yet!
+No Items in wishlist.
+No Photos
+No description given
+No files for download in this sales invoice
+No items listed
+No matching invoice found for above crieteria
+Node Name
+Node Type
+Not Permitted
+Not a zip file
+Not in stock
+Not items found
+Notes
+Noël
+Offline
+Old Parent
+Online
+Only {0} in stock for item {1}
+Order amount must be mimimum 
+POS Profile
+POS Profile is required to use Point-of-Sale
+POS for Offline Sales Order
+POS for Sales Order
+Page #
+Page Number
+Parent Catalogue Directory Art
+Party
+Party Name
+Party Type
+Pay
+Payment Mode is not configured. Please check, whether account has been set on Mode of Payments or on POS Profile.
+Pending Files #
+Percentage
+Permanant
+Photo Status Report
+Photo Upload Help
+Photo Upload Status
+Photo Upload Utility
+Picker Role
+Place Bon De Commande Order
+Place Order
+Please add sales person againt address in 'Customer Sales Person' table
+Please correct from value {0} for row {1}
+Please enable pop-ups
+Please enter Delivery Date
+Please select Apply Discount On
+Please select customer
+Please set Universe start and end page number
+Port
+Port Art
+Port Of Loading
+Posting Date
+Pre Item rename failed.
+Prev
+Price
+Price List Rate
+Price List not found or disabled
+Pricing
+Print
+Process Log
+Process flow for Photo upload utility
+Processed Files #
+Product Dimension
+Product List Art
+Project
+Purchase History
+Purchase Manager
+Purchase Master Manager
+Purchase User
+Qty Total
+Qty per pack
+Quantity
+Rate
+Rate:
+Reference
+Reload
+Remarks
+Report an Issue
+Request for Quotation
+Right
+Root
+Sales
+Sales Manager
+Sales Master Manager
+Sales Order
+Sales Person
+Sales User
+Sales orders can not be deleted
+Sanitize Folder
+Save
+Save Anyway
+Search Item
+See past orders
+See past quotations
+Select All
+Select Batch No
+Select a group node first.
+Select items to save the invoice
+Select or add new customer
+Sell
+Send
+Serial no item cannot be a fraction
+Series
+Session Defaults
+Set
+Shipping Rate Rules Art
+Shipping Rate Rules Detail Art
+Shipping Rule Rates Information to choose the best transporter in Delivery Note
+Shopping Cart
+Show Cancelled Entries
+Show In Website
+Show Net Values in Party Account
+Show Opening Entries
+Situation
+Slideshow
+Something went wrong!
+Start Photo Processing...
+State
+Status
+Stock
+Stock Items
+Stock Ledger
+Stock Manager
+Subject
+Submit
+Submitted
+Subtotal
+Successful Files #
+Supplier
+Supplier Item Directive
+Supplier Item Specific Directive
+Supplier Name
+Supplier Skills Art
+Support
+Support Team
+Sync Master Data
+Sync Offline Orders
+System Error
+System Manager
+T
+Tap items to add them here
+Tax Id
+Taxes
+Terms and Conditions
+Territory
+There are 2 options to upload image files, depending upon the option execute the first 2 steps, rest of the steps are common.
+This is a root item group and cannot be edited.
+This is based on stock movement. See {0} for details
+Title
+To
+To Amount
+To County
+To Date
+To Deliver and Bill
+To Weigth
+To link multiple Items with the Issue Doctype
+To process customer incentive based on the goal defined and achieved
+To value {0} is incorrect for row {1}. It should be greater than From value. Please correct it
+Toggle Full Width
+Toggle Theme
+Tools
+Total Files #
+Total Photo
+Traceability
+Trade Name
+Traite
+Transporter
+Universe
+Universe Page End
+Universe Page End #
+Universe Page Start
+Universe Page Start #
+Unusually higher qty for no. of selling pack in inner
+Unzipped {0} files
+Unzipping files...
+Upload Zip
+User Forum
+Utility to Upload Photo to Item and Website slide show.
+Valid From 
+Valid Till
+Valid To
+Variant of
+View
+View Website
+View in Cart
+Virtual
+Voucher No
+W x 
+Website Image
+Website Name
+Weightage
+Wish List
+Wish List Name
+Year
+Year-wise Customer Target 
+You are in offline mode. You will not be able to reload until you have network.
+You have not double checked the order.
+You should recheck
+Your Process is queued
+Your cart is Empty
+ZIP Code
+ZIP Failed File Name
+ZIP File Status
+Zip Code
+Zip File Download Failure Encountered.
+in_stock
+item_code
+on submit of document, journal entry will be created
+route
+title
+to proceed.
+{0} is mandatory. Maybe Currency Exchange record is not created for {1} to {2}

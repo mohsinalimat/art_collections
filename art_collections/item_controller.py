@@ -5,12 +5,13 @@ from frappe.utils import nowdate,add_days,flt,cstr
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 
 def item_custom_validation(self,method):
-	set_custom_item_name(self)
+	pass
+	# set_custom_item_name(self)
 	# fix : shopping_cart
 	# sync_description_with_web_long_description(self)
 	# update_flag_table(self)
 
-def set_custom_item_name(self):
+def set_custom_item_name(self,method):
 	list_of_item_name_values= [self.qty_in_selling_pack_art,self.item_group,self.main_design_color_art,self.length_art,self.width_art,self.thickness_art]
 	custom_item_name = []
 	for d in list_of_item_name_values:

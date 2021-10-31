@@ -6,6 +6,49 @@ frappe.ui.form.on('Item', {
          frm.doc.nb_inner_in_outer_art=flt(0.0)
       }
       frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
+
+      if (frm.doc.item_name && frm.is_new() == undefined) {
+         let custom_item_name = []
+         if (frm.doc.qty_in_selling_pack_art) {
+            custom_item_name.push(frm.doc.qty_in_selling_pack_art)
+         }
+         if (frm.doc.item_group) {
+            custom_item_name.push(frm.doc.item_group)
+         }
+         if (frm.doc.main_design_color_art) {
+            custom_item_name.push(frm.doc.main_design_color_art)
+         }
+         if (frm.doc.length_art) {
+            custom_item_name.push(frm.doc.length_art)
+         }
+         if (frm.doc.width_art) {
+            custom_item_name.push(frm.doc.width_art)
+         }
+         if (frm.doc.thickness_art) {
+            custom_item_name.push(frm.doc.thickness_art)
+         }
+         custom_item_name = custom_item_name.join(" ")
+         if (frm.doc.item_name != custom_item_name) {
+            return new Promise((resolve) => {
+               return frappe.confirm(
+                  __(
+                     "Are you sure you want change item name? <br>Existing : <b>{0}</b> <br>New      : <b>{1}</b>",
+                     [frm.doc.item_name,custom_item_name]
+                  ),
+                  () => {
+                     // ok
+                     frm.doc.item_name = custom_item_name
+                     resolve("ok");
+                  },
+                  () => {
+                     // not ok
+                     resolve("not ok");
+                  }
+               );
+            });
+         }
+      }
+
    },
    onload: function (frm) {
       if (frm.doc.item_code && frm.doc.is_pre_item_art == 0) {
@@ -138,5 +181,30 @@ frappe.ui.form.on('Item', {
             }
          }
       });
+   },
+   new_item_name: function (frm) {
+   
+      let custom_item_name=[]
+      if (frm.doc.qty_in_selling_pack_art) {
+         custom_item_name.push(frm.doc.qty_in_selling_pack_art)
+      }
+      if (frm.doc.item_group) {
+         custom_item_name.push(frm.doc.item_group)
+      }
+      if (frm.doc.main_design_color_art) {
+         custom_item_name.push(frm.doc.main_design_color_art)
+      }
+      if (frm.doc.length_art) {
+         custom_item_name.push(frm.doc.length_art)
+      }
+      if (frm.doc.width_art) {
+         custom_item_name.push(frm.doc.width_art)
+      }         
+      if (frm.doc.thickness_art) {
+         custom_item_name.push(frm.doc.thickness_art)
+      }  
+      custom_item_name=custom_item_name.join(" ")
+      return custom_item_name
    }
 });
+

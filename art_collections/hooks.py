@@ -110,6 +110,7 @@ doc_events = {
 	},
 	"Item": { 
 		"validate": "art_collections.item_controller.item_custom_validation",
+		"before_insert":"art_collections.item_controller.set_custom_item_name",
 		"autoname": "art_collections.item_controller.set_item_code_for_pre_item"
 		},
 	"Pricing Rule": { "on_update": "art_collections.api.update_flag_table_from_pricing_rule"},

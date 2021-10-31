@@ -95,6 +95,17 @@ frappe.ui.form.on('Item', {
       }
 
    },
+   is_existing_product_cf: function (frm) {
+      if (frm.doc.is_existing_product_cf==1) {
+         let row1 = frm.add_child('existing_product_art_work_cf')
+         row1.art_work_name = __('Inner')
+         let row2 = frm.add_child('existing_product_art_work_cf')
+         row2.art_work_name = __('Outer')
+         let row3 = frm.add_child('existing_product_art_work_cf')
+         row3.art_work_name = __('Selling Pack')
+         frm.refresh_field('existing_product_art_work_cf')         
+      }
+   },
    set_average_values: function (frm) {
       frappe.call({
          method: "art_collections.api.get_average_values_for_item",

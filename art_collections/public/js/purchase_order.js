@@ -22,7 +22,7 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 	refresh: function(frm){
-		frm.page.add_menu_item(__("Make Product Excel"), function () {
+		frm.page.add_menu_item(__("Product Excel"), function () {
 			frappe.call({
 				method:'art_collections.excel_controller.make_excel',
 				args:{

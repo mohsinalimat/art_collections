@@ -1093,7 +1093,7 @@
    "columns": 0,
    "creation": "2021-08-20 06:10:40.535983",
    "default": "0",
-   "depends_on": "eval:doc.address_type =='Shipping'",
+   "depends_on": "eval:(doc.address_type =='Shipping' || doc.address_type =='Billing + Shipping')",
    "description": null,
    "docstatus": 0,
    "dt": "Address",

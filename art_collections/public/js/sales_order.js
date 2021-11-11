@@ -35,19 +35,23 @@ frappe.ui.form.on('Sales Order', {
 	refresh: function (frm) {
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
-		frm.page.add_menu_item(__("Product Excel"), function () {
-			frappe.call({
-				method:'art_collections.excel_controller.make_excel',
-				args:{
-					docname: frm.doc.name,
-					doctype: frm.doc.doctype
+		frm.add_custom_button(
+			__("Product Excel"),
+			function () {
+			  frappe.call({
+				method: "art_collections.excel_controller.make_excel",
+				args: {
+				  docname: frm.doc.name,
+				  doctype: frm.doc.doctype,
 				},
-				callback:function(){
-					frm.reload_doc()
-				}
-			})
-			
-		});
+				callback: function () {
+				  frm.reload_doc();
+				},
+			  });
+			},
+			__("Create")
+		  );
+		
 
 		
 	},

@@ -117,14 +117,16 @@ doc_events = {
 	"Issue Type":{ "autoname": "art_collections.api.autoname_issue_type"},
 	"Purchase Receipt": { "on_submit": "art_collections.api.stock_availability_notification"},
 	"Sales Order":{
-		"on_submit":"art_collections.api.sales_order_from_shopping_cart" ,
+		"on_submit":[ "art_collections.api.sales_order_from_shopping_cart" , 
+               "art_collections.excel_controller.on_submit_sales_order"],
 		"validate": "art_collections.sales_order_controller.sales_order_custom_validation",
 		},
 	"Purchase Order":{
 		"on_submit":[
 			"art_collections.api.purchase_order_convert_preorder_item" ,
 			"art_collections.api.purchase_order_update_delivery_date_of_item" ,
-			"art_collections.api.purchase_order_update_schedule_date_of_item"
+			"art_collections.api.purchase_order_update_schedule_date_of_item",
+			"art_collections.excel_controller.on_submit_purchase_order"
 			],
 		"on_update_after_submit":[
 			"art_collections.api.purchase_order_update_delivery_date_of_item",

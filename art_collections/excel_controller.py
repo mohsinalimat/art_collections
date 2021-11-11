@@ -31,6 +31,14 @@ COL_MAP = {
 }
 
 
+def on_submit_purchase_order(doc, method=None):
+    make_excel(doc.name, doc.doctype)
+
+
+def on_submit_sales_order(doc, method=None):
+    make_excel(doc.name, doc.doctype)
+
+
 @frappe.whitelist()
 def make_excel(docname=None, doctype=None):
     data = frappe.db.sql(

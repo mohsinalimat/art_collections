@@ -22,20 +22,23 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 	refresh: function(frm){
-		frm.page.add_menu_item(__("Product Excel"), function () {
-			frappe.call({
-				method:'art_collections.excel_controller.make_excel',
-				args:{
-					docname: frm.doc.name,
-					doctype: frm.doc.doctype
+		frm.add_custom_button(
+			__("Product Excel"),
+			function () {
+			  frappe.call({
+				method: "art_collections.excel_controller.make_excel",
+				args: {
+				  docname: frm.doc.name,
+				  doctype: frm.doc.doctype,
 				},
-				callback:function(){
-					frm.reload_doc()
-				}
-			})
-			
-		});
-
+				callback: function () {
+				  frm.reload_doc();
+				},
+			  });
+			},
+			__("Create")
+		  );
+		
 	}
 
 });

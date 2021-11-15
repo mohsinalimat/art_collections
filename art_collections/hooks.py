@@ -148,23 +148,23 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"art_collections.tasks.all"
-# 	],
-# 	"daily": [
-# 		"art_collections.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"art_collections.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"art_collections.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"art_collections.tasks.monthly"
-# 	]
-# }
+scheduler_events = {
+	# "all": [
+	# 	"art_collections.tasks.all"
+	# ],
+	"daily": [
+		"art_collections.scheduler_task_controller.daily"
+	]
+	# "hourly": [
+	# 	"art_collections.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"art_collections.tasks.weekly"
+	# ]
+	# "monthly": [
+	# 	"art_collections.tasks.monthly"
+	# ]
+}
 
 # Testing
 # -------

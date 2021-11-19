@@ -1,4 +1,20 @@
 frappe.ui.form.on('Sales Order', {
+	shipping_address_name: function (frm) {
+		frappe.db.get_value('Address', frm.doc.shipping_address_name, ['delivery_by_appointment_art', 'delivery_contact_art','delivery_appointment_contact_detail_art'])
+    .then(r => {
+        let values = r.message;
+				if (values) {
+					let delivery_by_appointment_art=values.delivery_by_appointment_art
+					let delivery_contact_art=values.delivery_contact_art
+					let delivery_appointment_contact_detail_art=values.delivery_appointment_contact_detail_art
+					frm.set_value({
+						delivery_by_appointment_art: delivery_by_appointment_art,
+						delivery_contact_art: delivery_contact_art,
+						delivery_appointment_contact_detail_art:delivery_appointment_contact_detail_art
+				})					
+				}
+    })		
+	},
 	customer: function (frm) {
 		if (frm.doc.customer) {
 			const default_company = frappe.defaults.get_default('company');

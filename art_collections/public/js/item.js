@@ -28,7 +28,7 @@ frappe.ui.form.on('Item', {
             custom_item_name.push(frm.doc.thickness_art)
          }
          custom_item_name = custom_item_name.join(" ")
-         if (frm.doc.item_name != custom_item_name) {
+         if (frm.doc.previous_suggested_item_name_art != custom_item_name && frm.doc.item_name!=custom_item_name) {
             return new Promise((resolve) => {
                return frappe.confirm(
                   __(
@@ -42,6 +42,7 @@ frappe.ui.form.on('Item', {
                   },
                   () => {
                      // not ok
+                     frm.doc.previous_suggested_item_name_art=custom_item_name
                      resolve("not ok");
                   }
                );

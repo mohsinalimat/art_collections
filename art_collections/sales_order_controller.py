@@ -12,16 +12,23 @@ def sales_order_custom_validation(self, method):
 
 
 def validate_inner_qty_and_send_notification(self):
-	inner_pack_multiply_limit=frappe.db.get_single_value('Art Collections Settings', 'inner_pack_multiply_limit')
 	msg=''
+
 	for item in self.get("items"):
+		raise_warning=False
 		nb_selling_packs_in_inner_art=frappe.db.get_value('Item', item.item_code, 'nb_selling_packs_in_inner_art')
-		if nb_selling_packs_in_inner_art:
-			allowed_selling_packs_in_inner=flt(inner_pack_multiply_limit * nb_selling_packs_in_inner_art)
-			so_qty_for_selling_packs_in_inner = flt(item.qty * nb_selling_packs_in_inner_art)
-			if so_qty_for_selling_packs_in_inner > allowed_selling_packs_in_inner:
-				msg+="Row# : <b>{0}</b> : Item {1} : max allowed no. of selling packs in inner is <b>{2}</b>. It is <b>{3}</b>".format(item.idx,item.item_name,allowed_selling_packs_in_inner,so_qty_for_selling_packs_in_inner)
+		if nb_selling_packs_in_inner_art and nb_selling_packs_in_inner_art >0 :
+			if item.qty >= nb_selling_packs_in_inner_art:
+				allowed_selling_packs_in_inner= item.qty % nb_selling_packs_in_inner_art
+				if allowed_selling_packs_in_inner!=0:
+					raise_warning=True
+			else:
+					raise_warning=True	
+			if raise_warning==True:
+				msg+="Row# : <b>{0}</b> : Item {1} : qty should be in multiples of <b>{2}</b> (inner selling packs). It is <b>{3}</b>".format(item.idx,item.item_name,nb_selling_packs_in_inner_art,item.qty)
 	if msg!='':
+		print('-'*100)
+		print(msg)
 		send_email_via_custom_notification('validate_inner_qty_for_sales_order',self.name,msg)
 
 

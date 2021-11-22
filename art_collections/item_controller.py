@@ -18,6 +18,7 @@ def set_custom_item_name(self,method):
 		if d:
 			custom_item_name.append(cstr(d))
 	custom_item_name = " ".join(custom_item_name)	
+	self.previous_suggested_item_name_art=custom_item_name
 	if not self.item_name:
 		self.item_name=custom_item_name
 	elif self.item_name!=custom_item_name:

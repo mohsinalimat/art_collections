@@ -8,7 +8,8 @@ frappe.pages['pos-so'].on_page_load = function(wrapper) {
 		single_column: true
 	});
 
-frappe.db.get_value('POS Settings', {name: 'POS Settings'}, 'is_online', (r) => {
+frappe.db.get_value('Art Collections Settings', {name: 'Art Collections Settings'}, 'is_online', (r) => {
+	console.log('r',r)
 	if (r && r.use_pos_in_offline_mode && cint(r.use_pos_in_offline_mode)) {
 		// offline
 		wrapper.pos = new erpnext.pos.PointOfSale(wrapper);
@@ -74,13 +75,18 @@ set_indicator: function () {
 	var me = this;
 	// navigator.onLine
 	this.connection_status = false;
-	this.page.set_indicator(__("Offline"), "grey")
+	frappe.flags.is_online = false
+	$('.greycube').remove()
+	$('.pos-bill-toolbar').append('<span class="greycube indicator red">Offline</span>')
+	// this.page.set_indicator(__("Offline"), "red")
 	frappe.call({
 		method: "frappe.handler.ping",
 		callback: function (r) {
 			if (r.message) {
 				me.connection_status = true;
-				me.page.set_indicator(__("Online"), "green")
+				// me.page.set_indicator(__("Online"), "green")
+				$('.greycube').remove()
+				$('.pos-bill-toolbar').append('<span class="greycube indicator green">Online</span>')
 				frappe.flags.is_online = true
 				//online
 			}
@@ -101,26 +107,48 @@ make_menu_list: function () {
 	var me = this;
 	this.page.clear_menu();
 
-	// for mobile
-	this.page.add_menu_item(__("New Sales Order"), function () {
-		me.save_previous_entry();
-		me.create_new();
-	})
-
-	this.page.add_menu_item(__("Sync Master Data"), function () {
+	this.page.add_menu_item(__("Go Offline : Get Master Data"), function () {
+		me.set_indicator();
+		var condition = navigator.onLine ? "online" : "offline";
+		if (condition=='offline') {
+			frappe.throw(__("You need to be online to do this."))
+		}		
 		me.get_data_from_server(function () {
-			me.load_data(false);
-			me.make_item_list();
+			me.make_control();
+			me.create_new();
+			me.make();
 			me.set_missing_values();
-		})
-	});
+		});
+	});	
 
-	this.page.add_menu_item(__("Sync Offline Orders"), function () {
+
+	// this.page.add_menu_item(__("Sync Master Data"), function () {
+	// 	me.get_data_from_server(function () {
+	// 		me.load_data(false);
+	// 		me.make_item_list();
+	// 		me.set_missing_values();
+	// 	})
+	// });
+
+	this.page.add_menu_item(__("Go Online: Sync Offline Orders"), function () {
+		me.set_indicator();
+		var condition = navigator.onLine ? "online" : "offline";
+		if (condition=='offline') {
+			frappe.throw(__("You need to be online to do this."))
+		}		
 		me.freeze_screen = true;
 		me.sync_sales_invoice()
 	});
 
-	this.page.add_menu_item(__("POS Profile"), function () {
+	// for mobile
+	this.page.add_menu_item(__("Offline : New Sales Order"), function () {
+		me.save_previous_entry();
+		me.create_new();
+	})
+
+
+
+	this.page.add_menu_item(__("Online : POS Profile"), function () {
 		frappe.set_route('List', 'POS Profile');
 	});
 },
@@ -281,7 +309,7 @@ get_data_from_server: function (callback) {
 		callback: function (r) {
 			localStorage.setItem('so_doc', JSON.stringify(r.message.doc));
 			me.init_master_data(r)
-			me.set_interval_for_si_sync();
+			// me.set_interval_for_si_sync();
 			me.check_internet_connection();
 			if (callback) {
 				callback();

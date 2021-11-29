@@ -1,0 +1,5 @@
+{
+	"css/list.min.css": [
+		"public/less/list.less"
+	]	
+}

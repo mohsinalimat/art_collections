@@ -179,7 +179,7 @@ def get_items_list(pos_profile, company):
 			i.name, i.item_code, i.item_name, i.description, i.item_group, i.has_batch_no,
 			i.has_serial_no, i.is_stock_item, i.brand, i.stock_uom, i.image,
 			id.expense_account, id.selling_cost_center, id.default_warehouse,
-			i.sales_uom, c.conversion_factor,i.availability_date_art
+			i.sales_uom, c.conversion_factor,i.availability_date_art,i.nb_selling_packs_in_inner_art
 		from
 			`tabItem` i
 		left join `tabItem Default` id on id.parent = i.name and id.company = %s

@@ -454,7 +454,7 @@ make_control: function() {
 	this.set_default_delivery_date();
 	this.make_delivery_date();
 	this.make_title();
-	// this.make_cycle_status();
+	this.make_cycle_status();
 
 
 },
@@ -1561,7 +1561,7 @@ add_to_cart: function () {
 	var no_of_items = me.wrapper.find(".pos-bill-item").length;
 
 	this.customer_validate();
-	this.mandatory_batch_no();
+	// this.mandatory_batch_no();
 	this.validate_serial_no();
 	this.validate_warehouse();
 
@@ -1633,6 +1633,7 @@ add_new_item_to_grid: function () {
 	this.child.serial_no = (this.item_serial_no[this.child.item_code]
 		? this.item_serial_no[this.child.item_code][0] : '');
 	this.child.item_tax_rate = JSON.stringify(this.tax_data[this.child.item_code]);
+	this.child.nb_selling_packs_in_inner_art=this.items[0].nb_selling_packs_in_inner_art;
 },
 
 update_paid_amount_status: function (update_paid_amount) {

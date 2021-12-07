@@ -16,7 +16,7 @@ frappe.ui.form.on('Sales Order', {
     })		
 	},
 	customer: function (frm) {
-		if (frm.doc.customer) {
+		if (frm.doc.customer && frm.doc.is_offline_art==0) {
 			const default_company = frappe.defaults.get_default('company');
 			let found_credit_limit=false
 			let found_payment_terms=false
@@ -106,7 +106,6 @@ frappe.ui.form.on('Sales Order', {
 						frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
 							message
 						}) => {
-							debugger
 							let raise_warning=false
 							let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
 							if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art>0) {

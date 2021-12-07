@@ -96,6 +96,7 @@ frappe.ui.form.on('Sales Order', {
 
 		});
     },
+
 		create_warning_dialog_for_inner_qty_check: function (frm) {
 			let promises = [];
 			let warning_html_messages = []
@@ -106,6 +107,7 @@ frappe.ui.form.on('Sales Order', {
 						frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
 							message
 						}) => {
+							console.log(message);
 							let raise_warning=false
 							let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
 							if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art>0) {
@@ -129,6 +131,10 @@ frappe.ui.form.on('Sales Order', {
 									// resolve on no warning
 									resolve();
 								}					
+							}
+							else{
+								// when nb_selling_packs_in_inner_art ==0 
+								resolve();
 							}
 						});
 					});

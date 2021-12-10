@@ -1,4 +1,25 @@
 frappe.ui.form.on('Sales Order', {
+	onload_post_render: function (frm) {
+		frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_type')
+			.then(saleable_warehouse_type => {
+				if (saleable_warehouse_type) {
+					frm.set_query('set_warehouse', () => {
+						return {
+							filters: {
+								warehouse_type: ['=', saleable_warehouse_type]
+							}
+						}
+					})
+					frm.set_query('warehouse', 'items', () => {
+						return {
+							filters: {
+								warehouse_type: ['=', saleable_warehouse_type]
+							}
+						}
+					})
+				}
+			})
+	},
 	shipping_address_name: function (frm) {
 		frappe.db.get_value('Address', frm.doc.shipping_address_name, ['delivery_by_appointment_art', 'delivery_contact_art','delivery_appointment_contact_detail_art'])
     .then(r => {

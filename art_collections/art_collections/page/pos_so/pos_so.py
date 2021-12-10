@@ -508,9 +508,9 @@ def create_quotation(doc):
 			quot_doc.art_shipping_contact_email=frappe.db.get_value('Contact', quot_doc.art_shipping_contact_person, 'email_id')
 		quot_doc.update(doc)
 		quot_doc.contact_person=None
-		quot_doc.save(ignore_permissions=True)
 		quot_doc.run_method("set_missing_values")
 		quot_doc.run_method("calculate_taxes_and_totals")
+		quot_doc.save(ignore_permissions=True)
 		print('8'*100,quot_doc.name)
 		return quot_doc.name
 
@@ -558,8 +558,9 @@ def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
 						si_doc.docstatus=0
 						print('isinstance', si_doc.delivery_date)
 						# name_list = submit_invoice(si_doc, name, doc, name_list,so_type)
-						si_doc.save(ignore_permissions=True)
+						si_doc.run_method("set_missing_values")
 						si_doc.run_method("calculate_taxes_and_totals")
+						si_doc.save(ignore_permissions=True)
 						# if doc.get('overall_directive_art'):
 						# 	frappe.db.set_value('Sales Order', si_doc.name, "overall_directive_art", doc.get('overall_directive_art'))
 						# 	frappe.db.commit()
@@ -573,8 +574,10 @@ def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
 						doc.pos_profile_art=doc.get('pos_profile')
 						print('else',doc.delivery_date)
 						# name_list = submit_invoice(doc, name, doc, name_list,so_type)
+						si_doc.run_method("set_missing_values")
 						si_doc.run_method("calculate_taxes_and_totals")
 						si_doc.save(ignore_permissions=True)
+
 						name_list.append(name)
 				else:
 					name_list.append(name)

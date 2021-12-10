@@ -509,7 +509,7 @@ def create_quotation(doc):
 		quot_doc.update(doc)
 		quot_doc.contact_person=None
 		quot_doc.run_method("set_missing_values")
-		quot_doc.run_method("calculate_taxes_and_totals")
+		# quot_doc.run_method("calculate_taxes_and_totals")
 		quot_doc.save(ignore_permissions=True)
 		print('8'*100,quot_doc.name)
 		return quot_doc.name

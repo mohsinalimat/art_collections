@@ -190,7 +190,7 @@ body[data-route="pos-so"] .pos-list-row .cell.price-cell {
   width: 50%;
 }
 body[data-route="pos-so"] .pos-list-row .subject {
-  width: 40%;
+  width: 20%;
 }
 body[data-route="pos-so"] .pos-list-row .list-row-checkbox,
 body[data-route="pos-so"] .pos-list-row .list-select-all {

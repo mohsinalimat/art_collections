@@ -76,7 +76,8 @@
 				<div class="col-sm-6 selected-item">
 
 				</div>
-				<div class="col-xs-6 numeric_keypad hidden-xs" style="display:none">
+				<div class="col-xs-6 numeric_keypad hidden-xs" style="display:none;">
+					<div class="row text-right">
 					{% var chartData = ["Qty", "Disc", "Price"] %} {% for(var i=0; i
 					<3; i++) { %} <div class="row text-right">
 						{% for(var j=i*3; j
@@ -89,8 +90,9 @@
 					<button type="button" class="btn btn-default numeric-keypad numeric-del">{{ __("Del") }}</button>
 					<button type="button" class="btn btn-default numeric-keypad" val="0">0</button>
 					<button type="button" class="btn btn-default numeric-keypad" val=".">.</button>
-					<button type="button" class="btn btn-default numeric-keypad "></button>
+					<button type="button" class="btn btn-primary numeric-keypad "></button>
 				</div>
+			</div>
 			</div>
 		</div>
 		<div class="col-sm-12 col-xs-12" style="margin-top: 5px; margin-bottom: 5px">
@@ -100,6 +102,7 @@
 				</div>
 			</div>
 		</div>
+
 	</div>
 	<div class="col-sm-12 list-customers">
 		<div class="col-sm-12"><h6 class="form-section-heading uppercase">{{ __("Orders in Queue") }}</h6></div>

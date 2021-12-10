@@ -100,9 +100,20 @@ onload: function () {
 		me.make_control();
 		me.create_new();
 		me.make();
+		// tigger past order view
+		me.view_only_past_order_list()
+		// $('.order-main-btn').hide()
+
 	});
 },
 
+view_only_past_order_list:function () {
+	var me = this;
+	me.toggle_item_cart(false)
+	me.toggle_items_section(false)
+	me.toggle_order_header(false)
+	me.toggle_past_order_list(true)
+},
 make_menu_list: function () {
 	var me = this;
 	this.page.clear_menu();
@@ -141,17 +152,40 @@ make_menu_list: function () {
 	});
 
 	// for mobile
-	this.page.add_menu_item(__("Offline : New Sales Order"), function () {
-		me.save_previous_entry();
-		me.create_new();
-	})
-
+	// this.page.add_menu_item(__("Offline : New Sales Order"), function () {
+	// 	me.save_previous_entry();
+	// 	me.create_new();
+	// })
+	this.page.add_menu_item(__("View offline orders"), function () {
+		me.view_only_past_order_list()
+	});
 
 
 	this.page.add_menu_item(__("Online : POS Profile"), function () {
 		frappe.set_route('List', 'POS Profile');
 	});
+
+	this.page.add_action_item('New Order', () => this.new_order(transaction_type='Sales Order'))	
+	this.page.add_action_item('New Bon de Commande', () => this.new_order(transaction_type='Bon de Commande'))
+	this.page.add_action_item('New Quotation', () => this.new_order(transaction_type='Quotation'))
+	
 },
+new_order:function(transaction_type){
+	// this.toggle_item_cart(false)
+	// this.toggle_items_section(false)
+	// this.toggle_order_header(true)
+	// this.toggle_past_order_list(false)	
+	this.toggle_pos_item_cart(false)
+	this.toggle_order_header(false)
+	this.make_new_cart(transaction_type)
+	this.make_menu_list()	
+	this.make()
+	this.toggle_items_section(true)
+	this.toggle_past_order_list(false)
+	$('.order-main-btn').show()
+
+},
+
 
 email_prompt: function() {
 	var me = this;
@@ -219,12 +253,13 @@ edit_record: function () {
 		this.refresh(false);
 		this.toggle_input_field();
 		this.list_dialog && this.list_dialog.hide();
+		me.toggle_items_section(true)
 	}
 },
 
 delete_records: function () {
 	var me = this;
-	this.validate_list()
+	// this.validate_list()
 	this.remove_doc_from_localstorage()
 	this.update_localstorage();
 	this.toggle_delete_button();
@@ -235,6 +270,8 @@ validate_list: function() {
 	this.si_docs = this.get_submitted_invoice()
 	$.each(this.removed_items, function(index, pos_name){
 		$.each(me.si_docs, function(key, data){
+			console.log("console.log(me.si_docs[key][pos_name] ,me.si_docs[key][pos_name].offline_pos_name ,pos_name)")
+			console.log(me.si_docs[key][pos_name] ,me.si_docs[key][pos_name].offline_pos_name ,pos_name)
 			if(me.si_docs[key][pos_name] && me.si_docs[key][pos_name].offline_pos_name == pos_name ){
 				frappe.throw(__("Sales orders can not be deleted"))
 			}
@@ -244,7 +281,8 @@ validate_list: function() {
 
 toggle_delete_button: function () {
 	var me = this;
-	if(this.pos_profile_data["allow_delete"]) {
+	console.log('this.pos_profile_data["allow_delete"]',this.pos_profile_data["allow_delete"])
+	if(this.pos_profile_data["allow_delete"]==undefined) {
 		if (this.removed_items && this.removed_items.length > 0) {
 			$(this.page.wrapper).find('.btn-danger').show();
 		} else {
@@ -333,7 +371,10 @@ init_master_data: function (r) {
 	this.barcode_data = r.message.barcode_data;
 	this.tax_data = r.message.tax_data;
 	this.contacts = r.message.contacts;
+	this.contacts_list=r.message.contacts_list;
 	this.address = r.message.address || {};
+	this.address_list= r.message.address_list || {};
+	this.shipping_address_list=r.message.shipping_address_list || {};
 	this.price_list_data = r.message.price_list_data;
 	this.customer_wise_price_list = r.message.customer_wise_price_list
 	this.bin_data = r.message.bin_data;
@@ -354,7 +395,7 @@ save_previous_entry: function () {
 	}
 },
 
-create_new: function () {
+create_new: function (transaction_type=undefined) {
 	var me = this;
 	this.frm = {}
 	this.load_data(true);
@@ -362,7 +403,8 @@ create_new: function () {
 	this.setup();
 	this.set_default_customer();
 	this.frm.doc.title='';
-	this.set_default_delivery_date()
+	this.frm.doc.transaction_type=transaction_type
+	// this.set_default_delivery_date()
 },
 
 load_data: function (load_doc) {
@@ -451,12 +493,482 @@ make_control: function() {
 	this.make_customer();
 	this.make_list_customers();
 	this.bind_numeric_keypad();
-	this.set_default_delivery_date();
-	this.make_delivery_date();
-	this.make_title();
-	this.make_cycle_status();
+	// this.set_default_delivery_date();
+	// this.make_delivery_date();
+	// this.make_title();
+	// this.make_cycle_status();
 
 
+},
+make_contact_field_link: function () {
+	let me = this;
+	let contact = frappe.ui.form.make_control({
+		parent: this.wrapper.find(".so-contact_list"),
+		df: {
+			fieldtype: 'Link',
+			options: 'Contact',
+			fieldname: 'contact',
+			placeholder: __('Select Contact'),
+			only_select: true,
+			get_query: () => this.contacts_list[this.frm.doc.customer],
+			change: () => {
+				me.contact_id = '';
+				if (me.contact_id != contact.get_value() && contact.get_value()) {
+					me.start = 0;
+					me.contact_id = contact.get_value();
+					console.log('on change make_contact_field_link',me.contact_id,me.frm.doc.contact_id)
+				}
+			}
+		}
+	});
+	contact.refresh();	
+},
+make_contact_select_field: function (list_field, parent, fieldname, label, placeholder, display_field_name, display_field_ele) {
+	let me = this;
+	let customers_select_field_list = list_field[this.frm.doc.customer];
+	options_list = []
+	let default_value
+	var i = 0;
+	for (const customers_select_field in customers_select_field_list) {
+		if (fieldname == 'contact_person') {
+			options_list.push(customers_select_field)
+			i++
+			if (i == 1) {
+				default_value = customers_select_field_list[customers_select_field].name
+			}
+			if (customers_select_field_list[customers_select_field].is_primary_contact == 1) {
+				default_value = customers_select_field_list[customers_select_field].name
+			}
+		}
+	}
+
+	contact_select_field = frappe.ui.form.make_control({
+		parent: parent,
+		only_input: true,
+		df: {
+			fieldtype: 'Select',
+			options: options_list.join("\n"),
+			label: label,
+			fieldname: fieldname,
+			placeholder: placeholder,
+			change: () => {
+				me.frm.doc[fieldname] = contact_select_field.get_value();
+				// populate display field on change
+				let list_field_display = ''
+				for (const customers_select_field in customers_select_field_list) {
+					if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+						list_field_display = customers_select_field_list[customers_select_field][display_field_name]
+						me.frm.doc[display_field_name] = list_field_display
+						this.wrapper.find(display_field_ele).html('')
+						this.make_read_only_fields(parent = display_field_ele, fieldname = display_field_name, label = undefined, set_value = me.frm.doc[display_field_name]);
+						break
+					}
+				}
+			}
+		}
+	});
+
+	contact_select_field.make_input();
+	// default
+	if (!me.frm.doc[fieldname]) {
+		me.frm.doc[fieldname] = default_value
+	}
+	contact_select_field.$input.val(me.frm.doc[fieldname]);
+ // populate display field for first time
+	let list_field_display = ''
+	for (const customers_select_field in customers_select_field_list) {
+		if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+			list_field_display = customers_select_field_list[customers_select_field][display_field_name]
+			me.frm.doc[display_field_name] = list_field_display
+			break
+		}
+	}
+},
+make_customer_address_select_field: function (list_field, parent, fieldname, label, placeholder, display_field_name, display_field_ele) {
+	let me = this;
+	let customers_select_field_list = list_field[this.frm.doc.customer];
+	options_list = []
+	let default_value
+	var i = 0;
+	for (const customers_select_field in customers_select_field_list) {
+		if (fieldname=='customer_address'  ) {
+			if (customers_select_field_list[customers_select_field].address_type == 'Billing' ||  customers_select_field_list[customers_select_field].address_type == 'Billing + Shipping') {
+				options_list.push(customers_select_field)
+				i++
+				if (i==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}
+				if (customers_select_field_list[customers_select_field].is_primary_address==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}
+			}
+			
+		}		
+	}
+
+	customer_address_select_field = frappe.ui.form.make_control({
+		parent: parent,
+		only_input: true,
+		df: {
+			fieldtype: 'Select',
+			options: options_list.join("\n"),
+			label: label,
+			fieldname: fieldname,
+			placeholder: placeholder,
+			change: () => {
+				me.frm.doc[fieldname] = customer_address_select_field.get_value();
+				// populate display field on change
+				let list_field_display = ''
+				for (const customers_select_field in customers_select_field_list) {
+					if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+						list_field_display = customers_select_field_list[customers_select_field]['customer_address_display']
+						me.frm.doc[display_field_name] = list_field_display
+						me.frm.doc['customer_address_display']=list_field_display
+						this.wrapper.find(display_field_ele).html('')
+						this.make_read_only_fields(parent = display_field_ele, fieldname = display_field_name, label = undefined, set_value = me.frm.doc['customer_address_display']);
+						break
+					}
+				}
+			}
+		}
+	});
+
+	customer_address_select_field.make_input();
+	// default
+	if (!me.frm.doc[fieldname]) {
+		me.frm.doc[fieldname] = default_value
+	}
+	customer_address_select_field.$input.val(me.frm.doc[fieldname]);
+ // populate display field for first time
+	let list_field_display = ''
+	for (const customers_select_field in customers_select_field_list) {
+		if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+			list_field_display = customers_select_field_list[customers_select_field][display_field_name]
+			me.frm.doc[display_field_name] = list_field_display
+			me.frm.doc['customer_address_display']=list_field_display
+			break
+		}
+	}
+},
+make_shipping_address_select_field: function (list_field, parent, fieldname, label, placeholder, display_field_name, display_field_ele) {
+	let me = this;
+	let customers_select_field_list = list_field[this.frm.doc.customer];
+	options_list = []
+	let default_value
+
+	var i = 0;
+	for (const customers_select_field in customers_select_field_list) {
+		if(fieldname=='shipping_address_name' ){
+			if (customers_select_field_list[customers_select_field].address_type == 'Shipping'|| customers_select_field_list[customers_select_field].address_type == 'Billing + Shipping') {
+				options_list.push(customers_select_field)
+				i++
+				if (i==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+						
+				}
+				if (customers_select_field_list[customers_select_field].is_shipping_address==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+			
+				}				
+			}
+		}	
+	}
+
+	shipping_address_select_field = frappe.ui.form.make_control({
+		parent: parent,
+		only_input: true,
+		df: {
+			fieldtype: 'Select',
+			options: options_list.join("\n"),
+			label: label,
+			fieldname: fieldname,
+			placeholder: placeholder,
+			change: () => {
+				me.frm.doc[fieldname] = shipping_address_select_field.get_value();
+				// populate display field on change
+				let list_field_display = ''
+				for (const customers_select_field in customers_select_field_list) {
+					if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+						list_field_display = customers_select_field_list[customers_select_field]['shipping_address_display']
+						me.frm.doc[display_field_name] = list_field_display
+						console.log(me.frm.doc[display_field_name],"me.frm.doc[display_field_name]",display_field_name)
+						me.frm.doc['shipping_address_display']=list_field_display
+						me.frm.doc['delivery_by_appointment_art']=0
+						me.frm.doc['delivery_contact_art']=undefined
+						me.frm.doc['delivery_appointment_contact_detail_art']=undefined
+						this.wrapper.find('.delivery_by_appointment_art-field').html('')
+						this.wrapper.find('.delivery_contact_art-field').html('')
+						this.wrapper.find('.delivery_appointment_contact_detail_art-field').html('')
+						if (customers_select_field_list[customers_select_field].delivery_by_appointment_art==1) {
+							me.frm.doc['delivery_by_appointment_art']=customers_select_field_list[customers_select_field].delivery_by_appointment_art
+							me.frm.doc['delivery_contact_art']=customers_select_field_list[customers_select_field].delivery_contact_art
+							me.frm.doc['delivery_appointment_contact_detail_art']=customers_select_field_list[customers_select_field].delivery_appointment_contact_detail_art		
+							this.make_check_field(parent='.delivery_by_appointment_art-field',fieldname="delivery_by_appointment_art",label=__("Delivery By Appointment?"),read_only=1,default_value=1)	
+							this.make_read_only_fields(parent=".delivery_contact_art-field",fieldname="delivery_contact_art",label=__('Delivery Contact'),set_value=me.frm.doc['delivery_contact_art']);		
+							this.make_data_field(parent='.delivery_appointment_contact_detail_art-field',fieldtype='Small Text',fieldname="delivery_appointment_contact_detail_art",label=__('Delivery Contact Detail'),placeholder=__("Delivery Contact Detail"))												
+						}						
+						console.log(me.frm.doc['shipping_address_display'],"me.frm.doc['shipping_address_display']")
+						this.wrapper.find(display_field_ele).html('')
+						this.make_read_only_fields(parent = display_field_ele, fieldname = display_field_name, label = undefined, set_value = me.frm.doc['shipping_address_display']);
+
+						break
+					}
+				}
+			}
+		}
+	});
+
+	shipping_address_select_field.make_input();
+	// default
+	if (!me.frm.doc[fieldname]) {
+		me.frm.doc[fieldname] = default_value
+	}
+	shipping_address_select_field.$input.val(me.frm.doc[fieldname]);
+ // populate display field for first time
+	let list_field_display = ''
+	me.frm.doc['delivery_by_appointment_art']=0
+	me.frm.doc['delivery_contact_art']=undefined
+	for (const customers_select_field in customers_select_field_list) {
+		if (customers_select_field_list[customers_select_field].name == me.frm.doc[fieldname]) {
+			list_field_display = customers_select_field_list[customers_select_field][display_field_name]
+			me.frm.doc[display_field_name] = list_field_display
+			me.frm.doc['shipping_address_display']=list_field_display
+			if (customers_select_field_list[customers_select_field].delivery_by_appointment_art==1) {
+				me.frm.doc['delivery_by_appointment_art']=customers_select_field_list[customers_select_field].delivery_by_appointment_art
+				me.frm.doc['delivery_contact_art']=customers_select_field_list[customers_select_field].delivery_contact_art
+				if (!me.frm.doc['delivery_appointment_contact_detail_art']) {
+					me.frm.doc['delivery_appointment_contact_detail_art']=customers_select_field_list[customers_select_field].delivery_appointment_contact_detail_art			
+					
+				}
+			}
+			break
+		}
+
+		
+	}
+},
+make_select_field: function (list_field,parent,fieldname,label,placeholder,display_field_name,display_field_ele) {
+	let me = this;
+	let customers_select_field_list = list_field[this.frm.doc.customer];
+	options_list=[]
+	let default_value
+	var i = 0;
+	for (const customers_select_field in customers_select_field_list) {
+		console.log(customers_select_field_list[customers_select_field].address_type,"ustomers_select_field_list[customers_select_field].address_type")
+		if (fieldname=='customer_address'  ) {
+			if (customers_select_field_list[customers_select_field].address_type == 'Billing' ||  customers_select_field_list[customers_select_field].address_type == 'Billing + Shipping') {
+				options_list.push(customers_select_field)
+				i++
+				if (i==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}
+				if (customers_select_field_list[customers_select_field].is_primary_address==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}
+			}
+			
+		}else if(fieldname=='shipping_address' ){
+			if (customers_select_field_list[customers_select_field].address_type == 'Shipping'|| customers_select_field_list[customers_select_field].address_type == 'Billing + Shipping') {
+				options_list.push(customers_select_field)
+				i++
+				if (i==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}
+				if (customers_select_field_list[customers_select_field].is_shipping_address==1) {
+					default_value=customers_select_field_list[customers_select_field].name
+				}				
+			}
+		}else{
+			options_list.push(customers_select_field)
+			
+			i++
+			if (i==1) {
+				default_value=customers_select_field_list[customers_select_field].name
+			}
+			if (customers_select_field_list[customers_select_field].is_primary_contact==1) {
+				default_value=customers_select_field_list[customers_select_field].name
+			}				
+		}
+		
+}	
+	console.log('default_value',default_value,fieldname)
+	select_field = frappe.ui.form.make_control({
+		parent:parent,
+		df: {
+			fieldtype: 'Select',
+			options: options_list.join("\n"),
+			label:label,
+			fieldname: fieldname,
+			placeholder: placeholder,
+			change: () => {
+				if (me.frm.doc[fieldname] != select_field.get_value() && select_field.get_value()) {
+					me.frm.doc[fieldname] = select_field.get_value();
+					console.log('ooo',me.frm.doc[fieldname],'me.frm.doc[fieldname]')
+					let list_field_display=''
+					for (const customers_select_field in customers_select_field_list) {
+							if (customers_select_field_list[customers_select_field].name==me.frm.doc[fieldname]) {
+								list_field_display=customers_select_field_list[customers_select_field][display_field_name]
+								// this.make_read_only_fields(parent=display_field_ele,fieldname=list_field_display,label=__('list_field_display'),set_value=list_field_display);
+								console.log('list_field_display',list_field_display)
+								console.log(customers_select_field_list[customers_select_field].delivery_by_appointment_art,fieldname,'delivery_by_appointment_art')
+								// me.frm.doc.address_display=address_display;
+								this.wrapper.find('.delivery_by_appointment_art-field').html('')
+								this.wrapper.find('.delivery_contact_art-field').html('')
+								this.wrapper.find('.delivery_appointment_contact_detail_art-field').html('')
+								if (customers_select_field_list[customers_select_field].delivery_by_appointment_art && customers_select_field_list[customers_select_field].delivery_by_appointment_art==1 ) {
+									// this.frm.doc.delivery_by_appointment_art=customers_select_field_list[customers_select_field].delivery_by_appointment_art
+									this.make_check_field(parent='.delivery_by_appointment_art-field',fieldname="delivery_by_appointment_art",label=__("Delivery By Appointment?"),read_only=1,default_value=customers_select_field_list[customers_select_field].delivery_by_appointment_art)
+									this.make_read_only_fields(parent=".delivery_contact_art-field",fieldname="delivery_contact_art",label=__('Delivery Contact'),set_value=customers_select_field_list[customers_select_field].delivery_contact_art);
+									console.log(customers_select_field_list[customers_select_field].delivery_appointment_contact_detail_art,'customers_select_field_list[customers_select_field].delivery_appointment_contact_detail_art')
+									if (!me.frm.doc.delivery_appointment_contact_detail_art) {
+										console.log('in')
+										me.frm.doc.delivery_appointment_contact_detail_art=customers_select_field_list[customers_select_field].delivery_appointment_contact_detail_art
+										console.log(me.frm.doc.delivery_appointment_contact_detail_art,'me.frm.doc.delivery_appointment_contact_detail_art')
+									}									
+									this.make_data_field(parent='.delivery_appointment_contact_detail_art-field',fieldtype='Small Text',fieldname="delivery_appointment_contact_detail_art",label=__('Delivery Contact Detail'),placeholder=__("Delivery Contact Detail"))
+								}
+								break
+							}
+					}	
+
+					this.wrapper.find(display_field_ele).html('')
+					this.make_read_only_fields(parent=display_field_ele,fieldname=display_field_name,label=undefined,set_value=list_field_display);
+					// this.wrapper.find(display_field_ele).html('')
+					// this.wrapper.find(display_field_ele).html(list_field_display)
+				}
+			}
+		}
+	});
+	console.log('-------------------------')
+
+	console.log('me.frm.doc[fieldname]==undefined && default_value',me.frm.doc[fieldname],default_value)
+	// this.select_field.make_input();
+	// default
+	// if (!me.frm.doc[fieldname])  {
+	// 	me.frm.doc[fieldname]=default_value
+	// }
+	// this.select_field.$input.val(me.frm.doc[fieldname]);
+
+	if(me.frm.doc[fieldname]) {
+	// show display field
+	  // select_field.set_value(me.frm.doc[fieldname])
+		// select_field.set_value(me.frm.doc[fieldname])
+		this.wrapper.find(display_field_ele).html('')
+		this.make_read_only_fields(parent=display_field_ele,fieldname=display_field_name,label=undefined,set_value=undefined);		
+		console.log("me.frm.doc['delivery_by_appointment_art'] && me.frm.doc['delivery_by_appointment_art']==1 && fieldname=='shipping_address'")
+		console.log(me.frm.doc['delivery_by_appointment_art'] ,me.frm.doc['delivery_by_appointment_art'], fieldname)
+		if (me.frm.doc['delivery_by_appointment_art'] && me.frm.doc['delivery_by_appointment_art']==1 ) {
+			this.wrapper.find('.delivery_by_appointment_art-field').html('')
+			this.wrapper.find(".delivery_contact_art-field").html('')
+			this.wrapper.find('.delivery_appointment_contact_detail_art-field').html('')
+			this.make_check_field(parent='.delivery_by_appointment_art-field',fieldname="delivery_by_appointment_art",label=__("Delivery By Appointment?"),read_only=false,default_value=undefined)
+			this.make_read_only_fields(parent=".delivery_contact_art-field",fieldname="delivery_contact_art",label=__('Delivery Contact'),set_value=undefined);
+			this.make_data_field(parent='.delivery_appointment_contact_detail_art-field',fieldtype='Small Text',fieldname="delivery_appointment_contact_detail_art",label=__('Delivery Contact Detail'),placeholder=__("Delivery Contact Detail"))
+						
+		}
+	}
+
+	select_field.refresh();	
+},
+make_data_field:function(parent,fieldtype,fieldname,label,placeholder){
+	let me = this;
+	let data_field = frappe.ui.form.make_control({
+		parent: parent,
+		df: {
+			fieldtype: fieldtype,
+			fieldname: fieldname,
+			label:label,
+			placeholder:placeholder,
+			render_input: true,
+			change: () => {
+				if (me.frm.doc[fieldname] != data_field.get_value() && data_field.get_value()) {
+					me.frm.doc[fieldname] = data_field.get_value();
+					console.log(me.frm.doc[fieldname],'me.frm.doc[fieldname]',fieldname)
+				}
+			}
+		}
+	});
+	console.log('me.frm.doc.fieldname set',me.frm.doc.fieldname,fieldname,'fieldname',me.frm.doc.overall_directive_art)
+	if (me.frm.doc[fieldname]) {
+		data_field.set_value(me.frm.doc[fieldname]);
+	}
+	data_field.refresh();	
+},
+make_check_field:function(parent,fieldname,label,read_only,default_value=undefined){
+	let me = this;
+	let check_field = frappe.ui.form.make_control({
+		parent: parent,
+		df: {
+			fieldtype: 'Check',
+			fieldname: fieldname,
+			label: label,
+			input_class: 'input-xs',
+			read_only: read_only,
+			change: () => {
+				// if (me.frm.doc[fieldname] != check_field.get_value() && check_field.get_value()) {
+					me.frm.doc[fieldname] = check_field.get_value();
+				// }
+			}
+		}
+	});
+	console.log('me.frm.doc[fieldname]',me.frm.doc[fieldname],fieldname,read_only)
+	if (default_value!=undefined) {
+		me.frm.doc[fieldname] =default_value
+		check_field.set_value(me.frm.doc[fieldname])
+		console.log('set value')
+		console.log(me.frm.doc[fieldname],'me.frm.doc[fieldname]','fieldname',fieldname,me.frm.doc)
+	}else{
+		check_field.set_value(me.frm.doc[fieldname])
+	}
+
+	check_field.refresh();	
+},
+make_date_field:function(parent,fieldname,label,placeholder,reqd=0){
+	let me = this;
+	let date_field = frappe.ui.form.make_control({
+		parent: parent,
+		df: {
+			fieldtype: 'Date',
+			fieldname: fieldname,
+			label:label,
+			placeholder:placeholder,
+			"input_class": 'input-xs',
+			"reqd": reqd,
+			only_select: true,
+			change: () => {
+				if (me.frm.doc[fieldname] != date_field.get_value() && date_field.get_value()) {
+					me.frm.doc[fieldname]= date_field.get_value();
+				}else if(reqd==1){
+					// frappe.throw(__(repl("Mandatory: Please select a  %(fieldname)s first.", {
+					// 	'fieldname': fieldname
+					// })))
+				}
+			}
+		}
+	});
+	if (me.frm.doc[fieldname]) {
+		date_field.set_value(me.frm.doc[fieldname])
+	}
+	date_field.refresh();	
+},
+make_read_only_fields:function(parent,fieldname,label,set_value=undefined){
+	let me = this;
+	let read_only_field= frappe.ui.form.make_control({
+		parent: this.wrapper.find(parent),
+		df: {
+			fieldname: fieldname,
+			label:label,
+			fieldtype: 'Data',
+			read_only: 1			
+		}
+	});
+	if (set_value==undefined && me.frm.doc[fieldname]) {
+		read_only_field.set_value(me.frm.doc[fieldname])
+	} else {
+		read_only_field.set_value(set_value)
+		me.frm.doc[fieldname]= set_value
+	}
+	read_only_field.refresh();	
 },
 make_cycle_status: function () {
 	var me = this;
@@ -474,11 +986,16 @@ make_cycle_status: function () {
 			}
 
 		},
-		parent: this.wrapper.find(".so-cycle_status_art"),
+		parent: this.wrapper.find(".cycle_status_art-field"),
 		only_input: true,
 	});
 
 	this.cycle_status_art.make_input();	
+	// to set default
+	// if (!me.frm.doc.cycle_status_art) {
+	// 	me.frm.doc.cycle_status_art='Implantation'
+		
+	// }	
 	this.cycle_status_art.$input.val(me.frm.doc.cycle_status_art);
 	// me.frm.doc.delivery_date =this.delivery_date.$input.val()
 	console.log('inside make me.frm.doc.cycle_status_art',me.frm.doc.cycle_status_art)
@@ -632,14 +1149,42 @@ toggle_totals_area: function(show) {
 make_list_customers: function () {
 	var me = this;
 	this.list_customers_btn = this.page.wrapper.find('.list-customers-btn');
+	this.order_main_btn=this.page.wrapper.find('.order-main-btn');
 	this.add_customer_btn = this.wrapper.find('.add-customer-btn');
 	this.pos_bill = this.wrapper.find('.pos-bill-wrapper').hide();
 	this.list_customers = this.wrapper.find('.list-customers');
+	this.order_header_section = this.wrapper.find('.order-header-section');
 	this.numeric_keypad = this.wrapper.find('.numeric_keypad');
 	this.list_customers_btn.addClass("view_customer")
+	this.order_main_btn.addClass("view_order_main")
 
 	me.render_list_customers();
 	me.toggle_totals_area(false);
+
+	this.page.wrapper.on('click', '.order-main-btn', function() {
+		$(this).toggleClass("view_order_main");
+		if($(this).hasClass("view_order_main")) {
+			// me.render_list_customers();
+			// me.list_customers.show();
+			me.list_customers.hide();
+			me.render_order_main();
+			me.order_header_section.show();
+			me.pos_bill.hide();
+			me.numeric_keypad.hide();
+			me.toggle_delete_button()
+		} else {
+			if(me.frm.doc.docstatus == 0) {
+				me.party_field.$input.attr('disabled', false);
+			}
+			me.pos_bill.show();
+			me.toggle_totals_area(false);
+			me.toggle_delete_button()
+			me.order_header_section.hide();
+			me.list_customers.hide();
+			me.numeric_keypad.show();
+		}
+	});
+
 
 	this.page.wrapper.on('click', '.list-customers-btn', function() {
 		$(this).toggleClass("view_customer");
@@ -718,13 +1263,27 @@ bind_numeric_keypad: function() {
 		me.create_invoice();
 		me.make_payment();
 	})
-	$(this.numeric_keypad).find('.pos-so').click(function(){
-		if (!me.frm.doc.delivery_date) {
-			frappe.throw(__('Please enter Delivery Date'))
+	$('.pos-checkout').click(function(){
+
+		if (me.frm.doc.doctype=='Sales Order') {
+			if (!me.frm.doc.delivery_date) {
+				frappe.throw(__('Please enter Delivery Date'))
+			}
+			if (me.frm.doc.delivery_date <  frappe.datetime.get_today()) {
+				frappe.throw(__('Delivery Date cann\'t be less than today\'s date.'))
+			}	
+		 if (me.frm.doc.needs_confirmation_art==1) {
+			if (!me.frm.doc.order_expiry_date_ar) {
+				frappe.throw(__('Please enter Order Expiry Date'))
+			}
+			if (me.frm.doc.needs_confirmation_art==1 && me.frm.doc.order_expiry_date_ar <  frappe.datetime.get_today()) {
+				frappe.throw(__('Order Expiry Date cann\'t be less than today\'s date.'))
+			}			 
+		 }						
 		}
-		if (me.frm.doc.delivery_date <  frappe.datetime.get_today()) {
-			frappe.throw(__('Delivery Date cann\'t be less than today\'s date.'))
-		}	
+
+
+
 		frappe.confirm(__("Are you sure?"), function () {
 		me.validate();
 		// me.update_paid_amount_status(true);
@@ -769,6 +1328,124 @@ remove_selected_item: function() {
 	this.remove_zero_qty_items_from_cart()
 	this.update_paid_amount_status(false)
 },
+toggle_component(show,component) {
+	show ? component.css('display', 'flex') : component.css('display', 'none');
+},
+set_fields_as_per_transaction_type:function (transaction_type) {
+	switch (transaction_type) {
+		case 'Sales Order':
+			this.frm.doc.doctype='Sales Order'
+			this.frm.doc.order_type='Sales'
+			this.frm.doc.needs_confirmation_art=0
+			break;
+		case 'Bon de Commande':
+			this.frm.doc.doctype='Sales Order'
+			this.frm.doc.order_type='Sales'
+			this.frm.doc.needs_confirmation_art=1
+
+			break;
+			case 'Quotation':
+			this.frm.doc.doctype='Quotation'
+			this.frm.doc.quotation_to='Customer'
+			this.frm.doc.order_type='Sales'
+			this.frm.doc.status='Draft'
+			break;			
+		default:
+			break;
+	}
+	this.frm.doc.is_offline_art=1
+	
+},
+hide_fields_as_per_transaction_type:function (transaction_type) {
+	switch (transaction_type) {
+		case 'Sales Order':
+			this.toggle_component(false,this.wrapper.find('.order_expiry_date_ar-field'))
+		break;
+		
+		case 'Bon de Commande':
+			break;
+		
+			case 'Quotation':
+				this.toggle_component(false,this.wrapper.find('.facing_required_art-field'))
+				this.toggle_component(false,this.wrapper.find('.overall_directive_art-field'))
+				this.toggle_component(false,this.wrapper.find('.order_expiry_date_ar-field'))
+				this.toggle_component(false,this.wrapper.find('.delivery_by_appointment_art-field'))
+				this.toggle_component(false,this.wrapper.find('.delivery_contact_art-field'))
+				this.toggle_component(false,this.wrapper.find('.delivery_appointment_contact_detail_art-field'))
+			break;			
+
+		default:
+		break;
+	}
+	
+},
+render_order_main:function(){
+
+	var me = this;
+	var html = "";
+	html = frappe.render_template("pos_so_order_header");
+	this.order_header_section = this.wrapper.find('.order-header-section');
+
+	this.order_header_section.html(html)
+	me.set_fields_as_per_transaction_type(transaction_type=me.frm.doc.transaction_type)
+	let contact_label
+	let delivery_date_required
+	if (me.frm.doc.transaction_type=='Quotation') {
+		contact_label=__('Shipping Contact')
+		delivery_date_required=0
+	} else {
+		contact_label=__('Contact')
+		delivery_date_required=1
+	}
+
+
+	this.make_read_only_fields(parent=".transaction_type-field",fieldname="transaction_type",label=__('Transaction'),set_value=me.frm.doc.transaction_type);
+	if (this.frm.doc.title=='') {
+		this.frm.doc.title=this.frm.doc.customer_name
+	}
+	this.make_data_field(parent=".title-field",fieldtype='Data',fieldname="title",label=__('Title'),placeholder=__("Enter Title"),reqd=1);
+	this.make_date_field(parent='.delivery_date-field',fieldname="delivery_date",label=__('Delivery'),placeholder=__("Delivery Date"),reqd=delivery_date_required)
+	this.make_date_field(parent='.order_expiry_date_ar-field',fieldname="order_expiry_date_ar",label=__('Order Expiry'),placeholder=__("Order Expiry Date"),reqd=1)
+	this.make_check_field(parent='.facing_required_art-field',fieldname="facing_required_art",label=__("Facing Required?"),read_only=0,default_value=undefined)
+	let default_overall_directive_art
+	this.customers.every(customer => {
+		if (customer.name==this.frm.doc.customer) {
+			default_overall_directive_art=customer.overall_directive_art
+			if (!this.frm.doc.overall_directive_art) {
+				this.frm.doc.overall_directive_art=default_overall_directive_art
+			}
+			return false;
+		}
+		return true
+		
+	});
+	console.log(default_overall_directive_art,this.frm.doc.customer,'overall_directive_art')
+
+	this.make_data_field(parent='.overall_directive_art-field',fieldtype='Small Text',fieldname="overall_directive_art",label=__('Overall Directive'),placeholder=__("Overall Directive"))
+	this.make_cycle_status();
+
+	this.make_contact_select_field(list_field=this.contacts_list,parent=this.wrapper.find(".contact-field"),fieldname= 'contact_person',label=contact_label,placeholder=__('Select Contact'),display_field_name='contact_display',display_field_ele=".contact_display-field") 
+	this.make_read_only_fields(parent=".contact_display-field",fieldname='contact_display',label=undefined,set_value=me.frm.doc.contact_display);
+	this.make_customer_address_select_field(list_field=this.address_list,parent=this.wrapper.find(".customer_address-field"),fieldname= 'customer_address',label=__('Customer Address'),placeholder=__('Select Customer Address'),display_field_name='customer_address_display',display_field_ele=".customer_address_display-field") 
+	this.make_read_only_fields(parent=".customer_address_display-field",fieldname='customer_address_display',label=undefined,set_value=me.frm.doc['customer_address_display']);
+
+	this.make_shipping_address_select_field(list_field=this.shipping_address_list,parent=this.wrapper.find(".shipping_address-field"),fieldname= 'shipping_address_name',label=__('Shipping Address'),placeholder=__('Select Shipping Address'),display_field_name='shipping_address_display',display_field_ele=".shipping_address_display-field") 
+	this.make_read_only_fields(parent=".shipping_address_display-field",fieldname='shipping_address_display',label=undefined,set_value=me.frm.doc['shipping_address_display']);
+	if (me.frm.doc['delivery_by_appointment_art']==1) {
+		this.make_check_field(parent='.delivery_by_appointment_art-field',fieldname="delivery_by_appointment_art",label=__("Delivery By Appointment?"),read_only=1,default_value=1)	
+		this.make_read_only_fields(parent=".delivery_contact_art-field",fieldname="delivery_contact_art",label=__('Delivery Contact'),set_value=me.frm.doc['delivery_contact_art']);
+		this.make_data_field(parent='.delivery_appointment_contact_detail_art-field',fieldtype='Small Text',fieldname="delivery_appointment_contact_detail_art",label=__('Delivery Contact Detail'),placeholder=__("Delivery Contact Detail"))	
+	}
+	// this.make_select_field(list_field=this.address_list,parent=this.wrapper.find(".shipping_address-field"),fieldname= 'shipping_address',label=__('Shipping Address'),placeholder=__('Select Shipping Address'),display_field_name='address_display',display_field_ele=".shipping_address_display-field") 
+
+	// this.make_select_field(list_field=this.address_list,parent=this.wrapper.find(".customer_address-field"),fieldname= 'customer_address',label=__('Customer Address'),placeholder=__('Select Customer Address'),display_field_name='address_display',display_field_ele=".customer_address_display-field") 
+	this.order_header_section.show()
+	this.hide_fields_as_per_transaction_type(me.frm.doc.transaction_type)
+	// this.make_contact_field_link();
+	// console.log(	this.list_customers)
+	// $( "#cycle_status option:selected" ).text();
+	// this.list_customers.on('change', '.cycle_status', function () {console.log($('[fieldname="cycle_status_art"]').val())});
+},
 
 render_list_customers: function () {
 	var me = this;
@@ -785,18 +1462,27 @@ render_list_customers: function () {
 	if(this.si_docs.length) {
 		this.si_docs.forEach(function (data, i) {
 			for (var key in data) {
-				html += frappe.render_template("pos_so_list", {
+				let doctype_value=data[key].doctype
+				if (data[key].needs_confirmation_art==1) {
+					doctype_value='Bon de Commande'
+				}
+				html += frappe.render_template("pos_so_past_order_list", {
 					sr: i + 1,
 					name: key,
-					customer: data[key].customer,
 					title:  data[key].title,
-					paid_amount:1000,
+					doctype:  doctype_value,
+					customer: data[key].customer,
+					customer_name:  data[key].customer_name,
+					item_total:  data[key].item_total,														
+					qty_total:  data[key].qty_total,
 					grand_total: format_currency(data[key].grand_total, me.frm.doc.currency),
+					creation_date_time:moment(key).format("Do MMMM, h:mma"),
 					data: me.get_doctype_status(data[key])
 				});
 			}
 		});
 	}
+	// this.toggle_items_section(false)
 	this.list_customers.find('.list-customers-table').html(html);
 
 	this.list_customers.on('click', '.customer-row', function () {
@@ -863,7 +1549,8 @@ make_customer: function () {
 	if(!this.party_field) {
 		if(this.page.wrapper.find('.pos-bill-toolbar').length === 0) {
 			$(frappe.render_template('customer_toolbar', {
-				allow_delete: this.pos_profile_data["allow_delete"]
+				// allow_delete: this.pos_profile_data["allow_delete"]
+				allow_delete:true
 			})).insertAfter(this.page.$title_area.hide());
 		}
 
@@ -880,7 +1567,7 @@ make_customer: function () {
 		});
 
 		this.party_field.make_input();
-		setTimeout(this.set_focus.bind(this), 500);
+		// setTimeout(this.set_focus.bind(this), 500);
 		me.toggle_delete_button();
 	}
 
@@ -1041,10 +1728,46 @@ toggle_list_customer: function(flag) {
 	this.list_customers.toggle(flag);
 },
 
+toggle_past_order_list: function(flag) {
+	if (flag==true) {
+		this.wrapper.find('.list-customers').show();
+	} else {
+		this.wrapper.find('.list-customers').hide();
+	}
+},
+
+toggle_order_header: function(flag) {
+	console.log("this.wrapper.find('.order-header-section')",this.wrapper.find('.order-header-section'))
+	if (flag==true) {
+		this.wrapper.find('.order-header-section').show();
+		
+	} else {
+		this.wrapper.find('.order-header-section').hide();
+	}
+},
+
 toggle_item_cart: function(flag) {
 	this.wrapper.find('.pos-bill-wrapper').toggle(flag);
 },
 
+toggle_pos_item_cart: function(flag) {
+	if (flag==true) {
+	this.wrapper.find('.pos-bill-wrapper').show()
+		
+	} else {
+		this.wrapper.find('.pos-bill-wrapper').hide()	
+	}
+},
+
+
+toggle_items_section: function(flag) {
+	if (flag==true) {
+		this.wrapper.find('.pos-items-section').show();
+		
+	} else {
+		this.wrapper.find('.pos-items-section').hide();
+	}
+},
 add_customer: function() {
 	this.frm.doc.customer = "";
 	this.update_customer(true);
@@ -1136,10 +1859,13 @@ update_customer: function (new_customer) {
 
 render_address_data: function() {
 	var me = this;
+	// console.log('render_address_data',this.address,'this.frm.doc.customer',this.frm.doc.customer,this.address[this.frm.doc.customer] || {})
+	console.log('this.contacts_list',this.contacts_list[this.frm.doc.customer])
+	console.log('this.address_list',this.address_list[this.frm.doc.customer])
 	this.address_data = this.address[this.frm.doc.customer] || {};
-	if(!this.address_data.email_id || !this.address_data.phone) {
-		this.address_data = this.contacts[this.frm.doc.customer];
-	}
+	// if(!this.address_data.email_id || !this.address_data.phone) {
+	// 	this.address_data = this.contacts[this.frm.doc.customer];
+	// }
 
 	this.customer_doc.set_values(this.address_data)
 	if(!this.customer_doc.fields_dict.full_name.$input.val()) {
@@ -1234,8 +1960,9 @@ make_item_list: function (customer) {
 					item_name: obj.name === obj.item_name ? "" : obj.item_name,
 					item_image: obj.image,
 					item_stock: __('Stock') + ": " + me.get_actual_qty(obj),
-					item_virtual_stock:__('Virtual') + ": " + me.get_virtual_stock(obj),
-					item_availability_date_art : obj.availability_date_art ? obj.availability_date_art: "",
+					item_virtual_stock: me.get_virtual_stock(obj) > 0 ? __('Virtual:') +me.get_virtual_stock(obj): "",
+					item_availability_date_art : obj.availability_date_art ? __('Av:')+ obj.availability_date_art: "",
+					nb_selling_packs_in_inner_art: obj.nb_selling_packs_in_inner_art > 0 ? obj.nb_selling_packs_in_inner_art: "",
 					item_uom: obj.stock_uom,
 					color: frappe.get_palette(obj.item_name),
 					abbr: frappe.get_abbr(obj.item_name)
@@ -1264,7 +1991,14 @@ make_item_list: function (customer) {
 		this.add_to_cart();
 	}
 },
-
+handle_broken_image($img,item_code) {
+	console.log('handle_broken_image',$img,item_code)
+	const item_abbr = $($img).attr('alt');
+	$($img).parent().replaceWith(`<div class="image-field" style="background-color: #fafbfc;  border: 0px;">
+	<span class="placeholder-text"> ${item_code}
+	</span>  
+	</div>`);
+},
 get_items: function (item_code) {
 	// To search item as per the key enter
 
@@ -1569,7 +2303,12 @@ add_to_cart: function () {
 		$.each(this.frm.doc["items"] || [], function (i, d) {
 			if (d.item_code == me.items[0].item_code) {
 				caught = true;
-				d.qty += 1;
+				console.log('	d.qty',	d.qty,d.item_code)
+				if (d.nb_selling_packs_in_inner_art>0) {
+					d.qty += d.nb_selling_packs_in_inner_art;
+				}else{
+					d.qty += 1;
+				}
 				d.amount = flt(d.rate) * flt(d.qty);
 				if (me.item_serial_no[d.item_code]) {
 					d.serial_no += '\n' + me.item_serial_no[d.item_code][0]
@@ -1602,7 +2341,12 @@ add_new_item_to_grid: function () {
 	this.child.brand = this.items[0].brand;
 	this.child.description = this.items[0].description || this.items[0].item_name;
 	this.child.discount_percentage = 0.0;
-	this.child.qty = 1;
+	if (this.items[0].nb_selling_packs_in_inner_art>0) {
+		this.child.qty = this.items[0].nb_selling_packs_in_inner_art
+	} else {
+		this.child.qty = 1;	
+	}
+
 	this.child.item_group = this.items[0].item_group;
 	this.child.cost_center = this.pos_profile_data['cost_center'] || this.items[0].cost_center;
 	this.child.income_account = this.pos_profile_data['income_account'] || this.items[0].income_account;
@@ -1621,8 +2365,8 @@ add_new_item_to_grid: function () {
 	}
 	this.child.price_list_rate = rate;
 	this.child.rate = rate;
-	this.child.delivery_date=this.frm.doc.delivery_date || this.default_delivery_date;
-	console.log(this.child.delivery_date,'this.child.delivery_date222')
+	// this.child.delivery_date=this.frm.doc.delivery_date || this.default_delivery_date;
+	// console.log(this.child.delivery_date,'this.child.delivery_date222')
 
 	this.child.prevdoc_docname='';
 	this.child.ensure_delivery_based_on_produced_serial_no=0;
@@ -1739,16 +2483,18 @@ update_total_qty: function() {
 				qty_total += d.qty;
 			}
 		});
+	let unique_item_codes = [...new Set(this.frm.doc["items"] .map(item => item.item_code))];	
 	this.frm.doc.qty_total = qty_total;
+	this.frm.doc.item_total=unique_item_codes.length;
 	this.wrapper.find('.qty-total').text(this.frm.doc.qty_total);
 },
 
 set_primary_action: function () {
 	var me = this;
-	this.page.set_primary_action(__("New Cart"), function () {
-		me.make_new_cart()
-		me.make_menu_list()
-	}, "fa fa-plus")
+	// this.page.set_primary_action(__("New Cart"), function () {
+	// 	me.make_new_cart()
+	// 	me.make_menu_list()
+	// }, "fa fa-plus")
 
 	if (this.frm.doc.docstatus == 1 || this.pos_profile_data["allow_print_before_pay"]) {
 		this.page.set_secondary_action(__("Print"), function () {
@@ -1765,11 +2511,11 @@ set_primary_action: function () {
 	}
 },
 
-make_new_cart: function (){
+make_new_cart: function (transaction_type=undefined){
 	this.item_code = '';
 	this.page.clear_secondary_action();
 	this.save_previous_entry();
-	this.create_new();
+	this.create_new(transaction_type);
 	this.refresh();
 	this.toggle_input_field();
 	this.render_list_customers();
@@ -1780,20 +2526,30 @@ print_dialog: function () {
 	var me = this;
 
 	this.msgprint = frappe.msgprint(
-		`<a class="btn btn-default new_doc">${__('New')}</a>`);
+		`
 
-	this.msgprint.msg_area.find('.print_doc').on('click', function() {
-		var html = frappe.render(me.print_template_data, me.frm.doc);
-		me.print_document(html);
+	<a class="btn btn-default new_quotation" style="margin-right: 5px;">${__('New Quotation')}</a>
+	<a class="btn btn-default  new_bon_de_commande" style="margin-right: 5px;">${__('New Bon de Commande')}</a>
+	<a class="btn btn-primary new_order">${__('New Order')}</a>
+	`);
+
+	this.msgprint.msg_area.find('.new_bon_de_commande').on('click', function() {
+		me.msgprint.hide();
+		me.new_order(transaction_type='Bon de Commande')
 	})
-
-	this.msgprint.msg_area.find('.new_doc').on('click', function() {
+	this.msgprint.msg_area.find('.new_quotation').on('click', function() {
+		me.msgprint.hide();
+		me.new_order(transaction_type='Quotation')
+	})
+	this.msgprint.msg_area.find('.new_order').on('click', function() {
+		me.msgprint.hide();
+		me.new_order(transaction_type='Sales Order')
 		// if online
 		if (frappe.flags.is_online == true) {
 			// me.sync_sales_invoice()
 		}
-		me.msgprint.hide();
-		me.make_new_cart();
+		// me.msgprint.hide();
+		// me.make_new_cart();
 	})
 
 },
@@ -1810,7 +2566,7 @@ print_document: function (html) {
 
 submit_invoice: function () {
 	var me = this;
-	this.change_status();
+	// this.change_status();
 	this.update_serial_no()
 	// if (this.frm.doc.docstatus == 1) {
 		this.print_dialog()
@@ -1982,7 +2738,7 @@ get_submitted_invoice: function () {
 	if (docs) {
 		invoices = $.map(docs, function (data) {
 			for (var key in data) {
-				if (data[key].docstatus == 1 && index < 50) {
+				if (data[key].docstatus == 0 && index < 50) {
 					index++
 					data[key].docstatus = 0;
 					return data

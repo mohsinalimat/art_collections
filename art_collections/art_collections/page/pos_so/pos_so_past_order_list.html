@@ -1,0 +1,13 @@
+<div class="pos-list-row" invoice-name = "{{name}}">
+	<div class="list-column cell subject" invoice-name = "{{name}}">
+		<input class="list-delete text-left" type="checkbox" style = "margin-right:5px">
+		<a class="grey list-id text-left customer-row" title="{{ title }}">{%= title %}</a>
+	</div>
+	<div class="list-column cell text-left customer-row">{%= doctype %}</div>
+	<div class="list-column cell text-left customer-row" title="{{ customer }}">{%= customer %}</div>
+	<div class="list-column cell text-left customer-row">{%= customer_name %}</div>
+	<div class="list-column cell text-right customer-row">{%= item_total %}</div>
+	<div class="list-column cell text-right customer-row">{%= qty_total %}</div>
+	<div class="list-column cell text-right customer-row">{%= grand_total %}</div>
+	<div class="list-column cell text-right customer-row">{%= creation_date_time %}</div>
+</div>

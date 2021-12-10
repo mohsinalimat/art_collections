@@ -4,7 +4,6 @@ frappe.ui.form.on('Website Item', {
 			let row1_desc, row2_desc, row3_desc = undefined
 			frappe.db.get_value('Item', frm.doc.item_code, ['qty_in_selling_pack_art', 'main_design_color_art', 'length_art', 'width_art', 'thickness_art' ])
 				.then(r => {
-					debugger
 					let values = r.message;
 					if (values.qty_in_selling_pack_art) {
 						row1_desc = values.qty_in_selling_pack_art

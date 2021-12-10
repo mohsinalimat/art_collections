@@ -12,6 +12,7 @@ from erpnext.stock.get_item_details import get_pos_profile
 from frappe import _
 from frappe.core.doctype.communication.email import make
 from frappe.utils import nowdate, cint
+from frappe.contacts.doctype.address.address import get_address_display
 
 from six import string_types, iteritems
 
@@ -50,7 +51,10 @@ def get_pos_data():
 		'item_groups': get_item_groups(pos_profile),
 		'customers': customers,
 		'address': get_customers_address(customers),
+		'address_list':get_customers_address_list(customers),
+		'shipping_address_list':get_shipping_address_list(customers),
 		'contacts': get_contacts(customers),
+		'contacts_list':get_contacts_list(customers),
 		'serial_no_data': get_serial_no_data(pos_profile, doc.company),
 		'batch_no_data': get_batch_no_data(),
 		'barcode_data': get_barcode_data(items_list),
@@ -203,6 +207,9 @@ def get_item_groups(pos_profile):
 def get_customers_list(pos_profile={}):
 	cond = "1=1"
 	customer_groups = []
+	print('pos_profile',pos_profile)
+	print('--')
+	# pos_profile={'customer_groups':''}
 	if pos_profile.get('customer_groups'):
 		# Get customers based on the customer groups defined in the POS profile
 		for d in pos_profile.get('customer_groups'):
@@ -210,7 +217,7 @@ def get_customers_list(pos_profile={}):
 		cond = "customer_group in (%s)" % (', '.join(['%s'] * len(customer_groups)))
 
 	return frappe.db.sql(""" select name, customer_name, customer_group,
-		territory, customer_pos_id from tabCustomer where disabled = 0
+		territory, customer_pos_id,overall_directive_art from tabCustomer where disabled = 0
 		and {cond}""".format(cond=cond), tuple(customer_groups), as_dict=1) or {}
 
 
@@ -221,7 +228,7 @@ def get_customers_address(customers):
 
 	for data in customers:
 		address = frappe.db.sql(""" select name, address_line1, address_line2, city, state,
-			email_id, phone, fax, pincode from `tabAddress` where is_primary_address =1 and name in
+		 email_id, phone, fax, pincode,delivery_by_appointment_art,delivery_contact_art,delivery_appointment_contact_detail_art from `tabAddress` where is_primary_address =1 and name in
 			(select parent from `tabDynamic Link` where link_doctype = 'Customer' and link_name = %s
 			and parenttype = 'Address')""", data.name, as_dict=1)
 		address_data = {}
@@ -230,9 +237,94 @@ def get_customers_address(customers):
 
 		address_data.update({'full_name': data.customer_name, 'customer_pos_id': data.customer_pos_id})
 		customer_address[data.name] = address_data
-
 	return customer_address
 
+def get_customers_address_list(customers):
+	customer_address = {}
+	if isinstance(customers, string_types):
+		customers = [frappe._dict({'name': customers})]
+
+	for data in customers:
+		address = frappe.db.sql(""" select name, CONCAT_WS('\n', 
+IF(LENGTH(`address_line1`),`address_line1`,NULL),
+IF(LENGTH(`address_line2`),`address_line2`,NULL),
+IF(LENGTH(`art_county`),`art_county`,NULL),
+IF(LENGTH(`art_state`),`art_state`,NULL),
+IF(LENGTH(`city`),`city`,NULL),
+IF(LENGTH(`country`),`country`,NULL),
+IF(LENGTH(`zip_code`),`zip_code`,NULL)
+ ) as customer_address_display,
+ delivery_by_appointment_art,delivery_contact_art,delivery_appointment_contact_detail_art,
+ is_primary_address,address_type from `tabAddress`
+  where
+	address_type in ('Billing','Billing + Shipping')
+	 and name in
+			(select parent from `tabDynamic Link` where link_doctype = 'Customer' and link_name = %s
+			and parenttype = 'Address') order by creation asc""", data.name, as_dict=1)
+		if address:
+			customer_address[data.name] = {}
+			for adder in address:
+				customer_address[data.name][adder.name]=adder
+	print('+'*100)
+	print('get_customers_address_list',customer_address)
+	print('+'*100)
+	return customer_address
+
+def get_shipping_address_list(customers):
+	customer_address = {}
+	if isinstance(customers, string_types):
+		customers = [frappe._dict({'name': customers})]
+
+	for data in customers:
+		address = frappe.db.sql(""" select name, CONCAT_WS('\n', 
+IF(LENGTH(`address_line1`),`address_line1`,NULL),
+IF(LENGTH(`address_line2`),`address_line2`,NULL),
+IF(LENGTH(`art_county`),`art_county`,NULL),
+IF(LENGTH(`art_state`),`art_state`,NULL),
+IF(LENGTH(`city`),`city`,NULL),
+IF(LENGTH(`country`),`country`,NULL),
+IF(LENGTH(`zip_code`),`zip_code`,NULL)
+ ) as shipping_address_display,
+ delivery_by_appointment_art,delivery_contact_art,delivery_appointment_contact_detail_art,
+ is_shipping_address,address_type from `tabAddress`
+  where
+	address_type in ('Shipping','Billing + Shipping')
+	 and name in
+			(select parent from `tabDynamic Link` where link_doctype = 'Customer' and link_name = %s
+			and parenttype = 'Address') order by creation asc""", data.name, as_dict=1)
+		if address:
+			customer_address[data.name] = {}
+			for adder in address:
+				customer_address[data.name][adder.name]=adder
+	print('+'*100)
+	print('get_customers_address_list',customer_address)
+	print('+'*100)
+	return customer_address
+
+def get_contacts_list(customers):
+	customer_contact = {}
+	if isinstance(customers, string_types):
+		customers = [frappe._dict({'name': customers})]
+
+	for data in customers:
+		contacts = frappe.db.sql(""" select name ,
+		first_name as art_shipping_contact_name,
+		email_id as art_shipping_contact_email,
+		mobile_no,
+		CONCAT_WS('<br>', 
+IF(LENGTH(`salutation`),`salutation`,NULL),
+IF(LENGTH(`first_name`),`first_name`,NULL),
+IF(LENGTH(`last_name`),`last_name`,NULL)
+ ) as contact_display,
+		is_primary_contact from `tabContact`
+			where name in
+			(select parent from `tabDynamic Link` where link_doctype = 'Customer' and link_name = %s
+			and parenttype = 'Contact') order by creation asc""", data.name, as_dict=1)
+		if contacts:
+			customer_contact[data.name] = {}
+			for cntct in contacts:
+				customer_contact[data.name][cntct.name]=cntct
+	return customer_contact
 
 def get_contacts(customers):
 	customer_contact = {}
@@ -407,6 +499,20 @@ def get_pricing_rule_data(doc):
                         {'company': doc.company, 'price_list': doc.selling_price_list, 'date': nowdate()}, as_dict=1)
 	return pricing_rules
 
+def create_quotation(doc):
+		quot_doc = frappe.new_doc('Quotation')
+		quot_doc.party_name=doc.get('customer')
+		quot_doc.art_shipping_contact_person=doc.get('contact_person')
+		if quot_doc.art_shipping_contact_person:
+			quot_doc.art_shipping_contact_name=frappe.db.get_value('Contact', quot_doc.art_shipping_contact_person, 'first_name')
+			quot_doc.art_shipping_contact_email=frappe.db.get_value('Contact', quot_doc.art_shipping_contact_person, 'email_id')
+		quot_doc.update(doc)
+		quot_doc.contact_person=None
+		quot_doc.save(ignore_permissions=True)
+		quot_doc.run_method("set_missing_values")
+		quot_doc.run_method("calculate_taxes_and_totals")
+		print('8'*100,quot_doc.name)
+		return quot_doc.name
 
 @frappe.whitelist()
 def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
@@ -421,39 +527,57 @@ def make_invoice(doc_list={}, email_queue_list={}, customers_list={}):
 
 	customers_list = make_customer_and_address(customers_list)
 	name_list = []
+	print('doc_list',doc_list)
 	for docs in doc_list:
+		print('docs',docs)
 		for name, doc in iteritems(docs):
-			print(doc.get('delivery_date'),'delivery_date','------------------')
-			if not frappe.db.exists('Sales Order', {'offline_pos_name_art': name}):
-				so_type=doc.get('so_type')
-				if isinstance(doc, dict):
-					validate_records(doc)
-					si_doc = frappe.new_doc('Sales Order')
-					si_doc.offline_pos_name_art = name
-					si_doc.pos_profile_art=doc.get('pos_profile')
-					si_doc.delivery_date=doc.get('delivery_date')
-					for item in doc.get('items'):
-						item['delivery_date']=doc.get('delivery_date')
-					if doc.get('title'):
-						si_doc.title=doc.get('title')
-					si_doc.update(doc)
-					si_doc.set_posting_time = 1
-					si_doc.customer = get_customer_id(doc)
-					si_doc.due_date = doc.get('posting_date')
-					si_doc.docstatus=0
-					print('isinstance', si_doc.delivery_date)
-					name_list = submit_invoice(si_doc, name, doc, name_list,so_type)
-				else:
-					doc.due_date = doc.get('posting_date')
-					doc.delivery_date=doc.get('delivery_date')
-					doc.customer = get_customer_id(doc)
-					doc.set_posting_time = 1
-					doc.offline_pos_name_art = name
-					doc.pos_profile_art=doc.get('pos_profile')
-					print('else',doc.delivery_date)
-					name_list = submit_invoice(doc, name, doc, name_list,so_type)
-			else:
+			print("doc.get('doctype')",doc.get('doctype'))
+			if doc.get('doctype')=='Quotation':
+				create_quotation(doc)
 				name_list.append(name)
+			else:
+				print(doc.get('delivery_date'),'delivery_date','------------------')
+				if not frappe.db.exists('Sales Order', {'offline_pos_name_art': name}):
+					so_type=doc.get('so_type')
+					if isinstance(doc, dict):
+						validate_records(doc)
+						si_doc = frappe.new_doc('Sales Order')
+						si_doc.offline_pos_name_art = name
+						si_doc.pos_profile_art=doc.get('pos_profile')
+						si_doc.delivery_date=doc.get('delivery_date')
+						si_doc.overall_directive_art=doc.get('overall_directive_art')
+						for item in doc.get('items'):
+							item['delivery_date']=doc.get('delivery_date')
+						print("doc.get('title')",doc.get('title'))
+						if doc.get('title'):
+							si_doc.title=doc.get('title')
+						si_doc.update(doc)
+						si_doc.set_posting_time = 1
+						si_doc.customer = get_customer_id(doc)
+						si_doc.due_date = doc.get('posting_date')
+						si_doc.docstatus=0
+						print('isinstance', si_doc.delivery_date)
+						# name_list = submit_invoice(si_doc, name, doc, name_list,so_type)
+						si_doc.save(ignore_permissions=True)
+						si_doc.run_method("calculate_taxes_and_totals")
+						# if doc.get('overall_directive_art'):
+						# 	frappe.db.set_value('Sales Order', si_doc.name, "overall_directive_art", doc.get('overall_directive_art'))
+						# 	frappe.db.commit()
+						name_list.append(name)
+					else:
+						doc.due_date = doc.get('posting_date')
+						doc.delivery_date=doc.get('delivery_date')
+						doc.customer = get_customer_id(doc)
+						doc.set_posting_time = 1
+						doc.offline_pos_name_art = name
+						doc.pos_profile_art=doc.get('pos_profile')
+						print('else',doc.delivery_date)
+						# name_list = submit_invoice(doc, name, doc, name_list,so_type)
+						si_doc.run_method("calculate_taxes_and_totals")
+						si_doc.save(ignore_permissions=True)
+						name_list.append(name)
+				else:
+					name_list.append(name)
 	print('------------------------------------------+++++++++++++++++++++++++++++++++++++++++')
 	print('name_list',name_list)
 	email_queue = make_email_queue(email_queue_list)
@@ -621,6 +745,8 @@ def validate_item(doc):
 def submit_invoice(si_doc, name, doc, name_list,so_type):
 	try:
 		print(so_type,'before so_type------------',si_doc.delivery_date)
+		print('+'*100,si_doc.overall_directive_art)
+		print(si_doc)
 		# si_doc.insert()	
 		si_doc.submit()
 		print(so_type,'after so_type------------',si_doc.delivery_date)

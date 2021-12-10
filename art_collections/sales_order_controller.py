@@ -6,9 +6,10 @@ from frappe.utils import get_link_to_form,flt
 
 
 def sales_order_custom_validation(self, method):
-	validate_minimum_order_amount_as_per_customer_group(self)
-	valiate_payment_terms_and_credit_limit_for_customer(self)
-	validate_inner_qty_and_send_notification(self)
+	if self.is_offline_art==0:
+		validate_minimum_order_amount_as_per_customer_group(self)
+		valiate_payment_terms_and_credit_limit_for_customer(self)
+		validate_inner_qty_and_send_notification(self)
 
 
 def validate_inner_qty_and_send_notification(self):

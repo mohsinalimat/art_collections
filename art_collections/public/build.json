@@ -1,5 +1,5 @@
 {
-	"css/list.min.css": [
-		"public/less/list.less"
+	"css/pos_list.min.css": [
+		"public/less/pos_list.less"
 	]	
 }

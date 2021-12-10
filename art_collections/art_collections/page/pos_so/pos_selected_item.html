@@ -4,7 +4,8 @@
 		{% if nb_selling_packs_in_inner_art==0 %}
   	<input type="tel" class="form-control cell pos-item-qty" value="{%= qty %}"/>
 		{% else %}
-		<input type="number" class="form-control cell pos-item-qty" placeholder="x{%=nb_selling_packs_in_inner_art %}"  step="{%= nb_selling_packs_in_inner_art %}" min="{%= nb_selling_packs_in_inner_art %}"  max="{%= nb_selling_packs_in_inner_art*5 %}" value="{%= qty %}"/>
+		<small>{{ __("Inner Packs: x") }}{%=nb_selling_packs_in_inner_art %}</small>
+		<input type="number" class="form-control cell pos-item-qty" placeholder="x{%=nb_selling_packs_in_inner_art %}"  step="{%= nb_selling_packs_in_inner_art %}" min="0"  max="{%= nb_selling_packs_in_inner_art*100 %}" value="{%= qty %}"/>
 		{% endif %}		
 
 	</div>

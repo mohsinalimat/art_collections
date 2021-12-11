@@ -2081,8 +2081,27 @@ bind_qty_event: function () {
 	$(this.wrapper).on("change", ".pos-item-qty", function () {
 		var item_code = $(this).parents(".pos-selected-item-action").attr("data-item-code");
 		var qty = $(this).val();
-		me.update_qty(item_code, qty);
-		me.update_value();
+		var nb_selling_packs_in_inner_art = flt($('div[data-pos-item-nb-selling-packs-qty]').attr('data-pos-item-nb-selling-packs-qty'));
+		if (nb_selling_packs_in_inner_art > 0) {
+			let divisor = Math.floor(qty / nb_selling_packs_in_inner_art)
+			let allowed_selling_packs_in_inner = qty % nb_selling_packs_in_inner_art
+			let updated_inner_pack_qty = flt(nb_selling_packs_in_inner_art * (divisor + 1))
+			let warning_html = ''
+			if (allowed_selling_packs_in_inner != 0) {
+					warning_html =
+						`<p>
+				${__("Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>. <br> It is corrected to <b>{3}</b>",[item_code,nb_selling_packs_in_inner_art,qty,updated_inner_pack_qty])}
+			</p>`;
+				}
+			qty = updated_inner_pack_qty
+			frappe.msgprint(warning_html)
+			me.update_qty(item_code, qty);
+			me.update_value();
+		} else 
+		{
+			me.update_qty(item_code, qty);
+			me.update_value();
+		}
 	})
 
 	$(this.wrapper).on("focusout", ".pos-item-qty", function () {

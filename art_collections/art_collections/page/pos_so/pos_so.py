@@ -33,7 +33,7 @@ def get_pos_data():
 	if pos_profile.get('name'):
 		pos_profile = frappe.get_doc('POS Profile', pos_profile.get('name'))
 		pos_profile.validate()
-
+	print('pos_profile'*10,pos_profile)
 	company_data = get_company_data(doc.company)
 	update_pos_profile_data(doc, pos_profile, company_data)
 	# update_multi_mode_option(doc, pos_profile)
@@ -488,6 +488,16 @@ sum(ifnull(actual_qty,0)) - SUM(ifnull(reserved_qty,0))  as virtual_stock
 		itemwise_bin_data[bins.item_code]= bins.actual_qty
 	return itemwise_bin_data,itemwise_bin_data_for_virtual_stock
 
+# def get_pricing_rule_data(doc):
+# 	pricing_rules = ""
+# 	if doc.ignore_pricing_rule == 0:
+# 		pricing_rules = frappe.db.sql(""" Select * from `tabPricing Rule` where docstatus < 2
+# 						and ifnull(for_price_list, '') in (%(price_list)s, '') and selling = 1
+# 						and ifnull(company, '') in (%(company)s, '') and disable = 0 and %(date)s
+# 						between ifnull(valid_from, '2000-01-01') and ifnull(valid_upto, '2500-12-31')
+# 						order by priority desc, name desc""",
+#                         {'company': doc.company, 'price_list': doc.selling_price_list, 'date': nowdate()}, as_dict=1)
+# 	return pricing_rules
 def get_pricing_rule_data(doc):
 	pricing_rules = ""
 	if doc.ignore_pricing_rule == 0:
@@ -497,8 +507,15 @@ def get_pricing_rule_data(doc):
 						between ifnull(valid_from, '2000-01-01') and ifnull(valid_upto, '2500-12-31')
 						order by priority desc, name desc""",
                         {'company': doc.company, 'price_list': doc.selling_price_list, 'date': nowdate()}, as_dict=1)
-	return pricing_rules
 
+		for row in pricing_rules:
+			if row.apply_on:
+				doctype = "Pricing Rule " + row.apply_on
+				apply_on = frappe.scrub(row.apply_on)
+				row[apply_on] = [d.get(apply_on) for d in frappe.get_all(doctype,
+					filters = {"parent": row.name}, fields = [apply_on])]
+
+	return pricing_rules
 def create_quotation(doc):
 		quot_doc = frappe.new_doc('Quotation')
 		quot_doc.party_name=doc.get('customer')

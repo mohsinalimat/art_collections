@@ -49,6 +49,7 @@ init: function (wrapper) {
 },
 
 beforeunload: function (e) {
+	console.log('beforeunload',this.connection_status , frappe.get_route()[0],'this.connection_status , frappe.get_route()[0]')
 	if (this.connection_status == false && frappe.get_route()[0] == "pos-so") {
 		e = e || window.event;
 
@@ -2140,23 +2141,42 @@ bind_qty_event: function () {
 	})
 },
 
-bind_events: function() {
+on_item_selection:function () {
+	var me = this;
+	me.add_to_cart();
+	me.clear_selected_row();
+	me.bind_delete_event()
+},
+
+bind_events: function () {
 	var me = this;
 	// if form is local then allow this function
 	// $(me.wrapper).find(".pos-item-wrapper").on("click", function () {
 	$(this.wrapper).on("click", ".pos-item-wrapper", function () {
 		me.item_code = '';
 		me.customer_validate();
-		if($(me.pos_bill).is(":hidden")) return;
-
-		if (me.frm.doc.docstatus == 0) {
-			me.items = me.get_items($(this).attr("data-item-code"))
-			me.add_to_cart();
-			me.clear_selected_row();
+		if ($(me.pos_bill).is(":hidden")) return;
+		// alert user on adding a product to the cart, if it already exist in the cart and it is not the last one, display an alert
+		let selected_items = me.get_items($(this).attr("data-item-code"))
+		let selected_item_code = me.get_items($(this).attr("data-item-code"))[0].item_code
+		let cart_length = me.frm.doc["items"].length
+		let item_code_present_in_cart = me.frm.doc["items"].find(item => item.item_code == selected_item_code)
+		if (selected_item_code && cart_length > 1 && item_code_present_in_cart) {
+			let last_cart_item_code = me.frm.doc["items"][cart_length - 1].item_code
+			if (last_cart_item_code != selected_item_code) {
+				frappe.confirm(__("Item {0} is already in the cart, would you like to add more qty ?", [selected_item_code]), function () {
+					me.items = selected_items
+					me.on_item_selection()
+				})
+			} else {
+				me.items = selected_items
+				me.on_item_selection()
+			}
+		} else {
+			me.items = selected_items
+			me.on_item_selection()
 		}
 	});
-
-	me.bind_delete_event()
 },
 
 update_qty: function (item_code, qty, remove_zero_qty_items) {

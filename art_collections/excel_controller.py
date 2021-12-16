@@ -134,24 +134,6 @@ def make_excel(docname=None, doctype=None):
     frappe.db.commit()
 
 
-def __write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
-    wb = Workbook()
-    ws1 = wb.active
-    ws1.title = "range names"
-    for row in range(1, 40):
-        ws1.append(range(600))
-    ws2 = wb.create_sheet(title="Pi")
-    ws2["F5"] = 3.14
-    ws3 = wb.create_sheet(title="Data")
-    for row in range(10, 20):
-        for col in range(27, 54):
-            _ = ws3.cell(
-                column=col, row=row, value="{0}".format(get_column_letter(col))
-            )
-    print(ws3["AA10"].value)
-    wb.save(filename=dest_filename)
-
-
 def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
     # from xlsx utils with changes
     column_widths = column_widths or []
@@ -186,3 +168,50 @@ def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
                     _.hyperlink = value
                 else:
                     _ = ws.cell(column=col + 1, row=idx + 1, value=value)
+
+
+def sample_write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
+    wb = openpyxl.Workbook()
+    ws1 = wb.active
+    ws1.title = "range names"
+    for row in range(1, 40):
+        ws1.append(range(600))
+    ws2 = wb.create_sheet(title="Pi")
+    ws2["F5"] = 3.14
+    ws3 = wb.create_sheet(title="Data")
+    for row in range(10, 20):
+        for col in range(27, 54):
+            _ = ws3.cell(
+                column=col, row=row, value="{0}".format(get_column_letter(col))
+            )
+    print(ws3["AA10"].value)
+    wb.save(filename="dest_filename")
+
+
+# sales order print format
+def get_print_context_for_art_collectons_sales_order(name):
+    doc = frappe.get_doc("Sales Order", name)
+
+    ctx = {"doc": {}}
+
+    ctx["items"] = list(
+        frappe.db.sql(
+            """
+        select i.item_name, i.customer_code, tib.barcode, tw.warehouse_name,
+        sot.net_rate, sot.net_amount, sot.description, sot.total_weight, 
+        sot.qty, sot.image
+        from `tabSales Order Item` sot
+        inner join tabWarehouse tw on tw.name = sot.warehouse 
+        inner join tabItem i on i.name = sot.item_code
+        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        where sot.parent = %(name)s
+    """,
+            dict(name=name),
+            as_dict=True,
+        )
+    )
+
+    ctx["has_discount"] = any(x.discount_amount for x in doc.items)
+
+    print("*\n" * 10, ctx)
+    return ctx

@@ -60,7 +60,21 @@ def set_item_code_for_pre_item(self,method):
 
 @frappe.whitelist()
 def get_item_art_dashboard_data(item_code):
-	total_in_stock=frappe.db.sql("""select COALESCE(sum(actual_qty),0) from tabBin where item_code = %s """,(item_code))[0][0]
+	saleable_warehouse_type,reserved_warehouse_type = frappe.db.get_value('Art Collections Settings', 'Art Collections Settings', ['saleable_warehouse_type', 'reserved_warehouse_type'])
+	conditions=" 1=1"
+	print(saleable_warehouse_type,reserved_warehouse_type,'saleable_warehouse_type,reserved_warehouse_type')
+	if saleable_warehouse_type and reserved_warehouse_type:
+		conditions=" WH.warehouse_type in ('{0}','{1}')".format(saleable_warehouse_type,reserved_warehouse_type)
+	elif saleable_warehouse_type and not reserved_warehouse_type:
+		conditions=" WH.warehouse_type = '{0}'".format(saleable_warehouse_type)
+	elif not saleable_warehouse_type and reserved_warehouse_type:
+		conditions=" WH.warehouse_type = '{0}'".format(reserved_warehouse_type)
+	else :
+		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
+		return
+
+	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
+	where {conditions} and B.item_code = '{item_code}'""".format(conditions=conditions,item_code=item_code))[0][0]
 	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
 	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
@@ -112,6 +126,6 @@ def get_stock_qty_for_saleable_warehouse(item_code):
 		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
 		return
 
-	print(conditions,'conditions')
-	total_in_stock=frappe.db.sql("""select sum(B.actual_qty) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name where {conditions} and B.item_code = '{item_code}'""".format(conditions=conditions,item_code=item_code),as_dict=1)
+	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
+	where {conditions} and B.item_code = '{item_code}'""".format(conditions=conditions,item_code=item_code),as_dict=1)
 	return total_in_stock 	

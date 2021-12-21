@@ -197,14 +197,16 @@ def get_print_context_for_art_collectons_sales_order(name):
     ctx["items"] = list(
         frappe.db.sql(
             """
-        select i.item_name, i.customer_code, tib.barcode, tw.warehouse_name,
-        sot.net_rate, sot.net_amount, sot.description, sot.total_weight, 
-        sot.qty, sot.image
-        from `tabSales Order Item` sot
-        inner join tabWarehouse tw on tw.name = sot.warehouse 
-        inner join tabItem i on i.name = sot.item_code
+        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
+        tw.warehouse_name, soi.price_list_rate,
+        soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
+        soi.qty, soi.image, so.overall_directive_art
+        from `tabSales Order Item` soi
+        inner join `tabSales Order` so on so.name = soi.parent
+        left outer join tabWarehouse tw on tw.name = soi.warehouse 
+        inner join tabItem i on i.name = soi.item_code
         left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
-        where sot.parent = %(name)s
+        where soi.parent = %(name)s
     """,
             dict(name=name),
             as_dict=True,

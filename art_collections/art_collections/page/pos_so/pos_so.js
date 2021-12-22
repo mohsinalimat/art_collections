@@ -1951,6 +1951,13 @@ make_item_list: function (customer) {
 				item_price = format_currency(me.price_list_data[obj.name], me.frm.doc.currency);
 			}
 			if(index < me.page_len) {
+				let qty_to_display = me.get_virtual_stock(obj);
+				let indicator_color = qty_to_display > 10 ? "green" : qty_to_display <= 0 ? "red" : "orange";
+				if (Math.round(qty_to_display) > 999) {
+					qty_to_display = Math.round(qty_to_display)/1000;
+					qty_to_display = qty_to_display.toFixed(1) + 'K';
+				}
+
 				$(frappe.render_template("pos_so_item", {
 					item_code: obj.name,
 					delivery_date:me.default_delivery_date,
@@ -1961,6 +1968,8 @@ make_item_list: function (customer) {
 					item_name: obj.name === obj.item_name ? "" : obj.item_name,
 					item_image: obj.image,
 					item_stock: __('Stock') + ": " + me.get_actual_qty(obj),
+					qty_to_display:qty_to_display,
+					indicator_color:indicator_color,
 					item_virtual_stock: me.get_virtual_stock(obj) > 0 ? __('Virtual:') +me.get_virtual_stock(obj): "",
 					item_availability_date_art : obj.availability_date_art ? __('Av:')+ obj.availability_date_art: "",
 					nb_selling_packs_in_inner_art: obj.nb_selling_packs_in_inner_art > 0 ? obj.nb_selling_packs_in_inner_art: "",

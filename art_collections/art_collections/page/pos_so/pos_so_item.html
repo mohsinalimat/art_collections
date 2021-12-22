@@ -1,13 +1,14 @@
 <div class="pos-item-wrapper image-view-item" data-item-code="{{item_code}}">
 	<div class="image-view-header doclist-row">
 		<div class="list-value">
-			<a class="grey list-id" data-name="{{item_code}}" title="{{ item_name || item_code}}">{{item_name || item_code}}{% if(item_availability_date_art) { %}<br>({{ __(item_availability_date_art) }}){% } %}{% if(item_virtual_stock) { %}<br>({{ __(item_virtual_stock) }}){% } %}</a>
+			<a class="grey list-id" data-name="{{item_code}}" title="{{ item_name || item_code}}">{{item_name || item_code}}</a>
 		</div>
 	</div>
 	<div class="image-view-body">
 		<a  data-item-code="{{ item_code }}"
 			title="{{ item_name || item_code }}"
 		>
+
 			<div class="image-field"
 				style="
 				{% if (!item_image) { %}
@@ -24,9 +25,13 @@
 				<img onerror="cur_page.page.pos.handle_broken_image(this,{{item_code}})" src="{{ item_image }}" alt="{{item_name || item_code}}">
 				{% } %}
 			</div>
+
 			<span class="price-info">
-				{% if(nb_selling_packs_in_inner_art) { %}(Inner:{{ __(nb_selling_packs_in_inner_art) }})<br>{% } %}
-				{{item_price}} / {{item_uom}} 
+			
+					<span class="indicator-pill whitespace-nowrap {{indicator_color}}">{{qty_to_display}}</span>
+				{% if(nb_selling_packs_in_inner_art) { %}	<span class="indicator-pill whitespace-nowrap blue">I: {{nb_selling_packs_in_inner_art}}</span><br>{% } %}
+				{% if(item_availability_date_art) { %}	<span class="indicator-pill whitespace-nowrap pink">{{item_availability_date_art}}</span><br>{% } %}
+				{{item_price}}
 			</span>
 		</a>
 	</div>

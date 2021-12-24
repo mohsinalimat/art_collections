@@ -1,0 +1,42 @@
+<div class="pos-item-wrapper image-view-item item-wrapper"
+				data-item-code="{{item_code}}" title="{{ item_name || item_code}}">
+
+				{% if (item_image) %}
+				{% if(nb_selling_packs_in_inner_art) { %}
+				<div class="item-inner-qty-pill" style="position: absolute;display: flex;	justify-content: flex-start;left: 15px;">
+					<span class="indicator-pill whitespace-nowrap blue">{{nb_selling_packs_in_inner_art}}</span>
+				</div>	
+				{% } %}				
+				<div class="item-qty-pill" style="position: absolute;display: flex;justify-content: flex-end;right: 15px;">
+					<span class="indicator-pill whitespace-nowrap {{indicator_color}}">{{qty_to_display}}</span>
+				</div>
+				{% if(item_availability_date_art) { %}<div style="position: absolute;display: flex;	justify-content: flex-start;left: 15px;top: 140px;"><span  class="indicator-pill whitespace-nowrap pink">{{item_availability_date_art}}</span></div>{% } %}
+				<div class="flex items-center justify-center h-32 border-b-grey text-6xl text-grey-100">
+					<img
+						onerror="cur_page.page.pos.handle_broken_image(this,{{item_code}})"
+						class="h-full" src="{{ item_image }}" 
+						alt="{{frappe.get_abbr( item_name)}}"
+						style="object-fit: cover;">
+	
+				</div>
+		{% else %}
+		{% if(nb_selling_packs_in_inner_art) { %}
+		<div class="item-inner-qty-pill" style="position: absolute;display: flex;	justify-content: flex-start;left: 15px;">
+			<span class="indicator-pill whitespace-nowrap blue">{{nb_selling_packs_in_inner_art}}</span>
+		</div>
+		{% } %}	
+		<div class="item-qty-pill" style="position: absolute;display: flex;justify-content: flex-end;right: 15px;">
+			<span class="indicator-pill whitespace-nowrap {{indicator_color}}">{{qty_to_display}}</span>
+		</div>
+		<span class="placeholder-text"> 	{{frappe.get_abbr(item_name || item_code )}}
+		</span>
+		<div class="item-display abbr">	{{frappe.get_abbr(item_name || item_code )}}	</div>		
+		{% endif %}
+
+				<div class="item-detail">
+					<div class="item-name">
+						{{frappe.ellipsis(item_name, 18)}}
+					</div>
+					<div class="item-rate">{{item_price}}</div>
+				</div>
+			</div>

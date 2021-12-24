@@ -524,9 +524,11 @@ def create_quotation(doc):
 			quot_doc.art_shipping_contact_name=frappe.db.get_value('Contact', quot_doc.art_shipping_contact_person, 'first_name')
 			quot_doc.art_shipping_contact_email=frappe.db.get_value('Contact', quot_doc.art_shipping_contact_person, 'email_id')
 		quot_doc.update(doc)
+		quot_doc.naming_series='SAL-QTN-.YYYY.-'
 		quot_doc.contact_person=None
 		quot_doc.run_method("set_missing_values")
 		# quot_doc.run_method("calculate_taxes_and_totals")
+		print('quot'*100,quot_doc,doc)
 		quot_doc.save(ignore_permissions=True)
 		print('8'*100,quot_doc.name)
 		return quot_doc.name

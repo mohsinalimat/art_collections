@@ -196,10 +196,10 @@ def _get_cart_quotation(party=None,order_type=None,wish_list_name=None):
 
 # called from hook
 def set_wishlist_cart_count(login_manager):
-	from erpnext.e_commerce.shopping_cart.utils import show_cart_count , check_customer_or_supplier
+	from erpnext.e_commerce.shopping_cart.utils import show_cart_count , is_customer
 	# from erpnext.shopping_cart.utils import  show_cart_count , check_customer_or_supplier
-	role, parties = check_customer_or_supplier()
-	if role == 'Supplier': return
+	is_customer = is_customer()
+	if is_customer == False: return
 	if show_cart_count():
 		set_cart_count()
 

@@ -255,6 +255,8 @@ body[data-route="pos-so"] .item-list .image-field .placeholder-text {
 }
 body[data-route="pos-so"] .item-list .pos-item-wrapper {
   position: relative;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-base);  
 }
 body[data-route="pos-so"] .pos-bill-toolbar {
   margin-top: 10px;
@@ -295,20 +297,79 @@ body[data-route="pos-so"] .collapse-btn {
   cursor: pointer;
 }
 
+/* 
 
-
-body[data-route="pos-so"] .item-qty-pill {
-  position: absolute;
-  display: flex;
-  margin: var(--margin-sm);
-  justify-content: flex-end;
-  right: 0px;
-}
-
-body[data-route="pos-so"] .item-inner-qty-pill {
+body[data-route="pos-so"].item-list .pos-item-wrapper .item-qty-pill {
   position: absolute;
   display: flex;
   margin: var(--margin-sm);
   justify-content: flex-end;
   left: 0px;
 }
+
+body[data-route="pos-so"].item-inner-qty-pill {
+  position: absolute;
+  display: flex;
+  margin: var(--margin-sm);
+  justify-content: flex-end;
+  right: 0px;
+} */
+/* 
+body[data-route="pos-so"] .item-wrapper {
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-base);
+        position: relative;
+
+
+        .item-qty-pill {
+          position: absolute;
+          display: flex;
+          margin: var(--margin-sm);
+          justify-content: flex-end;
+          right: 0px;
+        }
+        .item-inner-qty-pill{
+          position: absolute;
+          display: flex;
+          margin: var(--margin-sm);
+          justify-content: flex-start;
+          left: 0px;          
+        }
+        .item-display {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--border-radius-md);
+          margin: var(--margin-sm);
+          margin-bottom: 0px;
+          min-height: 8rem;
+          height: 8rem;
+          color: var(--gray-500);
+
+          > img {
+            @extend .image;
+          }
+        }
+
+        > .item-detail {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          min-height: 3.5rem;
+          height: 3.5rem;
+          padding-left: var(--padding-sm);
+          padding-right: var(--padding-sm);
+
+          > .item-name {
+            @extend .nowrap;
+            display: flex;
+            align-items: center;
+            font-size: var(--text-md);
+          }
+
+          > .item-rate {
+            font-weight: 700;
+          }
+        }
+
+      } */

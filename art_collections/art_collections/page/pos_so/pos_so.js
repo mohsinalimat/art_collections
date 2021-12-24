@@ -77,17 +77,17 @@ set_indicator: function () {
 	// navigator.onLine
 	this.connection_status = false;
 	frappe.flags.is_online = false
-	$('.greycube').remove()
-	$('.pos-bill-toolbar').append('<span class="greycube indicator red">Offline</span>')
-	// this.page.set_indicator(__("Offline"), "red")
+	// $('.greycube').remove()
+	// $('.pos-bill-toolbar').append('<span class="greycube indicator red">Offline</span>')
+	this.page.set_indicator(__("Offline"), "red")
 	frappe.call({
 		method: "frappe.handler.ping",
 		callback: function (r) {
 			if (r.message) {
 				me.connection_status = true;
-				// me.page.set_indicator(__("Online"), "green")
-				$('.greycube').remove()
-				$('.pos-bill-toolbar').append('<span class="greycube indicator green">Online</span>')
+				me.page.set_indicator(__("Online"), "green")
+				// $('.greycube').remove()
+				// $('.pos-bill-toolbar').append('<span class="greycube indicator green">Online</span>')
 				frappe.flags.is_online = true
 				//online
 			}
@@ -162,13 +162,18 @@ make_menu_list: function () {
 	});
 
 
-	this.page.add_menu_item(__("Online : POS Profile"), function () {
-		frappe.set_route('List', 'POS Profile');
+	this.page.add_menu_item(__("New Order"), function () {
+		me.new_order(transaction_type='Sales Order'),'New'
 	});
-
-	this.page.add_action_item('New Order', () => this.new_order(transaction_type='Sales Order'))	
-	this.page.add_action_item('New Bon de Commande', () => this.new_order(transaction_type='Bon de Commande'))
-	this.page.add_action_item('New Quotation', () => this.new_order(transaction_type='Quotation'))
+	this.page.add_menu_item(__("New Bon de Commande"), function () {
+		me.new_order(transaction_type='Bon de Commande'),'New'
+	});
+	this.page.add_menu_item(__("New Quotation"), function () {
+		me.new_order(transaction_type='Quotation'),'New'
+	});
+	// this.page.add_action_item('New Order', () => this.new_order(transaction_type='Sales Order'))	
+	// this.page.add_action_item('New Bon de Commande', () => this.new_order(transaction_type='Bon de Commande'))
+	// this.page.add_action_item('New Quotation', () => this.new_order(transaction_type='Quotation'))
 	
 },
 new_order:function(transaction_type){
@@ -1001,6 +1006,38 @@ make_cycle_status: function () {
 	// me.frm.doc.delivery_date =this.delivery_date.$input.val()
 	console.log('inside make me.frm.doc.cycle_status_art',me.frm.doc.cycle_status_art)
 },
+
+make_transaction_type: function () {
+	var me = this;
+	this.select_transaction_type = frappe.ui.form.make_control({
+		df: {
+			"fieldtype": "Select",
+			"options": "\nSales Order\nBon de Commande\nQuotation",
+			"label": __("Transaction"),
+			"placeholder":__("Change Transaction Type"),
+			"fieldname": "select_transaction_type",
+			change: () => {
+				this.show_fields_as_per_transaction_type(this.select_transaction_type.get_value())
+				this.hide_fields_as_per_transaction_type(this.select_transaction_type.get_value())
+				this.set_fields_as_per_transaction_type(this.select_transaction_type.get_value())
+				this.wrapper.find(".transaction_type-field").html('')
+				this.make_read_only_fields(parent=".transaction_type-field",fieldname="transaction_type",label=__('Transaction'),set_value=this.select_transaction_type.get_value());
+			}
+
+		},
+		parent: this.wrapper.find(".transaction_type_selection-field"),
+		only_input: true,
+	});
+
+	this.select_transaction_type.make_input();	
+	// to set default
+	// if (!me.frm.doc.cycle_status_art) {
+	// 	me.frm.doc.cycle_status_art='Implantation'
+		
+	// }	
+	// this.select_transaction_type.$input.val(this.select_transaction_type.get_value());
+},
+
 make_title: function () {
 	var me = this;
 	// var default_date=frappe.datetime.add_days(frappe.datetime.get_today(), 5)
@@ -1065,7 +1102,7 @@ make_search: function () {
 
 	this.search_item.make_input();
 
-	this.search_item.$input.on("keypress", function (event) {
+	this.search_item.$input.on("keydown", function (event) {
 
 		clearTimeout(me.last_search_timeout);
 		me.last_search_timeout = setTimeout(() => {
@@ -1167,21 +1204,23 @@ make_list_customers: function () {
 		if($(this).hasClass("view_order_main")) {
 			// me.render_list_customers();
 			// me.list_customers.show();
-			me.list_customers.hide();
-			me.render_order_main();
-			me.order_header_section.show();
 			me.pos_bill.hide();
 			me.numeric_keypad.hide();
 			me.toggle_delete_button()
+			me.list_customers.hide();
+			me.render_order_main();
+			me.order_header_section.show();
+		
 		} else {
 			if(me.frm.doc.docstatus == 0) {
 				me.party_field.$input.attr('disabled', false);
 			}
+			me.order_header_section.hide();
+			me.list_customers.hide();
 			me.pos_bill.show();
 			me.toggle_totals_area(false);
 			me.toggle_delete_button()
-			me.order_header_section.hide();
-			me.list_customers.hide();
+		
 			me.numeric_keypad.show();
 		}
 	});
@@ -1357,6 +1396,38 @@ set_fields_as_per_transaction_type:function (transaction_type) {
 	this.frm.doc.is_offline_art=1
 	
 },
+show_fields_as_per_transaction_type:function (transaction_type) {
+	switch (transaction_type) {
+		case 'Sales Order':
+			this.toggle_component(true,this.wrapper.find('.facing_required_art-field'))
+			this.toggle_component(true,this.wrapper.find('.overall_directive_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_by_appointment_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_contact_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_appointment_contact_detail_art-field'))			
+		break;
+		
+		case 'Bon de Commande':
+			this.toggle_component(true,this.wrapper.find('.facing_required_art-field'))
+			this.toggle_component(true,this.wrapper.find('.overall_directive_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_by_appointment_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_contact_art-field'))
+			this.toggle_component(true,this.wrapper.find('.delivery_appointment_contact_detail_art-field'))	
+			
+			this.toggle_component(true,this.wrapper.find('.order_expiry_date_ar-field'))
+
+		break;
+		
+			case 'Quotation':
+				
+				
+
+			break;			
+
+		default:
+		break;
+	}
+	
+},
 hide_fields_as_per_transaction_type:function (transaction_type) {
 	switch (transaction_type) {
 		case 'Sales Order':
@@ -1398,7 +1469,7 @@ render_order_main:function(){
 		contact_label=__('Contact')
 		delivery_date_required=1
 	}
-
+	this.make_transaction_type()
 
 	this.make_read_only_fields(parent=".transaction_type-field",fieldname="transaction_type",label=__('Transaction'),set_value=me.frm.doc.transaction_type);
 	if (this.frm.doc.title=='') {
@@ -1552,7 +1623,9 @@ make_customer: function () {
 			$(frappe.render_template('customer_toolbar', {
 				// allow_delete: this.pos_profile_data["allow_delete"]
 				allow_delete:true
-			})).insertAfter(this.page.$title_area.hide());
+			})).prependTo($('.standard-actions'))
+			// this.make_transaction_type()
+			// .insertAfter(this.page.$title_area.hide());
 		}
 
 		this.party_field = frappe.ui.form.make_control({
@@ -1561,7 +1634,8 @@ make_customer: function () {
 				"options": this.party,
 				"label": this.party,
 				"fieldname": this.party.toLowerCase(),
-				"placeholder": __("Select or add new customer")
+				"placeholder": __("Select or add new customer"),
+				"only_select":true
 			},
 			parent: this.page.wrapper.find(".party-area"),
 			only_input: true,
@@ -1628,6 +1702,12 @@ make_customer: function () {
 			me.toggle_list_customer(false);
 			me.toggle_edit_button(true);
 			me.update_customer_data(customer);
+			console.log('onclick',$('.transaction_type_selection-field').length == 0 ||		$('.transaction_type_selection-field').is(":hidden"),$('.transaction_type_selection-field').length ,$('.transaction_type_selection-field').is(":hidden"))
+				setTimeout(() => {
+					$('.order-main-btn').trigger('click')
+					$('.order-main-btn').trigger('click')
+				}, 250);
+
 			me.refresh();
 			me.set_focus();
 			me.list_customers_btn.removeClass("view_customer");
@@ -1707,14 +1787,14 @@ prepare_customer_mapper: function(key) {
 		}
 	});
 
-	this.customers_mapper.push({
-		label: "<span class='text-primary link-option'>"
-		+ "<i class='fa fa-plus' style='margin-right: 5px;'></i> "
-		+ __("Create a new Customer")
-		+ "</span>",
-		value: 'is_action',
-		action: me.add_customer
-	});
+	// this.customers_mapper.push({
+	// 	label: "<span class='text-primary link-option'>"
+	// 	+ "<i class='fa fa-plus' style='margin-right: 5px;'></i> "
+	// 	+ __("Create a new Customer")
+	// 	+ "</span>",
+	// 	value: 'is_action',
+	// 	action: me.add_customer
+	// });
 },
 
 autocomplete_customers: function() {
@@ -1958,7 +2038,7 @@ make_item_list: function (customer) {
 					qty_to_display = qty_to_display.toFixed(1) + 'K';
 				}
 
-				$(frappe.render_template("pos_so_item", {
+				$(frappe.render_template("pos_so_item_new", {
 					item_code: obj.name,
 					delivery_date:me.default_delivery_date,
 					prevdoc_docname:'',
@@ -1972,7 +2052,7 @@ make_item_list: function (customer) {
 					indicator_color:indicator_color,
 					item_virtual_stock: me.get_virtual_stock(obj) > 0 ? __('Virtual:') +me.get_virtual_stock(obj): "",
 					item_availability_date_art : obj.availability_date_art ? __('Av:')+ obj.availability_date_art: "",
-					nb_selling_packs_in_inner_art: obj.nb_selling_packs_in_inner_art > 0 ? obj.nb_selling_packs_in_inner_art: "",
+					nb_selling_packs_in_inner_art: obj.nb_selling_packs_in_inner_art > 0 ? obj.nb_selling_packs_in_inner_art: undefined,
 					item_uom: obj.stock_uom,
 					color: frappe.get_palette(obj.item_name),
 					abbr: frappe.get_abbr(obj.item_name)
@@ -2574,13 +2654,15 @@ print_dialog: function () {
 	var me = this;
 
 	this.msgprint = frappe.msgprint(
-		`
-
-	<a class="btn btn-default new_quotation" style="margin-right: 5px;">${__('New Quotation')}</a>
+		`<a class="btn btn-default new_quotation" style="margin-right: 5px;">${__('New Quotation')}</a>
 	<a class="btn btn-default  new_bon_de_commande" style="margin-right: 5px;">${__('New Bon de Commande')}</a>
-	<a class="btn btn-primary new_order">${__('New Order')}</a>
+	<a class="btn btn-primary new_order">${__('New Order')}</a>	
 	`);
 
+	// this.msgprint.msg_area.find('.offline_orders').on('click', function() {
+	// 	me.msgprint.hide();
+	// 	me.view_only_past_order_list()
+	// })	
 	this.msgprint.msg_area.find('.new_bon_de_commande').on('click', function() {
 		me.msgprint.hide();
 		me.new_order(transaction_type='Bon de Commande')
@@ -2844,6 +2926,29 @@ remove_customer_from_localstorage: function() {
 
 validate: function () {
 	var me = this;
+	if (this.frm.doc.doctype=='Quotation') {
+		delete this.frm.doc['needs_confirmation_art'];
+		delete this.frm.doc['facing_required_art'];
+		delete this.frm.doc['order_expiry_date_ar'];
+		delete this.frm.doc['overall_directive_art'];
+		delete this.frm.doc['delivery_by_appointment_art'];
+		delete this.frm.doc['delivery_contact_art'];
+		delete this.frm.doc['delivery_appointment_contact_detail_art'];
+		this.frm.doc.items.forEach(d => {
+			if (d.doctype == 'Sales Order Item') {
+			d.doctype='Quotation Item'
+			d.name=d.name.replace('new-sales-order-item-','new-quotation-item-')
+			}
+		});		
+		}
+		else if(this.frm.doc.doctype=='Sales Order'){
+		this.frm.doc.items.forEach(d => {
+			if (d.doctype == 'Quotation Item') {
+			d.doctype='Sales Order Item'
+			d.name=d.name.replace('new-quotation-item-','new-sales-order-item-')
+			}
+		});	
+	}
 	this.customer_validate();
 	this.validate_zero_qty_items();
 	this.item_validate();
@@ -2866,7 +2971,7 @@ validate_zero_qty_items: function() {
 
 item_validate: function () {
 	if (this.frm.doc.items.length == 0) {
-		frappe.throw(__("Select items to save the invoice"))
+		frappe.throw(__("Select items to save the transaction"))
 	}
 },
 

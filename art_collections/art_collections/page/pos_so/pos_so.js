@@ -472,10 +472,9 @@ set_default_customer: function() {
 set_transaction_defaults: function (party) {
 	var me = this;
 	this.party = party;
-	this.price_list = (party == "Customer" ?
-		this.frm.doc.selling_price_list : this.frm.doc.buying_price_list);
-	this.price_list_field = (party == "Customer" ? "selling_price_list" : "buying_price_list");
-	this.sales_or_purchase = (party == "Customer" ? "Sales" : "Purchase");
+	this.price_list = this.frm.doc.selling_price_list
+	this.price_list_field = "selling_price_list"
+	this.sales_or_purchase = "Sales"
 },
 
 make: function () {
@@ -486,7 +485,6 @@ make: function () {
 make_control: function() {
 	this.frm = {}
 	this.frm.doc = this.doc
-	// this.frm.doc.delivery_date =frappe.datetime.add_days(frappe.datetime.get_today(), 5)
 	this.set_transaction_defaults("Customer");
 	this.frm.doc["allow_user_to_edit_rate"] = this.pos_profile_data["allow_user_to_edit_rate"] ? true : false;
 	this.frm.doc["allow_user_to_edit_discount"] = this.pos_profile_data["allow_user_to_edit_discount"] ? true : false;
@@ -499,12 +497,6 @@ make_control: function() {
 	this.make_customer();
 	this.make_list_customers();
 	this.bind_numeric_keypad();
-	// this.set_default_delivery_date();
-	// this.make_delivery_date();
-	// this.make_title();
-	// this.make_cycle_status();
-
-
 },
 make_contact_field_link: function () {
 	let me = this;
@@ -1703,14 +1695,20 @@ make_customer: function () {
 			me.toggle_edit_button(true);
 			me.update_customer_data(customer);
 			console.log('onclick',$('.transaction_type_selection-field').length == 0 ||		$('.transaction_type_selection-field').is(":hidden"),$('.transaction_type_selection-field').length ,$('.transaction_type_selection-field').is(":hidden"))
-				setTimeout(() => {
-					$('.order-main-btn').trigger('click')
-					$('.order-main-btn').trigger('click')
-				}, 250);
+
 
 			me.refresh();
 			me.set_focus();
 			me.list_customers_btn.removeClass("view_customer");
+
+			// add below code directly...to show default order headers
+			me.pos_bill.hide();
+			me.numeric_keypad.hide();
+			me.toggle_delete_button()
+			me.list_customers.hide();
+			me.render_order_main();
+			me.order_header_section.show();				
+			// end : add below code directly...to show default order headers
 		})
 		.on('focus', function (e) {
 			$(e.target).val('').trigger('input');

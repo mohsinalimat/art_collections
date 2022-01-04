@@ -1,3 +1,91 @@
+{% macro render_items(items, message) %}
+
+<div class="row">
+    <div class="col-xs-10">
+        <table class="table" style="border:1px solid #000;">
+            <!-- <colgroup>
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+            </colgroup> -->
+            <thead>
+                <tr>
+                    <th>Zone</th>
+                    <th>Ref</th>
+                    <th>Your Ref. </th>
+                    <th>Description</th>
+                    <th>Barcode</th>
+                    <th>HScode</th>
+                    <th>Weight</th>
+                    <th>Inner Qty</th>
+                    <th>Qty</th>
+                    <th>Gross Price</th>
+                    {% if ctx.has_discount %}
+                    <th>Discount</th>
+                    {% endif %}
+                    <th>Net Price</th>
+                    <th>Total Line</th>
+                    <th>Photo</th>
+                </tr>
+                {% if message %}
+                <tr>
+                    <th colspan="{{ 14 if ctx.has_discount else 13}}">
+                        {{message}}
+                    </th>
+                </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for d in items %}
+                <tr>
+                    <td>{{ d.warehouse_name or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.customer_code or "" }} </td>
+                    <td>{{ d.description or "" }}</td>
+                    <!-- <td>{{ d.barcode or "" }}</td> -->
+                    <td>
+                        {% if d.barcode %}
+                        <img alt="{{d.barcode}}"
+                            src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
+                        {% endif %}
+                    </td>
+                    <td>{{ d.customs_tariff_number or "" }}</td>
+                    <td>{{ d.weight or 0 }}</td>
+                    <td class="text-right">{{ d.nb_selling_packs_in_inner_art or "" }}</td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                    <td class="text-right">{{ d.price_list_rate or "" }}</td>
+                    {% if ctx.has_discount %}
+                    <td class="text-right">{{ d.discount_amount or ""}}</td>
+                    {% endif %}
+                    <td class="text-right">{{ d.net_rate or "" }}</td>
+                    <td class="text-right">{{ d.net_amount or "" }}</td>
+                    <td>
+                        {% if d.image %}
+                        <img src="{{ d.image or '' }}" alt="item image">
+                        {% else %}
+                        &nbsp;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endmacro %}
+
 <style>
     .row>.col-xs-6:first-child {
         padding-right: 5px;
@@ -68,82 +156,19 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-xs-10">
-        <table class="table" style="border:1px solid #000;">
-            <!-- <colgroup>
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-            </colgroup> -->
-            <thead>
-                <tr>
-                    <th>Zone</th>
-                    <th>Ref</th>
-                    <th>Your Ref. </th>
-                    <th>Description</th>
-                    <th>Barcode</th>
-                    <th>HScode</th>
-                    <th>Weight</th>
-                    <th>Inner Qty</th>
-                    <th>Qty</th>
-                    <th>Gross Price</th>
-                    {% if ctx.has_discount %}
-                    <th>Discount</th>
-                    {% endif %}
-                    <th>Net Price</th>
-                    <th>Total Line</th>
-                    <th>Photo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for d in ctx.get("items") %}
-                <tr>
-                    <td>{{ d.warehouse_name or "" }}</td>
-                    <td>{{ d.item_name or "" }}</td>
-                    <td>{{ d.customer_code or "" }} </td>
-                    <td>{{ d.description or "" }}</td>
-                    <!-- <td>{{ d.barcode or "" }}</td> -->
-                    <td>
-                        {% if d.barcode %}
-                        <img alt="{{d.barcode}}"
-                            src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
-                        {% endif %}
-                    </td>
-                    <td>{{ d.customs_tariff_number or "" }}</td>
-                    <td>{{ d.weight or 0 }}</td>
-                    <td class="text-right">{{ d.nb_selling_packs_in_inner_art or "" }}</td>
-                    <td class="text-right">{{ d.qty or "" }}</td>
-                    <td class="text-right">{{ d.price_list_rate or "" }}</td>
-                    {% if ctx.has_discount %}
-                    <td class="text-right">{{ d.discount_amount or ""}}</td>
-                    {% endif %}
-                    <td class="text-right">{{ d.net_rate or "" }}</td>
-                    <td class="text-right">{{ d.net_amount or "" }}</td>
-                    <td>
-                        {% if d.image %}
-                        <img src="{{ d.image or '' }}" alt="item image">
-                        {% else %}
-                        &nbsp;
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+{% set items_in_stock = ctx.get("items") | selectattr("in_stock",'eq',1) | list %}
+{% set items_out_of_stock = ctx.get("items") | selectattr("in_stock","eq",0) | list %}
+
+<!-- In Stock -->
+{% if items_in_stock | len %}
+{{ render_items(items_in_stock, "In Stock") }}
+{% endif %}
+<!-- Temporarily Out of Stock -->
+{% if items_out_of_stock | len %}
+{{ render_items(items_out_of_stock, "Temporarily Out of Stock") }}
+{% endif %}
+
+
 
 <div class="row">
     <div class="col-xs-9">

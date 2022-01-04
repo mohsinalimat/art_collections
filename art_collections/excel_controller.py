@@ -198,9 +198,10 @@ def get_print_context_for_art_collectons_sales_order(name):
         frappe.db.sql(
             """
         select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-        tw.warehouse_name, soi.price_list_rate,
+        tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
         soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
-        soi.qty, soi.image, so.overall_directive_art
+        soi.qty, soi.image, so.overall_directive_art,
+        if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock
         from `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent
         left outer join tabWarehouse tw on tw.name = soi.warehouse 

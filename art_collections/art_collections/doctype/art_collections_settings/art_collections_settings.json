@@ -11,7 +11,9 @@
   "warehouse_type_sb_section",
   "saleable_warehouse_type",
   "damage_warehouse_type",
-  "reserved_warehouse_type"
+  "reserved_warehouse_type",
+  "default_email_template_sb_section",
+  "sales_order_email_template"
  ],
  "fields": [
   {
@@ -52,12 +54,23 @@
    "fieldtype": "Link",
    "label": "Reserved Warehouse Type",
    "options": "Warehouse Type"
+  },
+  {
+   "fieldname": "default_email_template_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Default Email Template"
+  },
+  {
+   "fieldname": "sales_order_email_template",
+   "fieldtype": "Link",
+   "label": "Sales Order Email Template",
+   "options": "Email Template"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-12-09 15:53:23.821855",
+ "modified": "2022-01-07 05:41:27.067493",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

@@ -96,11 +96,13 @@ frappe.ui.form.on('Sales Order', {
 	validate: function (frm) {
 
 		// ignore_warning is set to true in warning popup's success route
-		if (frm.ignore_warning) {
+		console.log(frm.doc.ignore_warning,'ignore')
+		if (frm.doc.ignore_warning) {
 			return;
 		}
 		frappe.validated = false;
-		frm.trigger('create_warning_dialog_for_inner_qty_check');
+		create_warning_dialog_for_inner_qty_check(frm)
+		// frm.trigger('create_warning_dialog_for_inner_qty_check');
 
 		if (frm.doc.order_type && (frm.doc.order_type == 'Shopping Cart' || frm.doc.order_type == 'Shopping Cart Wish List')) {
 			$.each(frm.doc.items || [], function (i, d) {
@@ -117,77 +119,6 @@ frappe.ui.form.on('Sales Order', {
 		}
 	},
 
-	create_warning_dialog_for_inner_qty_check: function (frm) {
-		let promises = [];
-		let warning_html_messages = []
-
-		$.each(frm.doc.items || [], function (i, d) {
-			// create each new promise for item iteration
-			let p = new Promise(resolve => {
-				frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
-					message
-				}) => {
-					console.log(message);
-					let raise_warning = false
-					let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
-					if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
-						if (d.qty >= nb_selling_packs_in_inner_art) {
-							let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
-							if (allowed_selling_packs_in_inner != 0) {
-								raise_warning = true
-							}
-						} else {
-							raise_warning = true
-						}
-						if (raise_warning == true) {
-							let warning_html =
-								`<p>
-									${__("#<b>{3}</b> : Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>", [d.item_name, nb_selling_packs_in_inner_art, d.qty, d.idx])}
-								</p>`;
-							warning_html_messages.push(warning_html)
-							// resolve on warning
-							resolve();
-						} else {
-							// resolve on no warning
-							resolve();
-						}
-					}
-					else {
-						// when nb_selling_packs_in_inner_art ==0 
-						resolve();
-					}
-				});
-			});
-			// push all promises p to array
-			promises.push(p);
-		});
-
-		// start-- once the for loop od item is over need to run below code
-		Promise.all(promises).then(() => {
-
-			let state_table_html = `<p class="bold">
-						${__('Are you sure you want to save this document?')}
-						</p>`;
-			const message_html = state_table_html + warning_html_messages.join('') + __('You should recheck');
-
-			if (warning_html_messages.length > 0) {
-				let proceed_action = () => {
-					frm.ignore_warning = true;
-					frm.save();
-				};
-				frappe.warn(
-					__("Unusual qty regarding no. of selling pack in inner"),
-					message_html,
-					proceed_action,
-					__("Save Anyway")
-				);
-			} else {
-				// no warning , so set the flag and save
-				frm.ignore_warning = true;
-				frm.save();
-			}
-		});
-	},
 
 	after_save: function (frm) {
 		if (frm.doc.docstatus === 1) {
@@ -237,4 +168,78 @@ function show_email_dialog(frm) {
 				});
 			}, 900);
 		});
+}
+
+
+function 	create_warning_dialog_for_inner_qty_check (frm) {
+	let promises = [];
+	let warning_html_messages = []
+
+	$.each(frm.doc.items || [], function (i, d) {
+		// create each new promise for item iteration
+		let p = new Promise(resolve => {
+			frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
+				message
+			}) => {
+				console.log(message);
+				let raise_warning = false
+				let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
+				debugger
+				if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
+					if (d.qty >= nb_selling_packs_in_inner_art) {
+						let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
+						if (allowed_selling_packs_in_inner != 0) {
+							raise_warning = true
+						}
+					} else {
+						raise_warning = true
+					}
+					if (raise_warning == true) {
+						let warning_html =
+							`<p>
+								${__("#<b>{3}</b> : Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>", [d.item_name, nb_selling_packs_in_inner_art, d.qty, d.idx])}
+							</p>`;
+						warning_html_messages.push(warning_html)
+						// resolve on warning
+						resolve();
+					} else {
+						// resolve on no warning
+						resolve();
+					}
+				}
+				else {
+					// when nb_selling_packs_in_inner_art ==0 
+					resolve();
+				}
+			});
+		});
+		// push all promises p to array
+		promises.push(p);
+	});
+
+	// start-- once the for loop od item is over need to run below code
+	Promise.all(promises).then(() => {
+
+		let state_table_html = `<p class="bold">
+					${__('Are you sure you want to save this document?')}
+					</p>`;
+		const message_html = state_table_html + warning_html_messages.join('') + __('You should recheck');
+
+		if (warning_html_messages.length > 0) {
+			let proceed_action = () => {
+				frm.doc.ignore_warning = true;
+				frm.save();
+			};
+			frappe.warn(
+				__("Unusual qty regarding no. of selling pack in inner"),
+				message_html,
+				proceed_action,
+				__("Save Anyway")
+			);
+		} else {
+			// no warning , so set the flag and save
+			frm.doc.ignore_warning = true;
+			frm.save();
+		}
+	});
 }

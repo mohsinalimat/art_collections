@@ -125,7 +125,7 @@ doc_events = {
             "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.excel_controller.on_submit_sales_order",
         ],
-        "validate": "art_collections.sales_order_controller.sales_order_custom_validation",
+        "on_update": "art_collections.sales_order_controller.sales_order_custom_validation",
     },
     "Purchase Order": {
         "on_submit": [

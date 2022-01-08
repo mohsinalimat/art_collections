@@ -2,7 +2,9 @@ frappe.ui.form.on('Sales Order', {
 
 	setup: function (frm) {
 		frappe.realtime.on("show_sales_order_email_dialog", function () {
-			show_email_dialog(frm);
+			frm.reload_doc().then(() => {
+				show_email_dialog(frm);
+			});
 		});
 	},
 

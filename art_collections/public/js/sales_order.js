@@ -7,9 +7,6 @@ frappe.ui.form.on('Sales Order', {
 	},
 
 	onload_post_render: function (frm) {
-
-		frm.page.add_menu_item(__('Send Email'), function () { show_email_dialog(frm); });
-
 		frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_type')
 			.then(saleable_warehouse_type => {
 				if (saleable_warehouse_type) {
@@ -80,6 +77,8 @@ frappe.ui.form.on('Sales Order', {
 
 	},
 	refresh: function (frm) {
+		frm.page.add_menu_item(__('Send Email'), function () { show_email_dialog(frm); });
+
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
 		frm.add_custom_button(
@@ -106,7 +105,7 @@ frappe.ui.form.on('Sales Order', {
 	validate: function (frm) {
 
 		// ignore_warning is set to true in warning popup's success route
-		console.log(frm.doc.ignore_warning,'ignore')
+		console.log(frm.doc.ignore_warning, 'ignore')
 		if (frm.doc.ignore_warning) {
 			return;
 		}
@@ -175,7 +174,7 @@ function show_email_dialog(frm) {
 }
 
 
-function 	create_warning_dialog_for_inner_qty_check (frm) {
+function create_warning_dialog_for_inner_qty_check(frm) {
 	let promises = [];
 	let warning_html_messages = []
 

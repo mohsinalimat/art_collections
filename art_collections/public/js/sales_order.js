@@ -1,5 +1,15 @@
 frappe.ui.form.on('Sales Order', {
+
+	setup: function (frm) {
+		frappe.realtime.on("show_sales_order_email_dialog", function () {
+			show_email_dialog(frm);
+		});
+	},
+
 	onload_post_render: function (frm) {
+
+		frm.page.add_menu_item(__('Send Email'), function () { show_email_dialog(frm); });
+
 		frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_type')
 			.then(saleable_warehouse_type => {
 				if (saleable_warehouse_type) {
@@ -120,12 +130,6 @@ frappe.ui.form.on('Sales Order', {
 	},
 
 
-	after_save: function (frm) {
-		if (frm.doc.docstatus === 1) {
-			// 
-			show_email_dialog(frm);
-		}
-	}
 });
 frappe.ui.form.on("Sales Order Item", {
 	item_code: function (frm, cdt, cdn) {

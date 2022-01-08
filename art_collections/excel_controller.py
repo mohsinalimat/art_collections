@@ -132,6 +132,9 @@ def make_excel(docname=None, doctype=None):
     )
     _file.save()
     frappe.db.commit()
+    frappe.publish_realtime(
+        "show_sales_order_email_dialog", {"user": frappe.session.user}
+    )
 
 
 def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):

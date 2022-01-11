@@ -306,38 +306,7 @@ def autoname_issue_type(self,method):
 		if existing_issue:
 			frappe.throw(_('Duplicate record'))
 
-def stock_availability_notification(self,method):
-	from frappe.utils.background_jobs import enqueue
-	from frappe.contacts.doctype.contact.contact import get_default_contact
-
-	if self.items:
-		for item in self.items:
-			wishlists= frappe.db.get_list('Quotation', filters={'order_type': ['=', 'Shopping Cart Wish List'],
-			'status': ['=', 'Draft']})
-			for wishlist in wishlists:
-				doc = frappe.get_doc('Quotation', wishlist.name)
-				for  quot_item in doc.items:
-					if quot_item.item_code == item.item_code and quot_item.is_stock_available_art == 0:
-						url=frappe.utils.get_url() + '/art_cart?wish_list=' +doc.wish_list_name
-						item_name=quot_item.item_name
-						customer=doc.party_name
-						template='Stock Availability Notification'
-						email_template = frappe.get_doc("Email Template", template)
-						args={
-							"url":url,
-							"item_name":item_name,
-							"customer":doc.customer_name
-						}
-						message = frappe.render_template(email_template.response, args)
-						email_to = frappe.db.get_value('Contact', get_default_contact('customer', customer), 'email_id')
-						email_args = {
-							"recipients": email_to,
-							"sender": None,
-							"subject": email_template.subject,
-							"message": message,
-							"now": True,
-							}
-						enqueue(method=frappe.sendmail, queue='short', timeout=300, is_async=True, **email_args)						
+						
 
 def sales_order_from_shopping_cart(self,method):
 	if self.order_type=='Shopping Cart':

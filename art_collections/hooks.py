@@ -118,7 +118,7 @@ doc_events = {
     },
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {
-        "on_submit": "art_collections.api.stock_availability_notification"
+        "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic"
     },
     "Sales Order": {
         "on_submit": [
@@ -158,6 +158,11 @@ scheduler_events = {
     # "all": [
     # 	"art_collections.tasks.all"
     # ],
+	"cron": {
+		"15 00 * * *": [
+			"art_collections.item_controller.allow_order_still_stock_last",
+		]
+	},	    
     "daily": ["art_collections.scheduler_task_controller.daily"]
     # "hourly": [
     # 	"art_collections.tasks.hourly"

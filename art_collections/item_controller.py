@@ -115,7 +115,6 @@ where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%
 def get_stock_qty_for_saleable_warehouse(item_code):
 	saleable_warehouse_type,reserved_warehouse_type = frappe.db.get_value('Art Collections Settings', 'Art Collections Settings', ['saleable_warehouse_type', 'reserved_warehouse_type'])
 	conditions=" 1=1"
-	print(saleable_warehouse_type,reserved_warehouse_type,'saleable_warehouse_type,reserved_warehouse_type')
 	if saleable_warehouse_type and reserved_warehouse_type:
 		conditions=" WH.warehouse_type in ('{0}','{1}')".format(saleable_warehouse_type,reserved_warehouse_type)
 	elif saleable_warehouse_type and not reserved_warehouse_type:
@@ -129,3 +128,22 @@ def get_stock_qty_for_saleable_warehouse(item_code):
 	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
 	where {conditions} and B.item_code = '{item_code}'""".format(conditions=conditions,item_code=item_code),as_dict=1)
 	return total_in_stock 	
+
+@frappe.whitelist()
+def allow_order_still_stock_last():
+		in_stock_item_list=frappe.db.get_list('Item', filters={
+    'is_purchase_item': ['=', 0],
+    'is_sales_item': ['=', 1],
+    'is_stock_item': ['=', 1],
+    'has_variants': ['=', 0],
+    'disabled': ['=', 0]
+    })
+		if len(in_stock_item_list)>0:
+			for item in in_stock_item_list:
+				total_saleable_qty=get_stock_qty_for_saleable_warehouse(item.name)
+				if len(total_saleable_qty)>0:
+					if total_saleable_qty[0].saleable_qty==0:
+						eligible_item=frappe.get_doc('Item',item.name)
+						eligible_item.is_sales_item=0
+						eligible_item.save(ignore_permissions=True)
+						print(eligible_item.name,eligible_item.is_sales_item)

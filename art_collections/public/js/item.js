@@ -7,7 +7,7 @@ frappe.ui.form.on('Item', {
       }
       frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
 
-      if (frm.doc.item_name && frm.is_new() == undefined) {
+      if (frm.is_new() == 1) {
          let custom_item_name = []
          if (frm.doc.qty_in_selling_pack_art) {
             custom_item_name.push(frm.doc.qty_in_selling_pack_art)
@@ -28,7 +28,7 @@ frappe.ui.form.on('Item', {
             custom_item_name.push(frm.doc.thickness_art)
          }
          custom_item_name = custom_item_name.join(" ")
-         if (frm.doc.previous_suggested_item_name_art != custom_item_name && frm.doc.item_name!=custom_item_name) {
+         if (custom_item_name) {
             return new Promise((resolve) => {
                return frappe.confirm(
                   __(
@@ -36,13 +36,16 @@ frappe.ui.form.on('Item', {
                      [frm.doc.item_name,custom_item_name]
                   ),
                   () => {
+                     debugger
                      // ok
                      frm.doc.item_name = custom_item_name
                      resolve("ok");
                   },
                   () => {
+                     debugger
                      // not ok
-                     frm.doc.previous_suggested_item_name_art=custom_item_name
+                     frm.doc.item_name =frm.doc.item_name 
+                     // frm.doc.previous_suggested_item_name_art=custom_item_name
                      resolve("not ok");
                   }
                );

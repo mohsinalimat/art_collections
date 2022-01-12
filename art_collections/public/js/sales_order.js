@@ -84,6 +84,14 @@ frappe.ui.form.on('Sales Order', {
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
 		frm.add_custom_button(
+			__("Download ART Bulk Template"), function () {download_art_bulk_template(frm)},__("Create")
+		);
+
+		frm.add_custom_button(
+			__("Upload ART Bulk"),function () { upload_art_bulk_items(frm)},	__("Create")
+		);		
+
+		frm.add_custom_button(
 			__("Product Excel"),
 			function () {
 				frappe.call({
@@ -247,4 +255,126 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 			frm.save();
 		}
 	});
+}
+
+function download_art_bulk_template(frm) {
+	var data = [];
+	var docfields = [];
+	data.push([__("Bulk Edit {0}", ['Items'])]);
+	data.push([]);
+	data.push([]);
+	data.push([]);
+	data.push([__("The CSV format is case sensitive")]);
+	data.push([__("Do not edit headers which are preset in the template")]);
+	data.push(["-----------------------------------------------------------------------------"]);
+	$.each(frappe.get_meta('Sales Order Item').fields, (i, df) => {
+		// don't include the read-only field in the template
+		if (frappe.model.is_value_type(df.fieldtype) && (df.fieldname == 'item_code' || df.fieldname == 'qty')) {
+			data[1].push(df.label);
+			data[2].push(df.fieldname);
+			let description = (df.description || "") + ' ';
+			if (df.fieldtype === "Date") {
+				description += frappe.boot.sysdefaults.date_format;
+			}
+			data[3].push(description);
+			docfields.push(df);
+		}
+	});
+
+	// add data
+	$.each(frm.doc['items'] || [], (i, d) => {
+		var row = [];
+		$.each(data[2], (i, fieldname) => {
+			var value = d[fieldname];
+
+			// format date
+			if (docfields[i].fieldtype === "Date" && value) {
+				value = frappe.datetime.str_to_user(value);
+			}
+
+			row.push(value || "");
+		});
+		data.push(row);
+	});
+
+	frappe.tools.downloadify(data, null, 'Items');
+	return false;
+}
+
+function upload_art_bulk_items(frm) {
+	let me = this
+	const value_formatter_map = {
+		"Date": val => val ? frappe.datetime.user_to_str(val) : val,
+		"Int": val => cint(val),
+		"Check": val => cint(val),
+		"Float": val => flt(val),
+	};
+	new frappe.ui.FileUploader({
+		as_dataurl: true,
+		allow_multiple: false,
+		on_success(file) {
+			var data = frappe.utils.csv_to_array(frappe.utils.get_decoded_string(file.dataurl));
+			// row #2 contains fieldnames;
+			var fieldnames = data[2];
+			frm.clear_table('items');
+			frm.clear_table('discontinued_sales_item_ct');
+			$.each(data, (i, row) => {
+				if (i > 6) {
+					var blank_row = true;
+					$.each(row, function (ci, value) {
+						if (value) {
+							blank_row = false;
+							return false;
+						}
+					});
+					if (!blank_row) {
+						var d = frm.add_child('items');
+						$.each(row, (ci, value) => {
+							var fieldname = fieldnames[ci];
+							var df = frappe.meta.get_docfield('Sales Order Item', fieldname);
+							if (df) {
+								d[fieldnames[ci]] = value_formatter_map[df.fieldtype] ?
+									value_formatter_map[df.fieldtype](value) :
+									value;
+							}
+						});
+					}
+				}
+			});
+			frm.refresh_field('items');
+			let items = frm.doc.items
+			for (let index = 0; index < items.length; index++) {
+				let visited=false
+				const d = items[index];
+				frappe.call({
+					method: "art_collections.sales_order_controller.get_item_details",
+					args: {
+						"item_code": d.item_code,
+						"qty":d.qty
+					},
+					callback: function (r, rt) {
+						if (r.message) {
+							$.each(r.message, function (k, v) {
+								debugger
+								if (k=='is_sales_item') {
+									if (v=='0' && visited==false) {
+										
+										frm.add_child('discontinued_sales_item_ct',r.message)
+										cur_frm.get_field("items").grid.grid_rows[index].remove();
+										let visited=true
+									}
+									
+								} else {
+									frappe.model.set_value('Sales Order Item', d.name, k, v);
+									
+								}
+							});
+						}
+					}
+				})
+			}
+			frappe.msgprint({message: __('Table updated'),title: __('Success'),indicator: 'green'});
+		}
+	});
+	return false;
 }

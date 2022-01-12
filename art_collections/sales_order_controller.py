@@ -213,3 +213,17 @@ def validate_billed(names):
 				frappe.bold(",".join(billed))
 			)
 		)
+
+@frappe.whitelist()
+def get_item_details(item_code,qty):
+	item = frappe.db.sql("""select is_sales_item,item_code, item_name, stock_uom,  description, item_group
+		from `tabItem` where name = %s""", item_code, as_dict=1)
+	return {
+		'is_sales_item': item and item[0]['is_sales_item'] or 0,
+		'item_code': item and item[0]['item_code'] or '',
+		'qty':qty or 1,
+		'item_name': item and item[0]['item_name'] or '',
+		'uom': item and item[0]['stock_uom'] or '',
+		'description': item and item[0]['description'] or '',
+		'item_group': item and item[0]['item_group'] or ''
+	}

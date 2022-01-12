@@ -36,16 +36,12 @@ frappe.ui.form.on('Item', {
                      [frm.doc.item_name,custom_item_name]
                   ),
                   () => {
-                     debugger
                      // ok
                      frm.doc.item_name = custom_item_name
                      resolve("ok");
                   },
                   () => {
-                     debugger
                      // not ok
-                     frm.doc.item_name =frm.doc.item_name 
-                     // frm.doc.previous_suggested_item_name_art=custom_item_name
                      resolve("not ok");
                   }
                );

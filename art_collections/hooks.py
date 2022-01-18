@@ -129,14 +129,13 @@ doc_events = {
     },
     "Purchase Order": {
         "on_submit": [
-            "art_collections.api.purchase_order_convert_preorder_item",
-            "art_collections.api.purchase_order_update_delivery_date_of_item",
-            "art_collections.api.purchase_order_update_schedule_date_of_item",
-            "art_collections.excel_controller.on_submit_purchase_order",
+            "art_collections.purchase_order_controller.purchase_order_custom_on_submit",
+            "art_collections.excel_controller.on_submit_purchase_order"
         ],
         "on_update_after_submit": [
-            "art_collections.api.purchase_order_update_delivery_date_of_item",
-            "art_collections.api.purchase_order_update_schedule_date_of_item",
+            "art_collections.purchase_order_controller.purchase_order_custom_on_submit"
+            # "art_collections.purchase_order_controller.purchase_order_update_delivery_date_of_item",
+            # "art_collections.purchase_order_controller.purchase_order_update_schedule_date_of_item",
         ],
         "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
     },

@@ -222,35 +222,7 @@ def convert_pre_to_normal_item(item_name):
 			return new
 
 
-def purchase_order_convert_preorder_item(self,method):
-	purchase_order_items=self.get("items")
-	for item in purchase_order_items:	
-		item_doc=frappe.get_doc('Item',item.item_code)
-		if item_doc.is_pre_item_art==1:
-			from art_collections.ean import calc_check_digit,compact
-			from stdnum import ean
-			from frappe.model.rename_doc import rename_doc
-			# id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
-			id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'""")[0][0] or 79000
-			if id:
-				id=str(int(id))
-				new=rename_doc('Item',old=item_doc.name,new=id, merge=False)
-				# new
-				item_doc=frappe.get_doc('Item',new)
-				item_doc.is_pre_item_art=0
-				item_doc.is_stock_item=1
-				item_doc.is_sales_item=1
-				domain='3700091'
-				code_brut=compact(domain+item_doc.item_code)
-				key=calc_check_digit(code_brut)
-				barcode=code_brut+key
-				if (ean.is_valid(str(barcode))==True):
-					row = item_doc.append('barcodes', {})
-					row.barcode=barcode
-					row.barcode_type='EAN'
-					item_doc.save(ignore_permissions=True)
-			else:
-				frappe.throw(_('Conversion failed for Pre Item. New id not found.'))
+
 
 
 
@@ -312,23 +284,10 @@ def sales_order_from_shopping_cart(self,method):
 	if self.order_type=='Shopping Cart':
 		frappe.db.set_value(self.doctype, self.name, "workflow_state", "To Deliver and Bill")
 
-def purchase_order_update_schedule_date_of_item(self,method):
-	if (method=='on_update_after_submit' and self.docstatus==1 ) or method=='on_submit':
-		for po_item in self.get("items"):
-			availability_date =frappe.db.get_value('Item',po_item.item_code, 'availability_date_art')
-			if availability_date==None or getdate(availability_date) < getdate(po_item.schedule_date):
-				frappe.db.set_value('Item', po_item.item_code, 'availability_date_art', po_item.schedule_date)
-				frappe.msgprint(_("Availability date for item {0} is changed to {1} based on latest required by date."
-				.format(po_item.item_name,frappe.bold(format_date(po_item.schedule_date)))), indicator='orage',alert=True)
 
 
-def purchase_order_update_delivery_date_of_item(self,method):
-	from frappe.utils import add_days
-	for item in self.get("items"):
-		if item.expected_delivery_date:
-			lag_days=45
-			availability_date=add_days(item.expected_delivery_date, lag_days)
-			frappe.db.set_value('Item', item.item_code, 'availability_date_art', availability_date)
+
+
 
 @frappe.whitelist()
 def pos_so_get_series():

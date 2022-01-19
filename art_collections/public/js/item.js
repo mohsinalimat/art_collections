@@ -1,4 +1,34 @@
 frappe.ui.form.on('Item', {
+   qty_in_selling_pack_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },
+   item_group:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },
+   main_design_color_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },      
+   length_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },
+   width_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },
+   thickness_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },         
    validate:function (frm) {
       if (frm.doc.nb_selling_packs_in_outer_art!=0 && frm.doc.nb_selling_packs_in_inner_art!=0) {
          frm.doc.nb_inner_in_outer_art=flt(frm.doc.nb_selling_packs_in_outer_art/frm.doc.nb_selling_packs_in_inner_art)
@@ -7,47 +37,47 @@ frappe.ui.form.on('Item', {
       }
       frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
 
-      if (frm.is_new() == 1) {
-         let custom_item_name = []
-         if (frm.doc.qty_in_selling_pack_art) {
-            custom_item_name.push(frm.doc.qty_in_selling_pack_art)
-         }
-         if (frm.doc.item_group) {
-            custom_item_name.push(frm.doc.item_group)
-         }
-         if (frm.doc.main_design_color_art) {
-            custom_item_name.push(frm.doc.main_design_color_art)
-         }
-         if (frm.doc.length_art) {
-            custom_item_name.push(frm.doc.length_art)
-         }
-         if (frm.doc.width_art) {
-            custom_item_name.push(frm.doc.width_art)
-         }
-         if (frm.doc.thickness_art) {
-            custom_item_name.push(frm.doc.thickness_art)
-         }
-         custom_item_name = custom_item_name.join(" ")
-         if (custom_item_name) {
-            return new Promise((resolve) => {
-               return frappe.confirm(
-                  __(
-                     "Are you sure you want change item name? <br>Existing : <b>{0}</b> <br>New      : <b>{1}</b>",
-                     [frm.doc.item_name,custom_item_name]
-                  ),
-                  () => {
-                     // ok
-                     frm.doc.item_name = custom_item_name
-                     resolve("ok");
-                  },
-                  () => {
-                     // not ok
-                     resolve("not ok");
-                  }
-               );
-            });
-         }
-      }
+      // if (frm.is_new() == 1) {
+      //    let custom_item_name = []
+      //    if (frm.doc.qty_in_selling_pack_art) {
+      //       custom_item_name.push(frm.doc.qty_in_selling_pack_art)
+      //    }
+      //    if (frm.doc.item_group) {
+      //       custom_item_name.push(frm.doc.item_group)
+      //    }
+      //    if (frm.doc.main_design_color_art) {
+      //       custom_item_name.push(frm.doc.main_design_color_art)
+      //    }
+      //    if (frm.doc.length_art) {
+      //       custom_item_name.push(frm.doc.length_art)
+      //    }
+      //    if (frm.doc.width_art) {
+      //       custom_item_name.push(frm.doc.width_art)
+      //    }
+      //    if (frm.doc.thickness_art) {
+      //       custom_item_name.push(frm.doc.thickness_art)
+      //    }
+      //    custom_item_name = custom_item_name.join(" ")
+      //    if (custom_item_name) {
+      //       return new Promise((resolve) => {
+      //          return frappe.confirm(
+      //             __(
+      //                "Are you sure you want change item name? <br>Existing : <b>{0}</b> <br>New      : <b>{1}</b>",
+      //                [frm.doc.item_name,custom_item_name]
+      //             ),
+      //             () => {
+      //                // ok
+      //                frm.doc.item_name = custom_item_name
+      //                resolve("ok");
+      //             },
+      //             () => {
+      //                // not ok
+      //                resolve("not ok");
+      //             }
+      //          );
+      //       });
+      //    }
+      // }
 
    },
    onload: function (frm) {
@@ -182,29 +212,30 @@ frappe.ui.form.on('Item', {
          }
       });
    },
-   new_item_name: function (frm) {
-   
-      let custom_item_name=[]
-      if (frm.doc.qty_in_selling_pack_art) {
-         custom_item_name.push(frm.doc.qty_in_selling_pack_art)
-      }
-      if (frm.doc.item_group) {
-         custom_item_name.push(frm.doc.item_group)
-      }
-      if (frm.doc.main_design_color_art) {
-         custom_item_name.push(frm.doc.main_design_color_art)
-      }
-      if (frm.doc.length_art) {
-         custom_item_name.push(frm.doc.length_art)
-      }
-      if (frm.doc.width_art) {
-         custom_item_name.push(frm.doc.width_art)
-      }         
-      if (frm.doc.thickness_art) {
-         custom_item_name.push(frm.doc.thickness_art)
-      }  
-      custom_item_name=custom_item_name.join(" ")
-      return custom_item_name
-   }
+
 });
 
+function new_item_name(frm) {
+   
+   let custom_item_name=[]
+   if (frm.doc.qty_in_selling_pack_art) {
+      custom_item_name.push(frm.doc.qty_in_selling_pack_art)
+   }
+   if (frm.doc.item_group) {
+      custom_item_name.push(frm.doc.item_group)
+   }
+   if (frm.doc.main_design_color_art) {
+      custom_item_name.push(frm.doc.main_design_color_art)
+   }
+   if (frm.doc.length_art) {
+      custom_item_name.push(frm.doc.length_art)
+   }
+   if (frm.doc.width_art) {
+      custom_item_name.push(frm.doc.width_art)
+   }         
+   if (frm.doc.thickness_art) {
+      custom_item_name.push(frm.doc.thickness_art)
+   }  
+   custom_item_name=custom_item_name.join(" ")
+   return custom_item_name
+}

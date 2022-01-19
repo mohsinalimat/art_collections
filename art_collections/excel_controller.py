@@ -236,7 +236,6 @@ def get_print_context_for_art_collectons_purchase_order(name):
         tw.warehouse_name, poi.price_list_rate, poi.total_saleable_qty_cf, 
         poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
         poi.qty, poi.image, po.overall_directive_art,
-        if(poi.total_saleable_qty_cf >= poi.qty,1,0) in_stock
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
         left outer join tabWarehouse tw on tw.name = poi.warehouse 

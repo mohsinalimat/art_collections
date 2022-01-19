@@ -221,3 +221,35 @@ def get_print_context_for_art_collectons_sales_order(name):
 
     print("*\n" * 10, ctx)
     return ctx
+
+
+# purchase order print format
+def get_print_context_for_art_collectons_purchase_order(name):
+    doc = frappe.get_doc("Purchase Order", name)
+
+    ctx = {"doc": {}}
+
+    ctx["items"] = list(
+        frappe.db.sql(
+            """
+        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
+        tw.warehouse_name, poi.price_list_rate, poi.total_saleable_qty_cf, 
+        poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
+        poi.qty, poi.image, po.overall_directive_art,
+        if(poi.total_saleable_qty_cf >= poi.qty,1,0) in_stock
+        from `tabPurchase Order Item` poi
+        inner join `tabPurchase Order` po on po.name = poi.parent
+        left outer join tabWarehouse tw on tw.name = poi.warehouse 
+        inner join tabItem i on i.name = poi.item_code
+        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        where poi.parent = %(name)s
+    """,
+            dict(name=name),
+            as_dict=True,
+        )
+    )
+
+    ctx["has_discount"] = any(x.discount_amount for x in doc.items)
+
+    print("*\n" * 10, ctx)
+    return ctx

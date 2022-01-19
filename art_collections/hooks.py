@@ -220,6 +220,7 @@ fixtures = [
 jenv = {
     "methods": [
         "get_print_context_for_art_collectons_sales_order:art_collections.excel_controller.get_print_context_for_art_collectons_sales_order",
+        "get_print_context_for_art_collectons_purchase_order:art_collections.excel_controller.get_print_context_for_art_collectons_purchase_order"
     ],
     "filters": [],
 }

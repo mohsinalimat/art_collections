@@ -1,0 +1,217 @@
+{% macro render_items(items, message) %}
+
+<div class="row">
+    <div class="col-xs-10">
+        <table class="table" style="border:1px solid #000;">
+            <!-- <colgroup>
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+            </colgroup> -->
+            <thead>
+                <tr>
+                    <th>Zone</th>
+                    <th>Ref</th>
+                    <th>Your Ref. </th>
+                    <th>Description</th>
+                    <th>Barcode</th>
+                    <th>HScode</th>
+                    <th>Weight</th>
+                    <th>Inner Qty</th>
+                    <th>Qty</th>
+                    <th>Gross Price</th>
+                    {% if ctx.has_discount %}
+                    <th>Discount</th>
+                    {% endif %}
+                    <th>Net Price</th>
+                    <th>Total Line</th>
+                    <th>Photo</th>
+                </tr>
+                {% if message %}
+                <tr>
+                    <td colspan="{{ 14 if ctx.has_discount else 13}}">
+                        <span class="lilly">
+                            {{message}}
+
+                        </span>
+                    </td>
+                </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for d in items %}
+                <tr>
+                    <td>{{ d.warehouse_name or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.customer_code or "" }} </td>
+                    <td>{{ d.description or "" }}</td>
+                    <!-- <td>{{ d.barcode or "" }}</td> -->
+                    <td>
+                        {% if d.barcode %}
+                        <img alt="{{d.barcode}}"
+                            src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
+                        {% endif %}
+                    </td>
+                    <td>{{ d.customs_tariff_number or "" }}</td>
+                    <td>{{ d.weight or 0 }}</td>
+                    <td class="text-right">{{ d.nb_selling_packs_in_inner_art or "" }}</td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                    <td class="text-right">{{ d.price_list_rate or "" }}</td>
+                    {% if ctx.has_discount %}
+                    <td class="text-right">{{ d.discount_amount or ""}}</td>
+                    {% endif %}
+                    <td class="text-right">{{ d.net_rate or "" }}</td>
+                    <td class="text-right">{{ d.net_amount or "" }}</td>
+                    <td>
+                        {% if d.image %}
+                        <img src="{{ d.image or '' }}" alt="item image">
+                        {% else %}
+                        &nbsp;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endmacro %}
+
+<style>
+
+</style>
+
+{% set ctx = get_print_context_for_art_collectons_sales_order(doc.name)%}
+
+<div class="row">
+    <div class="col-xs-2 logodiv">
+        <img src="files/logo01.png" class="logofirst" />
+    </div>
+    <div class="col-xs-7 logodiv">
+        <img src="files/logo02.png" class="logosec" />
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+        <p>Sales order : {{ doc.name }} </p>
+        <p>Date : {{ doc.transaction_date }} </p>
+        <p>Your order no: {{ doc.po_no or "" }} </p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="addressbox">
+            <p class="lilly title"> Bill to </p>
+            <p>{{ doc.address_display }}
+            </p>
+            <p>Email: {{ doc.contact_email or "" }}</p>
+            <p>VAT: {{ doc.taxes_and_charges or "" }}</p>
+
+            <p>Sales contact: <span class="lilly">{{ doc.contact_person }}</span> <span class="width-50"></span>
+                Operator: <span class="lilly">{{ doc.owner }}</span> </p>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="addressbox">
+            <p class="lilly title"> Ship to </p>
+            <p>
+                {{ doc.shipping_address or "Shipping Address" }}</p>
+            <p>To deliver on:
+                <br>Payment method and Due date: {{ doc.delivery_date or "" }}
+                <br>Ordered from: {{ doc.po_no or "" }}
+            </p>
+            <hr>
+            <p>Comments: {{ ctx.overall_directive_art or "" }}</p>
+        </div>
+    </div>
+</div>
+
+{% set items_in_stock = ctx.get("items") | selectattr("in_stock",'eq',1) | list %}
+{% set items_out_of_stock = ctx.get("items") | selectattr("in_stock","eq",0) | list %}
+
+<!-- In Stock -->
+{% if items_in_stock | len %}
+{{ render_items(items_in_stock, "In Stock") }}
+{% endif %}
+<!-- Temporarily Out of Stock -->
+{% if items_out_of_stock | len %}
+{{ render_items(items_out_of_stock, "Temporarily Out of Stock") }}
+{% endif %}
+
+<!-- Sales Order Discountinued Items -->
+{% set discontinued_sales_item_ct = doc.get("discontinued_sales_item_ct") | list %}
+{% if discontinued_sales_item_ct | len %}
+<div class="row">
+    <div class="col-xs-10">
+        <table class="table" style="border:1px solid #000;">
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Description</th>
+                    <th>Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in discontinued_sales_item_ct %}
+                <tr>
+                    <td>{{ d.item_code or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.description or "" }}</td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-xs-9">
+        <div>
+            {{doc.terms}}
+        </div>
+    </div>
+    <div class="col-xs-3"></div>
+</div>
+
+
+<footer class="footer-html" id="footer-html" class="visible-pdf">
+    <div class="footertag">
+        <p class="lilly">La Team Arty vous remercie pour votre commande !</p>
+        <p>(On espère qu’elle vous plaira)</p>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-4 colf">
+            <img src="files/logo01.png" style="width:90px" class="float-left" />
+            <p>SARL ARTYFÊTES FACTORY <br> ZA de la Mesnilière <br> 11, rue des quatre vents <br> 14790 Verson - FRANCE
+            </p>
+        </div>
+        <div class="col-xs-2 colf" style="text-align:center">
+            <p class="footericon"><img src="files/foot-icon.png"></i></p>
+            <p><img src="files/foot-mail.png" class="max25"></i>commande@artyfetes.com <br> <img
+                    src="files/foot-phone.png" class="max25"></i>0231752121</p>
+        </div>
+        <div class="col-xs-3 colf" style="text-align:center">
+            <p class="footericon"><img src="files/foot-bar.png"></i></p>
+            <p> Capitalsocial2000000€ <br> RCSCaen379620115 <br> APE:4649Z <br> INTRA:FR41-379620115</p>
+        </div>
+        <div class="col-xs-3 colf" style="text-align:center">
+            <p class="footericon"><img src="files/foot-cart.png"></i></p>
+            <p> Banque: BREDCaenCourtonne <br> Nodecompte: 00530696023 <br> IBAN: FR7610107003160053069602362 <br>
+                BIC:BREDFRPPXXX</p>
+        </div>
+    </div>
+</footer>

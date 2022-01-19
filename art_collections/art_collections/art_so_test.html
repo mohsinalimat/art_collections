@@ -1,7 +1,7 @@
 {% macro render_items(items, message) %}
 
 <div class="row">
-    <div class="col-xs-10">
+    <div class="col-xs-12">
         <table class="table" style="border:1px solid #000;">
             <!-- <colgroup>
                 <col style="width: 4%">
@@ -21,22 +21,22 @@
             </colgroup> -->
             <thead>
                 <tr>
-                    <th>Zone</th>
-                    <th>Ref</th>
-                    <th>Your Ref. </th>
-                    <th>Description</th>
-                    <th>Barcode</th>
-                    <th>HScode</th>
-                    <th>Weight</th>
-                    <th>Inner Qty</th>
-                    <th>Qty</th>
-                    <th>Gross Price</th>
+                    <th>{{ _('Zone') }}</th>
+                    <th>{{ _('Ref') }}</th>
+                    <th>{{ _('Your Ref.') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Barcode') }}</th>
+                    <th>{{ _('HScode') }}</th>
+                    <th>{{ _('Weight') }}</th>
+                    <th>{{ _('Inner Qty') }}</th>
+                    <th>{{ _('Qty') }}</th>
+                    <th>{{ _('Gross Price') }}</th>
                     {% if ctx.has_discount %}
-                    <th>Discount</th>
+                    <th>{{ _('Discount') }}</th>
                     {% endif %}
-                    <th>Net Price</th>
-                    <th>Total Line</th>
-                    <th>Photo</th>
+                    <th>{{ _('Net Price') }}</th>
+                    <th>{{ _('Total Line') }}</th>
+                    <th>{{ _('Photo') }}</th>
                 </tr>
                 {% if message %}
                 <tr>
@@ -95,43 +95,43 @@
 
 {% set ctx = get_print_context_for_art_collectons_sales_order(doc.name)%}
 
-<div class="row">
+<div class="row" style="padding-top:0.5rem;">
     <div class="col-xs-2 logodiv">
         <img src="files/logo01.png" class="logofirst" />
     </div>
-    <div class="col-xs-7 logodiv">
+    <div class="col-xs-6 logodiv">
         <img src="files/logo02.png" class="logosec" />
     </div>
-    <div class="col-xs-3" style="text-align:right">
-        <p>Sales order : {{ doc.name }} </p>
-        <p>Date : {{ doc.transaction_date }} </p>
-        <p>Your order no: {{ doc.po_no or "" }} </p>
+    <div class="col-xs-4" style="text-align:right">
+        <p>{{ _('Sales order :') }}{{ doc.name }} </p>
+        <p>{{ _('Date :') }}{{ doc.transaction_date }} </p>
+        <p>{{ _('Your order no:') }}{{ doc.po_no or "" }} </p>
     </div>
 </div>
 <div class="row">
     <div class="col-xs-6">
         <div class="addressbox">
-            <p class="lilly title"> Bill to </p>
+            <p class="lilly title">{{ _('Bill to')}}</p>
             <p>{{ doc.address_display }}
             </p>
-            <p>Email: {{ doc.contact_email or "" }}</p>
-            <p>VAT: {{ doc.taxes_and_charges or "" }}</p>
+            <p>{{ _('Email:') }}{{ doc.contact_email or "" }}</p>
+            <p>{{ _('VAT:') }}{{ "" }}</p>
 
-            <p>Sales contact: <span class="lilly">{{ doc.contact_person }}</span> <span class="width-50"></span>
-                Operator: <span class="lilly">{{ doc.owner }}</span> </p>
+            <p>{{ _('Sales contact:') }} <span class="lilly">{{ doc.contact_person }}</span> <span class="width-50"></span>
+                {{ _('Operator:') }} <span class="lilly">{{ doc.owner }}</span> </p>
         </div>
     </div>
     <div class="col-xs-6">
         <div class="addressbox">
-            <p class="lilly title"> Ship to </p>
+            <p class="lilly title">{{ _('Ship to') }}</p>
             <p>
                 {{ doc.shipping_address or "Shipping Address" }}</p>
-            <p>To deliver on:
-                <br>Payment method and Due date: {{ doc.delivery_date or "" }}
-                <br>Ordered from: {{ doc.po_no or "" }}
+            <p>{{ _('To deliver on:')}} {{ doc.delivery_date or "" }}
+                <br>{{ _('Payment method and Due date:')}}
+                <br>{{ _('Ordered from:')}} {{ doc.po_no or "" }}
             </p>
             <hr>
-            <p>Comments: {{ ctx.overall_directive_art or "" }}</p>
+            <p>{{ _('Comments:') }}{{ ctx.overall_directive_art or "" }}</p>
         </div>
     </div>
 </div>
@@ -141,25 +141,25 @@
 
 <!-- In Stock -->
 {% if items_in_stock | len %}
-{{ render_items(items_in_stock, "In Stock") }}
+{{ render_items(items_in_stock, _('In Stock')) }}
 {% endif %}
 <!-- Temporarily Out of Stock -->
 {% if items_out_of_stock | len %}
-{{ render_items(items_out_of_stock, "Temporarily Out of Stock") }}
+{{ render_items(items_out_of_stock, _('Temporarily Out of Stock')) }}
 {% endif %}
 
 <!-- Sales Order Discountinued Items -->
 {% set discontinued_sales_item_ct = doc.get("discontinued_sales_item_ct") | list %}
 {% if discontinued_sales_item_ct | len %}
 <div class="row">
-    <div class="col-xs-10">
+    <div class="col-xs-12">
         <table class="table" style="border:1px solid #000;">
             <thead>
                 <tr>
-                    <th>Item Code</th>
-                    <th>Item Name</th>
-                    <th>Description</th>
-                    <th>Qty</th>
+                    <th>{{ _('Item Code') }}</th>
+                    <th>{{ _('Item Name') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Qty') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -178,18 +178,26 @@
 {% endif %}
 
 <div class="row">
-    <div class="col-xs-9">
+    <div class="col-xs-8">
         <div>
             {{doc.terms}}
         </div>
     </div>
-    <div class="col-xs-3"></div>
+    <div class="col-xs-4">
+        <div>
+            {{ _('Total') }} {{doc.net_total}}<br>
+            {{ _('Deduction') }} {{doc.discount_amount}}<br>
+            {{ _('Shipping Cost') }} {{ctx.shipping_cost}}<br>
+            {{doc.taxes_and_charges }} {{ctx.taxes_cost}}<br>
+            {{ _('Grand Total') }} {{doc.grand_total}}
+        </div>
+    </div>    
 </div>
 
 
 <footer class="footer-html" id="footer-html" class="visible-pdf">
     <div class="footertag">
-        <p class="lilly">La Team Arty vous remercie pour votre commande !</p>
+        <p class="lilly" style="margin-bottom:-10px">La Team Arty vous remercie pour votre commande !</p>
         <p>(On espère qu’elle vous plaira)</p>
     </div>
 

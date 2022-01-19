@@ -220,12 +220,15 @@ def get_print_context_for_art_collectons_sales_order(name):
     ctx["has_discount"] = any(x.discount_amount for x in doc.items)
 
     shipping_cost=0
+    taxes_cost=0
     for tax in doc.taxes:
         account_type=frappe.db.get_value('Account', tax.account_head, 'account_type')
-        if account_type!='Tax':
+        if account_type=='Tax':
+            taxes_cost+=tax.base_tax_amount
+        else:
             shipping_cost+=tax.base_tax_amount
-
     ctx["shipping_cost"]=shipping_cost
+    ctx["taxes_cost"]=taxes_cost
     print("*\n" * 10, ctx)
     return ctx
 

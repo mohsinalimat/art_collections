@@ -5,7 +5,7 @@ from frappe.model.naming import make_autoname
 from frappe.utils import cstr
 
 def set_address_title_based_on_customer(self,method):
-	address_title=None
+	address_title=self.address_title
 	if self.links:
 		if self.links[0].link_doctype=='Customer':
 			trade_name=frappe.db.get_value('Customer', self.links[0].link_name, 'trade_name')

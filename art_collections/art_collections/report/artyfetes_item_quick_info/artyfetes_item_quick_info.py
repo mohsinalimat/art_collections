@@ -110,7 +110,7 @@ order by name """,as_dict=True)
 		, "avg_qty_sold_per_month": avg_qty_sold_per_month
 		, "avg_daily_outgoing": avg_daily_outgoing
 		, "avg_delivery_days": avg_delivery_days,
-		"day_remaining_with_the_stock": d.day_remaining_with_the_stock}
+		"day_remaining_with_the_stock": day_remaining_with_the_stock}
 
 		data.append(row)
 	return data	

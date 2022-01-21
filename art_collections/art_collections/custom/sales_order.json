@@ -969,14 +969,14 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2022-01-08 08:00:50.466850",
+   "creation": "2022-01-21 11:21:26.069954",
    "default_value": null,
    "doc_type": "Sales Order",
    "docstatus": 0,
    "doctype_or_field": "DocType",
    "field_name": null,
    "idx": 0,
-   "modified": "2022-01-08 08:00:50.466850",
+   "modified": "2022-01-21 11:21:26.069954",
    "modified_by": "Administrator",
    "name": "Sales Order-main-default_print_format",
    "owner": "Administrator",
@@ -986,7 +986,7 @@
    "property": "default_print_format",
    "property_type": "Data",
    "row_name": null,
-   "value": "Art Collections Sales Order"
+   "value": "Art SO"
   },
   {
    "_assign": null,

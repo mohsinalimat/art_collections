@@ -90,7 +90,7 @@ def make_excel(docname=None, doctype=None):
 
     columns = [COL_MAP.get(col) for col, _ in data[0].items()][1:]
 
-    site_url = get_url(frappe.local.site)
+    site_url = get_url()
 
     # set the existing artworks for each item
     art_work_columns = []

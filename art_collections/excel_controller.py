@@ -12,7 +12,7 @@ import xlrd
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
-from frappe.utils import cint, get_site_url
+from frappe.utils import cint, get_site_url,get_url
 import frappe
 
 ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
@@ -90,7 +90,7 @@ def make_excel(docname=None, doctype=None):
 
     columns = [COL_MAP.get(col) for col, _ in data[0].items()][1:]
 
-    site_url = get_site_url(frappe.local.site)
+    site_url = get_url(frappe.local.site)
 
     # set the existing artworks for each item
     art_work_columns = []
@@ -259,6 +259,17 @@ def get_print_context_for_art_collectons_purchase_order(name):
     )
 
     ctx["has_discount"] = any(x.discount_amount for x in doc.items)
+
+    shipping_cost=0
+    taxes_cost=0
+    for tax in doc.taxes:
+        account_type=frappe.db.get_value('Account', tax.account_head, 'account_type')
+        if account_type=='Tax':
+            taxes_cost+=tax.base_tax_amount
+        else:
+            shipping_cost+=tax.base_tax_amount
+    ctx["shipping_cost"]=shipping_cost
+    ctx["taxes_cost"]=taxes_cost
 
     print("*\n" * 10, ctx)
     return ctx

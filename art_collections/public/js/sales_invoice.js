@@ -44,12 +44,12 @@ frappe.ui.form.on('Sales Invoice', {
 	})	
 	},
 	customer: function (frm) {
-		if (frm.doc.customer && frm.doc.payment_method_art==__('Traite') ) {
+		if (frm.doc.customer && frm.doc.mode_of_payment_art==__('Traite') ) {
 				frm.trigger('filter_bank_account')
 		}
 	},
-	payment_method_art: function (frm) {
-		if (frm.doc.customer && frm.doc.payment_method_art==__('Traite')) {
+	mode_of_payment_art: function (frm) {
+		if (frm.doc.customer && frm.doc.mode_of_payment_art==__('Traite')) {
 				frm.trigger('filter_bank_account')
 		}
 	}	

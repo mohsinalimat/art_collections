@@ -14,7 +14,11 @@
   "damage_warehouse_type",
   "reserved_warehouse_type",
   "default_email_template_sb_section",
-  "sales_order_email_template"
+  "sales_order_email_template",
+  "item_defaults_section",
+  "inner_carton_uom",
+  "outer_carton_uom",
+  "product_uom"
  ],
  "fields": [
   {
@@ -72,12 +76,35 @@
    "fieldname": "item_availability_buffer_days",
    "fieldtype": "Int",
    "label": "Item Availability Buffer Days "
+  },
+  {
+   "fieldname": "item_defaults_section",
+   "fieldtype": "Section Break",
+   "label": "UOMs"
+  },
+  {
+   "fieldname": "inner_carton_uom",
+   "fieldtype": "Link",
+   "label": "Inner Carton UOM ",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "outer_carton_uom",
+   "fieldtype": "Link",
+   "label": "Outer Carton UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "product_uom",
+   "fieldtype": "Link",
+   "label": "Product UOM",
+   "options": "UOM"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-01-17 10:33:13.228590",
+ "modified": "2022-02-04 12:10:55.073816",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

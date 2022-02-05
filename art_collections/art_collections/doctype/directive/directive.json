@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "{apply_on}-{apply_for_value}",
+ "creation": "2022-02-04 08:44:13.426466",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "directive_name",
+  "apply_on",
+  "apply_for_value",
+  "disabled",
+  "show_directive_on_doctypes_art",
+  "column_break_6",
+  "directive"
+ ],
+ "fields": [
+  {
+   "fieldname": "directive_name",
+   "fieldtype": "Data",
+   "label": "Directive Name",
+   "reqd": 1
+  },
+  {
+   "description": "Filter Customer Group, Supplier Group, Customer, Supplier, Item Group, Item",
+   "fieldname": "apply_on",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Apply On",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "apply_for_value",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Apply For Value",
+   "options": "apply_on",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "reqd": 1
+  },
+  {
+   "description": "Filter On DocType :  QN,SO,DN,SI,PR,PI,SQ,RFQ",
+   "fieldname": "show_directive_on_doctypes_art",
+   "fieldtype": "Table",
+   "label": "Show Directive on Doctypes",
+   "options": "Show Directive on Doctypes Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "directive",
+   "fieldtype": "Small Text",
+   "label": "Directive",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-02-04 08:55:03.909819",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Directive",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Master Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Master Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "directive_name"
+}

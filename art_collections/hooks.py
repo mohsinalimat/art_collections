@@ -143,7 +143,7 @@ doc_events = {
         "validate": "art_collections.supplier_quotation_controller.supplier_quotation_custom_validation"
     },
     "Request for Quotation": {
-        "validate": "art_collections.request_for_quotation_ccontroller.request_for_quotation_custom_validation"
+        "validate": "art_collections.request_for_quotation_controller.request_for_quotation_custom_validation"
     },
     "Address": {
         "autoname": "art_collections.address_controller.set_address_title_based_on_customer"

@@ -96,6 +96,15 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Container Admission Follow Up",
+   "link_to": "Container Admission Follow Up",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Sales",
    "link_type": "DocType",
@@ -329,7 +338,7 @@
    "type": "Link"
   }
  ],
- "modified": "2021-11-22 07:39:57.962788",
+ "modified": "2022-02-05 11:35:07.230674",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

@@ -8,11 +8,15 @@
  "engine": "InnoDB",
  "field_order": [
   "directive_name",
+  "disabled",
   "apply_on",
   "apply_for_value",
-  "disabled",
+  "apply_for_items",
+  "apply_for_item_value",
+  "show_as_alert",
   "show_directive_on_doctypes_art",
   "column_break_6",
+  "directive_type",
   "directive"
  ],
  "fields": [
@@ -23,7 +27,7 @@
    "reqd": 1
   },
   {
-   "description": "Filter Customer Group, Supplier Group, Customer, Supplier, Item Group, Item",
+   "description": "Filter Customer Group, Supplier Group, Customer, Supplier",
    "fieldname": "apply_on",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -65,11 +69,37 @@
    "fieldtype": "Small Text",
    "label": "Directive",
    "reqd": 1
+  },
+  {
+   "description": "Filter  Item Group, Item\n\n",
+   "fieldname": "apply_for_items",
+   "fieldtype": "Link",
+   "label": "Apply For Items",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "apply_for_item_value",
+   "fieldtype": "Dynamic Link",
+   "label": "Apply for Item Value",
+   "options": "apply_for_items"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_as_alert",
+   "fieldtype": "Check",
+   "label": "Show as Alert",
+   "reqd": 1
+  },
+  {
+   "fieldname": "directive_type",
+   "fieldtype": "Select",
+   "label": "Directive Type",
+   "options": "\nTransport Directive\nLogistic Directive\nGlobal Directive"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-02-04 08:55:03.909819",
+ "modified": "2022-02-07 08:46:28.797588",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

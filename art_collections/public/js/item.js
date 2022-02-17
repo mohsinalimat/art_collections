@@ -40,6 +40,15 @@ frappe.ui.form.on('Item', {
       }
    },         
    validate:function (frm) {
+
+      for (let index = 0; index < frm.doc.existing_product_art_work_cf.length; index++) {
+         const row = frm.doc.existing_product_art_work_cf[index];
+         if (row.art_work_attachment==undefined){
+            frappe.throw(__("Art Work Attachment is required on row # <b>{0}</b>", [row.idx]));
+         }
+         
+      }
+
       if (frm.doc.nb_selling_packs_in_outer_art!=0 && frm.doc.nb_selling_packs_in_inner_art!=0) {
          frm.doc.nb_inner_in_outer_art=flt(frm.doc.nb_selling_packs_in_outer_art/frm.doc.nb_selling_packs_in_inner_art)
       }else{

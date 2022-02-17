@@ -28,6 +28,16 @@ frappe.ui.form.on('Item', {
       if (frm.is_new() == 1) {
       frm.set_value("item_name", new_item_name(frm))
       }
+   },
+   product_size_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
+   },
+   product_size_group_art:function (frm) {
+      if (frm.is_new() == 1) {
+      frm.set_value("item_name", new_item_name(frm))
+      }
    },         
    validate:function (frm) {
       if (frm.doc.nb_selling_packs_in_outer_art!=0 && frm.doc.nb_selling_packs_in_inner_art!=0) {
@@ -235,7 +245,13 @@ function new_item_name(frm) {
    }         
    if (frm.doc.thickness_art) {
       custom_item_name.push(frm.doc.thickness_art)
-   }  
+   } 
+   if (frm.doc.product_size_art) {
+      custom_item_name.push(frm.doc.product_size_art)
+   }
+   if (frm.doc.product_size_group_art) {
+      custom_item_name.push(frm.doc.product_size_group_art)
+   }       
    custom_item_name=custom_item_name.join(" ")
    return custom_item_name
 }

@@ -8,15 +8,18 @@
  "field_order": [
   "directive_name",
   "disabled",
+  "column_break_3",
+  "show_as_alert",
+  "directive_type",
+  "directive",
+  "section_break_7",
   "apply_on",
   "apply_for_value",
+  "column_break_10",
   "apply_for_items",
   "apply_for_item_value",
-  "show_as_alert",
-  "show_directive_on_doctypes_art",
-  "column_break_6",
-  "directive_type",
-  "directive"
+  "section_break_13",
+  "show_directive_on_doctypes_art"
  ],
  "fields": [
   {
@@ -62,10 +65,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "column_break_6",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "directive",
    "fieldtype": "Small Text",
    "label": "Directive",
@@ -96,11 +95,27 @@
    "fieldtype": "Select",
    "label": "Directive Type",
    "options": "\nTransport Directive\nLogistic Directive\nGlobal Directive"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-02-18 11:53:45.504719",
+ "modified": "2022-02-18 12:07:28.156515",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

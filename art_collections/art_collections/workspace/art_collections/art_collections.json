@@ -202,6 +202,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Directive",
+   "link_to": "Directive",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Customer Masters",
    "link_type": "DocType",
    "onboard": 0,
@@ -338,7 +347,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-02-05 11:35:07.230674",
+ "modified": "2022-02-18 05:02:13.633596",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

@@ -118,9 +118,11 @@ doc_events = {
     },
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {
+        "validate": "art_collections.directive_controller.get_directive",
         "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic"
     },
     "Sales Order": {
+        "validate": "art_collections.directive_controller.get_directive",
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.excel_controller.on_submit_sales_order",
@@ -140,14 +142,28 @@ doc_events = {
         "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
     },
     "Supplier Quotation": {
-        "validate": "art_collections.supplier_quotation_controller.supplier_quotation_custom_validation"
+        "validate": ["art_collections.supplier_quotation_controller.supplier_quotation_custom_validation",
+        "art_collections.directive_controller.get_directive"]
     },
     "Request for Quotation": {
-        "validate": "art_collections.request_for_quotation_controller.request_for_quotation_custom_validation"
+        "validate": ["art_collections.request_for_quotation_controller.request_for_quotation_custom_validation",
+        "art_collections.directive_controller.get_directive"]
     },
     "Address": {
         "autoname": "art_collections.address_controller.set_address_title_based_on_customer"
     },
+    "Quotation": {
+        "validate": "art_collections.directive_controller.get_directive"
+    },  
+    "Delivery Note" : {
+        "validate": "art_collections.directive_controller.get_directive"
+    },   
+    "Sales Invoice" : {
+        "validate": "art_collections.directive_controller.get_directive"
+    },   
+    "Purchase Invoice" : {
+        "validate": "art_collections.directive_controller.get_directive"
+    }      
 }
 
 # Scheduled Tasks

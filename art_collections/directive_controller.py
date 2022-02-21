@@ -37,6 +37,21 @@ def get_directive(self,method):
             directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
             if directive:
                 directive_list.append(directive) 
+    elif self.doctype=='Pick List':
+        directive=get_entity_directive(self.doctype,'Customer',self.customer)
+        if directive:
+            directive_list.append(directive)
+        customer_group=frappe.db.get_value('Customer', self.customer, 'customer_group')
+        directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
+        if directive:
+            directive_list.append(directive)            
+        for item in self.locations:
+            directive=get_item_directive(self.doctype,'Item',item.item_code)
+            if directive:
+                directive_list.append(directive)                 
+            directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
+            if directive:
+                directive_list.append(directive)                 
     elif self.doctype=='Purchase Receipt' or self.doctype=='Purchase Invoice' or self.doctype=='Supplier Quotation':
         directive=get_entity_directive(self.doctype,'Supplier',self.supplier)
         if directive:
@@ -92,6 +107,8 @@ def get_directive(self,method):
                 alert_content+='<br><br>'                       
     if len(directive_content)>0:
         self.directive_art=directive_content
+    else:
+        self.directive_art=None
     if len(alert_content)>0:
         frappe.msgprint(msg= _(alert_content),title= _('Directive Alert'),indicator= 'orange')     
 

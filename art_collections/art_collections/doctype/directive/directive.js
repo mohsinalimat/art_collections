@@ -20,7 +20,7 @@ frappe.ui.form.on('Directive', {
 		frm.set_query('directive_doctype', 'show_directive_on_doctypes_art', () => {
 			return {
 				filters: {
-					name: ['in',['Quotation','Sales Order','Delivery Note','Sales Invoice','Purchase Receipt','Purchase Invoice','Supplier Quotation','Request For Quotation']]
+					name: ['in',['Quotation','Sales Order','Delivery Note','Sales Invoice','Pick List','Purchase Receipt','Purchase Invoice','Supplier Quotation','Request For Quotation']]
 					// Filter On DocType :  QN,SO,DN,SI,PR,PI,SQ,RFQ
 				}
 			}

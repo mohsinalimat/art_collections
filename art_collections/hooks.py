@@ -163,7 +163,10 @@ doc_events = {
     },   
     "Purchase Invoice" : {
         "validate": "art_collections.directive_controller.get_directive"
-    }      
+    },
+    "Pick List" : {
+        "validate": "art_collections.directive_controller.get_directive"
+    }           
 }
 
 # Scheduled Tasks

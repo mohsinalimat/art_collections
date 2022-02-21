@@ -1,4 +1,8 @@
 frappe.ui.form.on('Pick List', {
+	refresh: (frm) => {	
+		// it is required to trigger our custom 'add_get_items_button'
+		frm.remove_custom_button('Get Items');
+	},
 	setup: (frm) => {
 		frappe.db.get_single_value('Art Collections Settings', 'picker_role')
 			.then(picker_role => {
@@ -12,6 +16,34 @@ frappe.ui.form.on('Pick List', {
 				}
 			})
 	},
+	add_get_items_button: (frm) => {
+		let purpose = frm.doc.purpose;
+		if (purpose != 'Delivery' || frm.doc.docstatus !== 0) return;
+		let get_query_filters = {
+			docstatus: 1,
+			per_delivered: ['<', 100],
+			status: ['!=', ''],
+			customer: frm.doc.customer
+		};
+		frm.get_items_btn = frm.add_custom_button(__('Get Items'), () => {
+			if (!frm.doc.customer) {
+				frappe.msgprint(__('Please select Customer first'));
+				return;
+			}
+			erpnext.utils.map_current_doc({
+				method: 'erpnext.selling.doctype.sales_order.sales_order.create_pick_list',
+				source_doctype: 'Sales Order',
+				target: frm,
+				setters: {
+					company: frm.doc.company,
+					customer: frm.doc.customer,
+					status: ['!=', '']
+				},
+				date_field: 'transaction_date',
+				get_query_filters: get_query_filters
+			});
+		});
+	},	
 	onload_post_render: function (frm) {
 		frappe.db.get_value('Art Collections Settings', 'Art Collections Settings', ['saleable_warehouse_type', 'reserved_warehouse_type'])
 			.then(r => {

@@ -5,11 +5,26 @@ from frappe.utils import nowdate,add_days,flt,cstr
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 
 def item_custom_validation(self,method):
-	pass
+	set_uom_quantity_of_inner_in_outer(self)
 	# set_custom_item_name(self)
 	# fix : shopping_cart
 	# sync_description_with_web_long_description(self)
 	# update_flag_table(self)
+def set_uom_quantity_of_inner_in_outer(self):
+	inner_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'inner_carton_uom')
+	outer_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'outer_carton_uom')
+	inner_carton_uom_conversion=None
+	outer_carton_uom_conversion=None
+
+	if inner_carton_uom and outer_carton_uom:
+		for uom in self.uoms:
+			if uom.uom==inner_carton_uom:
+				inner_carton_uom_conversion=uom.conversion_factor
+			elif uom.uom==outer_carton_uom:
+				outer_carton_uom_conversion=uom.conversion_factor
+	if inner_carton_uom_conversion and outer_carton_uom_conversion:
+		self.nb_inner_in_outer_art=flt(outer_carton_uom_conversion/inner_carton_uom_conversion,1)
+
 
 def set_custom_item_name(self,method):
 	list_of_item_name_values= [self.qty_in_selling_pack_art,self.item_group,self.main_design_color_art,self.length_art,self.width_art,self.thickness_art]

@@ -56,14 +56,12 @@ frappe.ui.form.on('Sales Order', {
 						for (var i in doc.credit_limits || []) {
 							var item = doc.credit_limits[i];
 							if (item.company == default_company && item.credit_limit > 0) {
-								console.log('item.credit_limit', item.credit_limit)
 								found_credit_limit = true
 								break;
 							}
 						}
 					} else {
 						found_payment_terms = true
-						console.log('doc.payment_terms', doc.payment_terms)
 					}
 					if (found_payment_terms == false && found_credit_limit == false) {
 						frappe.msgprint({
@@ -115,7 +113,6 @@ frappe.ui.form.on('Sales Order', {
 	validate: function (frm) {
 
 		// ignore_warning is set to true in warning popup's success route
-		console.log(frm.doc.ignore_warning, 'ignore')
 		if (frm.doc.ignore_warning) {
 			return;
 		}
@@ -127,7 +124,6 @@ frappe.ui.form.on('Sales Order', {
 			$.each(frm.doc.items || [], function (i, d) {
 				frappe.db.get_value('Item', d.item_code, 'max_qty_allowed_in_shopping_cart_art').then
 					(({ message }) => {
-						console.log(message);
 						var max_qty = message.max_qty_allowed_in_shopping_cart_art
 						if (d.qty > max_qty && max_qty > 0) {
 							frappe.msgprint(__('Maximum {0} qty allowed for {1} in sales order.', [max_qty, d.item_code]));
@@ -194,10 +190,8 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 			frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
 				message
 			}) => {
-				console.log(message);
 				let raise_warning = false
 				let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
-				debugger
 				if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
 					if (d.qty >= nb_selling_packs_in_inner_art) {
 						let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
@@ -269,7 +263,7 @@ function download_art_bulk_template(frm) {
 	data.push(["-----------------------------------------------------------------------------"]);
 	$.each(frappe.get_meta('Sales Order Item').fields, (i, df) => {
 		// don't include the read-only field in the template
-		if (frappe.model.is_value_type(df.fieldtype) && (df.fieldname == 'item_code' || df.fieldname == 'qty')) {
+		if (frappe.model.is_value_type(df.fieldtype) && (df.fieldname == 'item_code' || df.fieldname == 'qty' || df.fieldname == 'uom	')) {
 			data[1].push(df.label);
 			data[2].push(df.fieldname);
 			let description = (df.description || "") + ' ';
@@ -355,7 +349,6 @@ function upload_art_bulk_items(frm) {
 					callback: function (r, rt) {
 						if (r.message) {
 							$.each(r.message, function (k, v) {
-								debugger
 								if (k=='is_sales_item') {
 									if (v=='0' && visited==false) {
 										
@@ -365,7 +358,10 @@ function upload_art_bulk_items(frm) {
 									}
 									
 								} else {
+									if (k!='uom' || (d.uom=='' && k=='uom')) {
 									frappe.model.set_value('Sales Order Item', d.name, k, v);
+										
+									}
 									
 								}
 							});

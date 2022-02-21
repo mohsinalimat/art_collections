@@ -64,7 +64,13 @@ def get_columns():
 			"fieldtype": "Data",
 			"label": _("Transport Type"),
 			"width": 60
-		},		
+		},	
+		{
+			"fieldname": "transport_size_art",
+			"fieldtype": "Data",
+			"label": _("Transport Size"),
+			"width": 60
+		},			
 		{
 			"fieldname": "schedule_date",
 			"fieldtype": "Date",
@@ -118,8 +124,8 @@ def get_columns():
 	return columns
 
 def get_data(filters):	
-	query='''SELECT po.owner, po.supplier, po.supplier_name ,po.name,po.total_outer_cartons_ordered_art,po.total_qty,po.container_number_art,po.transport_type_art,po.schedule_date,
-po.set_apart_art,IF(ISNULL(po.set_apart_comment_art),NULL,'YES') as set_apart_comment_art,po.arrival_forecast_date_art,po.arrival_forecast_hour_art,
+	query='''SELECT po.owner, po.supplier, po.supplier_name ,po.name,po.total_outer_cartons_ordered_art,po.total_qty,po.container_number_art,po.transport_type_art,
+	po.transport_size_art,po.schedule_date,po.set_apart_art,IF(ISNULL(po.set_apart_comment_art),NULL,'YES') as set_apart_comment_art,po.arrival_forecast_date_art,po.arrival_forecast_hour_art,
 IF(po.status IN('To Bill','Completed','Delivered'),'YES','NO') as status,
 po.telex_release_sent_date_art,po.ship_name_art 
 FROM  `tabPurchase Order` po

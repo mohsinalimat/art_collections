@@ -162,3 +162,26 @@ def allow_order_still_stock_last():
 						eligible_item.is_sales_item=0
 						eligible_item.save(ignore_permissions=True)
 						print(eligible_item.name,eligible_item.is_sales_item)
+
+
+def get_qty_of_inner_cartoon(item_code):
+	inner_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'inner_carton_uom')
+	inner_carton_uom_conversion=None
+	item=frappe.get_doc('Item',item_code)
+	if item and inner_carton_uom:
+		for uom in item.uoms:
+			if uom.uom==inner_carton_uom:
+				inner_carton_uom_conversion=uom.conversion_factor
+				break
+	return inner_carton_uom_conversion
+
+def get_qty_of_outer_cartoon(item_code):
+	outer_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'outer_carton_uom')
+	outer_carton_uom_conversion=None
+	item=frappe.get_doc('Item',item_code)
+	if item  and outer_carton_uom:
+		for uom in item.uoms:
+			if uom.uom==outer_carton_uom:
+				outer_carton_uom_conversion=uom.conversion_factor
+				break
+	return outer_carton_uom_conversion		

@@ -229,27 +229,6 @@ def get_print_context_for_art_collectons_sales_order(name):
             shipping_cost += tax.base_tax_amount
     ctx["shipping_cost"] = shipping_cost
     ctx["taxes_cost"] = taxes_cost
-
-    discontinued_items = frappe.db.sql(
-        """
-        select
-            i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-            '' warehouse_name, 0 price_list_rate, 0 total_saleable_qty_cf,
-            0 net_rate, 0 net_amount, 0 discount_amount, soi.description, 0 total_weight,
-            soi.qty, '' image, so.overall_directive_art, 0 in_stock
-        from `tabSales Order Discountinued Items CT` soi
-        inner join `tabSales Order` so on so.name = soi.parent
-        inner join tabItem i on i.name = soi.item_code
-        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1
-        where soi.parent = %(name)s
-    """,
-        dict(name=name),
-        as_dict=True,
-        # debug=1,
-    )
-
-    ctx["discontinued_items"] = discontinued_items and list(discontinued_items) or []
-
     return ctx
 
 

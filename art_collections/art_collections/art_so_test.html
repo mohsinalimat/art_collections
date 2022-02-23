@@ -65,7 +65,7 @@
                     </td>
                     <td>{{ d.customs_tariff_number or "" }}</td>
                     <td>{{ d.weight or 0 }}</td>
-                    <td class="text-right">{{ d.nb_selling_packs_in_inner_art or "" }}</td>
+                    <td class="text-right">{{ d.stock_qty or "" }}</td>
                     <td class="text-right">{{ d.qty or "" }}</td>
                     <td class="text-right">{{ d.price_list_rate or "" }}</td>
                     {% if ctx.has_discount %}

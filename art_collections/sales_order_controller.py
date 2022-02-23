@@ -4,6 +4,7 @@ import datetime
 from frappe import _
 from frappe.utils import get_link_to_form,flt
 from art_collections.item_controller import get_stock_qty_for_saleable_warehouse
+from art_collections.item_controller import get_qty_of_inner_cartoon
 
 
 def sales_order_custom_validation(self, method):
@@ -24,7 +25,7 @@ def validate_inner_qty_and_send_notification(self):
 
 	for item in self.get("items"):
 		raise_warning=False
-		nb_selling_packs_in_inner_art=frappe.db.get_value('Item', item.item_code, 'nb_selling_packs_in_inner_art')
+		nb_selling_packs_in_inner_art=get_qty_of_inner_cartoon(item.item_code)
 		if nb_selling_packs_in_inner_art and nb_selling_packs_in_inner_art >0 :
 			if item.qty >= nb_selling_packs_in_inner_art:
 				allowed_selling_packs_in_inner= item.qty % nb_selling_packs_in_inner_art

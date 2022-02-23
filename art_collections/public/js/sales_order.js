@@ -187,11 +187,12 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 	$.each(frm.doc.items || [], function (i, d) {
 		// create each new promise for item iteration
 		let p = new Promise(resolve => {
-			frappe.db.get_value('Item', d.item_code, 'nb_selling_packs_in_inner_art').then(({
-				message
-			}) => {
+
+			frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', {item_code: d.item_code}).then(
+				r => 
+			{
 				let raise_warning = false
-				let nb_selling_packs_in_inner_art = message.nb_selling_packs_in_inner_art
+				let nb_selling_packs_in_inner_art = r.message
 				if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
 					if (d.qty >= nb_selling_packs_in_inner_art) {
 						let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
@@ -218,7 +219,9 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 					// when nb_selling_packs_in_inner_art ==0 
 					resolve();
 				}
-			});
+			}
+			);
+
 		});
 		// push all promises p to array
 		promises.push(p);

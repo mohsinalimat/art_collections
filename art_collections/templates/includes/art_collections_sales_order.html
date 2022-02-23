@@ -1,3 +1,54 @@
+{% macro render_discontinued_items(items, message) %}
+
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table" style="border:1px solid #000;" width="100%">
+            <colgroup>
+                <col style="width: 20%">
+                <col style="width: 20%">
+                <col style="width: 20%">
+                <col style="width: 20%">
+                <col style="width: 30%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Ref</th>
+                    <th>Your Ref. </th>
+                    <th>Description</th>
+                    <th>Barcode</th>
+                    <th>Qty</th>
+                </tr>
+                {% if message %}
+                <tr>
+                    <th colspan="5">
+                        {{message}}
+                    </th>
+                </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for d in items %}
+                <tr>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.customer_code or "" }} </td>
+                    <td>{{ d.description or "" }}</td>
+                    <td>
+                        {% if d.barcode %}
+                        <img alt="{{d.barcode}}"
+                            src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
+                        {% endif %}
+                    </td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endmacro %}
+
+
+
 {% macro render_items(items, message) %}
 
 <div class="row">
@@ -167,7 +218,12 @@
 {% if items_out_of_stock | len %}
 {{ render_items(items_out_of_stock, "Temporarily Out of Stock") }}
 {% endif %}
+<!-- Discontinued -->
+{% if ctx.get("discontinued_items") | len %}
+{{ render_discontinued_items(ctx.get("discontinued_items"), "Discontinued Items") }}
+{% endif %}
 
+{{ctx | json}}
 
 
 <div class="row">

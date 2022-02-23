@@ -51,7 +51,14 @@ frappe.ui.form.on('Purchase Order', {
 			frappe.db.get_value('Item', row.item_code, 'min_order_qty')
 			.then(r => {
 					row.min_order_qty_cf=r.message.min_order_qty
-			})			
+			})	
+			frappe.call('art_collections.item_controller.get_qty_of_outer_cartoon', {
+			    item_code: row.item_code
+			}).then(r => {
+			    if (r.message) {
+			    	row.nb_selling_packs_in_outer_art=r.message
+			    }
+			})					
 			
 		}
 		if (row.item_code && frm.doc.supplier) {

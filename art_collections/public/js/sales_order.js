@@ -82,18 +82,18 @@ frappe.ui.form.on('Sales Order', {
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
 		frm.add_custom_button(
-			__("Download ART Bulk Template"), function () {download_art_bulk_template(frm)},__("Create")
+			__("Download ART Bulk Template"), function () { download_art_bulk_template(frm) }, __("Create")
 		);
 
 		frm.add_custom_button(
-			__("Upload ART Bulk"),function () { upload_art_bulk_items(frm)},	__("Create")
-		);		
+			__("Upload ART Bulk"), function () { upload_art_bulk_items(frm) }, __("Create")
+		);
 
 		frm.add_custom_button(
 			__("Product Excel"),
 			function () {
 				frappe.call({
-					method: "art_collections.excel_controller.make_excel",
+					method: "art_collections.excel_controller.make_sales_order_excel",
 					args: {
 						docname: frm.doc.name,
 						doctype: frm.doc.doctype,
@@ -338,38 +338,38 @@ function upload_art_bulk_items(frm) {
 			frm.refresh_field('items');
 			let items = frm.doc.items
 			for (let index = 0; index < items.length; index++) {
-				let visited=false
+				let visited = false
 				const d = items[index];
 				frappe.call({
 					method: "art_collections.sales_order_controller.get_item_details",
 					args: {
 						"item_code": d.item_code,
-						"qty":d.qty
+						"qty": d.qty
 					},
 					callback: function (r, rt) {
 						if (r.message) {
 							$.each(r.message, function (k, v) {
-								if (k=='is_sales_item') {
-									if (v=='0' && visited==false) {
-										
-										frm.add_child('discontinued_sales_item_ct',r.message)
+								if (k == 'is_sales_item') {
+									if (v == '0' && visited == false) {
+
+										frm.add_child('discontinued_sales_item_ct', r.message)
 										cur_frm.get_field("items").grid.grid_rows[index].remove();
-										let visited=true
+										let visited = true
 									}
-									
+
 								} else {
-									if (k!='uom' || (d.uom=='' && k=='uom')) {
-									frappe.model.set_value('Sales Order Item', d.name, k, v);
-										
+									if (k != 'uom' || (d.uom == '' && k == 'uom')) {
+										frappe.model.set_value('Sales Order Item', d.name, k, v);
+
 									}
-									
+
 								}
 							});
 						}
 					}
 				})
 			}
-			frappe.msgprint({message: __('Table updated'),title: __('Success'),indicator: 'green'});
+			frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
 		}
 	});
 	return false;

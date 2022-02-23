@@ -293,3 +293,104 @@ def get_print_context_for_art_collectons_purchase_order(name):
 
     print("*\n" * 10, ctx)
     return ctx
+
+
+def get_so_excel_data(docname):
+    items = frappe.db.sql(
+        """
+            select 
+                i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
+                tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
+                soi.net_rate, soi.net_amount, soi.discount_amount, soi.description, soi.total_weight, 
+                soi.qty, soi.image, so.overall_directive_art,
+                if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock
+            from `tabSales Order Item` soi
+            inner join `tabSales Order` so on so.name = soi.parent
+            left outer join tabWarehouse tw on tw.name = soi.warehouse 
+            inner join tabItem i on i.name = soi.item_code
+            left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+            where soi.parent = %s
+    """,
+        (docname),
+        as_dict=True,
+    )
+    discontinued_items = frappe.db.sql(
+        """
+        select 
+            i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
+            '' warehouse_name, 0 price_list_rate, 0 total_saleable_qty_cf, 
+            0 net_rate, 0 net_amount, 0 discount_amount, soi.description, 0 total_weight, 
+            soi.qty, '' image, so.overall_directive_art, 0 in_stock
+        from `tabSales Order Discountinued Items CT` soi
+        inner join `tabSales Order` so on so.name = soi.parent
+        inner join tabItem i on i.name = soi.item_code
+        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        where soi.parent = %s
+    """,
+        (docname),
+        as_dict=True,
+    )
+
+    return {
+        "in_stock_items": filter(lambda x: x.in_stock, items),
+        "out_of_stock_items": filter(lambda x: not x.in_stock, items),
+        "discontinued_items": discontinued_items,
+    }
+
+
+SO_COLUMNS = [
+    ("warehouse_name", "Zone"),
+    ("item_name", "Ref"),
+    ("customer_code", "Your Ref. "),
+    ("description", "Description"),
+    ("barcode", "Barcode"),
+    ("customs_tariff_number", "HScode"),
+    ("weight", "Weight"),
+    ("nb_selling_packs_in_inner_art", "Inner Qty"),
+    ("qty", "Qty"),
+    ("price_list_rate", "Gross Price"),
+    ("discount_amount", "Discount"),
+    ("net_rate", "Net Price"),
+    ("net_amount", "Total Line"),
+    ("image", "Photo"),
+]
+
+
+@frappe.whitelist()
+def make_sales_order_excel(docname=None, doctype=None):
+    all_items = get_so_excel_data(docname)
+    columns = [[d[1] for d in SO_COLUMNS]]
+    wb = openpyxl.Workbook()
+    column_widths = [20, 20, 30, 30, 30, 20, 20, 15, 15, 30]
+
+    data = [
+        [d.get(col[0]) for d in all_items["discontinued_items"] for col in SO_COLUMNS]
+    ]
+    write_xlsx(columns + data, "Discontinued Items", wb, column_widths)
+
+    data = [
+        [d.get(col[0]) for d in all_items["out_of_stock_items"] for col in SO_COLUMNS]
+    ]
+    write_xlsx(columns + data, "Out of Stock Items", wb, column_widths)
+
+    data = [[d.get(col[0]) for d in all_items["in_stock_items"] for col in SO_COLUMNS]]
+    write_xlsx(columns + data, "In Stock Items", wb, column_widths)
+
+    # make attachment
+    out = io.BytesIO()
+    wb.save(out)
+    _file = frappe.get_doc(
+        {
+            "doctype": "File",
+            "file_name": "{}.xlsx".format(docname),
+            "attached_to_doctype": doctype,
+            "attached_to_name": docname,
+            "is_private": 1,
+            "content": out.getvalue(),
+        }
+    )
+    _file.save()
+    frappe.db.commit()
+    frappe.publish_realtime(
+        "show_sales_order_email_dialog", {"user": frappe.session.user}
+    )

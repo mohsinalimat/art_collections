@@ -151,7 +151,8 @@ doc_events = {
         "art_collections.directive_controller.get_directive"]
     },
     "Address": {
-        "autoname": "art_collections.address_controller.set_address_title_based_on_customer"
+        "autoname": "art_collections.address_controller.set_address_title_based_on_customer",
+        "validate": "art_collections.address_controller.fetch_default_mode_of_payment"
     },
     "Quotation": {
         "validate": "art_collections.directive_controller.get_directive"

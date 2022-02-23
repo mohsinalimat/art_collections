@@ -30,3 +30,11 @@ def set_address_title_based_on_customer(self,method):
 			self.name = make_autoname(self.address_title + "-.#")
 	else:
 		throw(_("Address Title is mandatory."))
+
+def fetch_default_mode_of_payment(self,method):
+	if not self.default_mode_of_payment_art:
+		for item in self.links:
+			if item.link_doctype=="Customer":
+				default_mode_of_payment_art= frappe.db.get_value('Customer', item.link_name, 'default_mode_of_payment_art')	
+				if default_mode_of_payment_art:
+					self.default_mode_of_payment_art=default_mode_of_payment_art		

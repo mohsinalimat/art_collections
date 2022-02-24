@@ -123,7 +123,9 @@ doc_events = {
         "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic"
     },
     "Sales Order": {
-        "validate": "art_collections.directive_controller.get_directive",
+        "validate": [
+            "art_collections.directive_controller.get_directive",
+            "art_collections.sales_order_controller.update_total_saleable_qty"],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.excel_controller.on_submit_sales_order",

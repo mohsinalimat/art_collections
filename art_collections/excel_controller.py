@@ -53,12 +53,18 @@ def make_excel(docname=None, doctype=None):
             i.description_3_cf,
             i.other_language_cf,
             (select barcode from `tabItem Barcode` x where x.parent = i.name order by idx limit 1) genco,
-            i.nb_selling_packs_in_inner_art,
-            i.packaging_description_cf
+            coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art,
+            i.packaging_description_cf  
         from 
         `tab{doctype}` dt
         inner join `tab{doctype} Item` dti on dti.parent = dt.name
         inner join tabItem i on i.name = dti.item_code
+        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
+            and ucd.parenttype='Item' and ucd.uom = (
+                select value from tabSingles
+                where doctype like 'Art Collections Settings' 
+                and field = 'inner_carton_uom' 
+            )
         where dt.name = %s
     """.format(
             your_ref=("dti.supplier_part_no" if doctype == "Purchase Order" else "''"),
@@ -204,16 +210,24 @@ def get_print_context_for_art_collectons_sales_order(name):
         tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
         soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
         soi.qty, soi.image, so.overall_directive_art,
-        if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock
+        if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock,
+        coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
         from `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent
         left outer join tabWarehouse tw on tw.name = soi.warehouse 
         inner join tabItem i on i.name = soi.item_code
         left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
+            and ucd.parenttype='Item' and ucd.uom = (
+                select value from tabSingles
+                where doctype like 'Art Collections Settings' 
+                and field = 'inner_carton_uom' 
+            )        
         where soi.parent = %(name)s
     """,
             dict(name=name),
             as_dict=True,
+            # debug=1,
         )
     )
 
@@ -244,12 +258,19 @@ def get_print_context_for_art_collectons_purchase_order(name):
         select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
         tw.warehouse_name, poi.price_list_rate,  
         poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
-        poi.qty, poi.image, po.overall_directive_art
+        poi.qty, poi.image, po.overall_directive_art,
+        coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
         left outer join tabWarehouse tw on tw.name = poi.warehouse 
         inner join tabItem i on i.name = poi.item_code
         left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
+            and ucd.parenttype='Item' and ucd.uom = (
+                select value from tabSingles
+                where doctype like 'Art Collections Settings' 
+                and field = 'inner_carton_uom' 
+            )
         where poi.parent = %(name)s
     """,
             dict(name=name),
@@ -282,12 +303,19 @@ def get_so_excel_data(docname):
                 tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
                 soi.net_rate, soi.net_amount, soi.discount_amount, soi.description, soi.total_weight, 
                 soi.qty, soi.image, so.overall_directive_art,
-                if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock
+                if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock,
+                coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
             from `tabSales Order Item` soi
             inner join `tabSales Order` so on so.name = soi.parent
             left outer join tabWarehouse tw on tw.name = soi.warehouse 
             inner join tabItem i on i.name = soi.item_code
             left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+            left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
+            and ucd.parenttype='Item' and ucd.uom = (
+                select value from tabSingles
+                where doctype like 'Art Collections Settings' 
+                and field = 'inner_carton_uom' 
+            )
             where soi.parent = %s
     """,
         (docname),
@@ -299,11 +327,18 @@ def get_so_excel_data(docname):
             i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
             '' warehouse_name, 0 price_list_rate, 0 total_saleable_qty_cf, 
             0 net_rate, 0 net_amount, 0 discount_amount, soi.description, 0 total_weight, 
-            soi.qty, '' image, so.overall_directive_art, 0 in_stock
+            soi.qty, '' image, so.overall_directive_art, 0 in_stock,
+            coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
         from `tabSales Order Discountinued Items CT` soi
         inner join `tabSales Order` so on so.name = soi.parent
         inner join tabItem i on i.name = soi.item_code
         left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
+            and ucd.parenttype='Item' and ucd.uom = (
+                select value from tabSingles
+                where doctype like 'Art Collections Settings' 
+                and field = 'inner_carton_uom' 
+            )
         where soi.parent = %s
     """,
         (docname),

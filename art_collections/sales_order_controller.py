@@ -12,9 +12,8 @@ def sales_order_custom_validation(self, method):
 		validate_minimum_order_amount_as_per_customer_group(self)
 		valiate_payment_terms_and_credit_limit_for_customer(self)
 		validate_inner_qty_and_send_notification(self)
-	update_total_saleable_qty(self)
 
-def update_total_saleable_qty(self):
+def update_total_saleable_qty(self, method=None):
 	for item in self.get("items"):
 		total_saleable_qty=get_stock_qty_for_saleable_warehouse(item.item_code)
 		if len(total_saleable_qty)>0:

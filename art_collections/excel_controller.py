@@ -53,7 +53,7 @@ def make_excel(docname=None, doctype=None):
             i.description_3_cf,
             i.other_language_cf,
             (select barcode from `tabItem Barcode` x where x.parent = i.name order by idx limit 1) genco,
-            coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art,
+            coalesce(ucd.conversion_factor,0) * dti.qty nb_selling_packs_in_inner_art,
             i.packaging_description_cf  
         from 
         `tab{doctype}` dt
@@ -257,7 +257,7 @@ def get_print_context_for_art_collectons_purchase_order(name):
         tw.warehouse_name, poi.price_list_rate,  
         poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
         poi.qty, poi.image, po.overall_directive_art,
-        coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
+        coalesce(ucd.conversion_factor,0) * poi.qty nb_selling_packs_in_inner_art
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
         left outer join tabWarehouse tw on tw.name = poi.warehouse 

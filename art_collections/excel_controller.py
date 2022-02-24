@@ -160,7 +160,6 @@ def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
 
     for idx, row in enumerate(data):
         clean_row = []
-        print(row)
         for col, item in enumerate(row):
             value = item
             if isinstance(item, str) and next(
@@ -193,7 +192,6 @@ def sample_write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=N
             _ = ws3.cell(
                 column=col, row=row, value="{0}".format(get_column_letter(col))
             )
-    print(ws3["AA10"].value)
     wb.save(filename="dest_filename")
 
 
@@ -210,7 +208,7 @@ def get_print_context_for_art_collectons_sales_order(name):
         tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
         soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
         soi.qty, soi.image, so.overall_directive_art,
-        if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock,
+        if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock,
         coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
         from `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent
@@ -291,7 +289,6 @@ def get_print_context_for_art_collectons_purchase_order(name):
     ctx["shipping_cost"] = shipping_cost
     ctx["taxes_cost"] = taxes_cost
 
-    print("*\n" * 10, ctx)
     return ctx
 
 
@@ -303,7 +300,7 @@ def get_so_excel_data(docname):
                 tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
                 soi.net_rate, soi.net_amount, soi.discount_amount, soi.description, soi.total_weight, 
                 soi.qty, soi.image, so.overall_directive_art,
-                if(soi.total_saleable_qty_cf >= soi.qty,1,0) in_stock,
+                if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock,
                 coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
             from `tabSales Order Item` soi
             inner join `tabSales Order` so on so.name = soi.parent
@@ -345,11 +342,13 @@ def get_so_excel_data(docname):
         as_dict=True,
     )
 
-    return {
-        "in_stock_items": filter(lambda x: x.in_stock, items),
-        "out_of_stock_items": filter(lambda x: not x.in_stock, items),
+    out = {
+        "in_stock_items": list(filter(lambda x: x.in_stock, items)),
+        "out_of_stock_items": list(filter(lambda x: not x.in_stock, items)),
         "discontinued_items": discontinued_items,
     }
+
+    return out
 
 
 SO_COLUMNS = [
@@ -377,19 +376,20 @@ def make_sales_order_excel(docname=None, doctype=None):
     wb = openpyxl.Workbook()
     column_widths = [20, 20, 30, 30, 30, 20, 20, 15, 15, 30]
 
-    data = [
-        [d.get(col[0]) for d in all_items["discontinued_items"] for col in SO_COLUMNS]
-    ]
+    data = []
+    for d in all_items["discontinued_items"]:
+        data.append([d.get(col[0]) for col in SO_COLUMNS])
     write_xlsx(columns + data, "Discontinued Items", wb, column_widths)
 
-    data = [
-        [d.get(col[0]) for d in all_items["out_of_stock_items"] for col in SO_COLUMNS]
-    ]
+    data = []
+    for d in all_items["out_of_stock_items"]:
+        data.append([d.get(col[0]) for col in SO_COLUMNS])
     write_xlsx(columns + data, "Out of Stock Items", wb, column_widths)
 
-    data = [[d.get(col[0]) for d in all_items["in_stock_items"] for col in SO_COLUMNS]]
+    data = []
+    for d in all_items["in_stock_items"]:
+        data.append([d.get(col[0]) for col in SO_COLUMNS])
     write_xlsx(columns + data, "In Stock Items", wb, column_widths)
-
     # make attachment
     out = io.BytesIO()
     wb.save(out)

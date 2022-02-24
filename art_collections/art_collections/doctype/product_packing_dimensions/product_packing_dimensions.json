@@ -22,18 +22,21 @@
    "reqd": 1
   },
   {
+   "columns": 1,
    "fieldname": "length",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Length"
   },
   {
+   "columns": 1,
    "fieldname": "width",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Width"
   },
   {
+   "columns": 1,
    "fieldname": "thickness",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -55,7 +58,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-02-04 12:08:11.147221",
+ "modified": "2022-02-24 05:36:13.050966",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Product Packing Dimensions",

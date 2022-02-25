@@ -18,7 +18,7 @@ def get_data(filters=None):
 	data = frappe.db.sql(
         """with fn as (
 SELECT  
-supplier.supplier_name as supplier,
+GROUP_CONCAT(DISTINCT supplier.supplier_name) as supplier,
 item.item_code ,
 item.item_name,  
 GROUP_CONCAT(DISTINCT catalogue.parent) as catalogue_type,

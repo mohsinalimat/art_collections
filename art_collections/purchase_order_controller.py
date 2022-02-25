@@ -123,7 +123,7 @@ def update_availability_date_of_item_based_on_po_shipping_date_art(self,method):
 				.format(po_item.item_name,frappe.bold(format_date(required_by_date_with_buffer)),item_availability_buffer_days)), indicator='orage',alert=True)		
 
 def check_previous_po_item_is_not_received(item_code)	:
-	check_previous_po_item_is_not_received = frappe.db.sql("""SELECT  POI.schedule_date as required_by_date
+	check_previous_po_item_is_not_received = frappe.db.sql("""SELECT  POI.shipping_date_art as required_by_date
 	FROM  `tabPurchase Order` PO inner join `tabPurchase Order Item` POI 
 	on PO.name=POI.parent
 	where PO.status in ('To Receive and Bill','To Receive')

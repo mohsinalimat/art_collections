@@ -193,7 +193,7 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 			{
 				let raise_warning = false
 				let nb_selling_packs_in_inner_art = r.message
-				if (nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
+				if ( (d.uom==d.stock_uom) && nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
 					if (d.qty >= nb_selling_packs_in_inner_art) {
 						let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
 						if (allowed_selling_packs_in_inner != 0) {

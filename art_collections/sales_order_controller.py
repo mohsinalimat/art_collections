@@ -25,7 +25,7 @@ def validate_inner_qty_and_send_notification(self):
 	for item in self.get("items"):
 		raise_warning=False
 		nb_selling_packs_in_inner_art=get_qty_of_inner_cartoon(item.item_code)
-		if nb_selling_packs_in_inner_art and nb_selling_packs_in_inner_art >0 :
+		if (item.uom==item.stock_uom) and nb_selling_packs_in_inner_art and nb_selling_packs_in_inner_art >0 :
 			if item.qty >= nb_selling_packs_in_inner_art:
 				allowed_selling_packs_in_inner= item.qty % nb_selling_packs_in_inner_art
 				if allowed_selling_packs_in_inner!=0:
@@ -37,7 +37,9 @@ def validate_inner_qty_and_send_notification(self):
 	if msg!='':
 		print('-'*100)
 		print(msg)
-		send_email_via_custom_notification('validate_inner_qty_for_sales_order',self.name,msg)
+		selling_pack_invalid_qty_so_notification = frappe.db.get_single_value('Art Collections Settings', 'selling_pack_invalid_qty_so_notification')
+		if selling_pack_invalid_qty_so_notification:
+			send_email_via_custom_notification(selling_pack_invalid_qty_so_notification,self.name,msg)
 
 
 def send_email_via_custom_notification(notification_name,doc_name,custom_message):
@@ -45,24 +47,25 @@ def send_email_via_custom_notification(notification_name,doc_name,custom_message
 	import json
 
 	notification = frappe.get_doc("Notification", notification_name)
-	doc = frappe.get_doc(notification.document_type, doc_name)
+	if notification.enabled==1:
+		doc = frappe.get_doc(notification.document_type, doc_name)
 
-	context = get_context(doc)
-	context = {"doc": doc, "alert": notification, "comments": None}
-	if doc.get("_comments"):
-		context["comments"] = json.loads(doc.get("_comments"))
+		context = get_context(doc)
+		context = {"doc": doc, "alert": notification, "comments": None}
+		if doc.get("_comments"):
+			context["comments"] = json.loads(doc.get("_comments"))
 
-	if notification.is_standard:
-		notification.load_standard_properties(context)
-	try:
-		if notification.channel == 'Email':
-			send_an_email(notification,doc, context,custom_message)
+		if notification.is_standard:
+			notification.load_standard_properties(context)
+		try:
+			if notification.channel == 'Email':
+				send_an_email(notification,doc, context,custom_message)
 
-		if notification.channel == 'System Notification' or notification.send_system_notification:
-			create_system_notification(notification,doc, context)
+			if notification.channel == 'System Notification' or notification.send_system_notification:
+				create_system_notification(notification,doc, context)
 
-	except:
-		frappe.log_error(title='Failed to send notification', message=frappe.get_traceback())
+		except:
+			frappe.log_error(title='Failed to send notification', message=frappe.get_traceback())
 	
 def send_an_email(notification, doc, context,custom_message):
 	from email.utils import formataddr

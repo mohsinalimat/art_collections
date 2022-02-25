@@ -229,6 +229,16 @@ frappe.ui.form.on('Item', {
 
 });
 
+frappe.ui.form.on('Product Packing Dimensions', {
+	uom: function(frm, cdt, cdn) {
+      let row=locals[cdt][cdn]
+      console.log(row.weight)
+      if (row.uom==frm.doc.stock_uom && frm.doc.weight_per_unit && row.weight==undefined) {
+		   frappe.model.set_value(cdt, cdn, 'weight', frm.doc.weight_per_unit);
+      }
+	}
+});
+
 function new_item_name(frm) {
    
    let custom_item_name=[]

@@ -186,3 +186,16 @@ def get_qty_of_outer_cartoon(item_code):
 				outer_carton_uom_conversion=uom.conversion_factor
 				break
 	return outer_carton_uom_conversion		
+
+
+@frappe.whitelist()
+def get_cbm_per_outer_carton(item_code):
+	outer_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'outer_carton_uom')
+	cbm_per_outer_carton=None
+	item=frappe.get_doc('Item',item_code)
+	if item  and outer_carton_uom:
+		for uom in item.product_packing_dimensions_art:
+			if uom.uom==outer_carton_uom:
+				cbm_per_outer_carton=uom.cbm
+				break
+	return cbm_per_outer_carton		

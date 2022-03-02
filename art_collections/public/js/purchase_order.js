@@ -53,21 +53,6 @@ frappe.ui.form.on('Purchase Order', {
 					row.min_order_qty_cf=r.message.min_order_qty
 			})	
 			
-			frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', {
-			    item_code: row.item_code
-			}).then(r => {
-			    if (r.message) {
-			    	row.nb_selling_packs_in_inner_art=r.message
-			    }
-			})	
-			
-			frappe.call('art_collections.item_controller.get_qty_of_outer_cartoon', {
-			    item_code: row.item_code
-			}).then(r => {
-			    if (r.message) {
-			    	row.nb_selling_packs_in_outer_art=r.message
-			    }
-			})
 
 		}
 		if (row.item_code && frm.doc.supplier) {
@@ -83,27 +68,5 @@ frappe.ui.form.on('Purchase Order', {
 				
 		}		
 	},
-	total_selling_packs_art: function(frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
-		if (row.total_selling_packs_art && row.nb_selling_packs_in_inner_art>0) {
-				row.total_inner_cartons_art=flt(row.total_selling_packs_art/row.nb_selling_packs_in_inner_art)
-		}		
-		if (row.total_selling_packs_art && row.nb_selling_packs_in_outer_art>0) {
-			row.total_outer_cartons_art=flt(row.total_selling_packs_art/row.nb_selling_packs_in_outer_art)
-  	}	
-		if (row.total_outer_cartons_art && row.total_outer_cartons_art!=0 && row.cbm_per_outer_art) {
-			row.total_cbm=flt(row.total_outer_cartons_art*row.cbm_per_outer_art)
-		}		
-		frm.refresh_field("items")
-	},
-	nb_selling_packs_in_outer_art: function(frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
-		if (row.total_selling_packs_art && row.nb_selling_packs_in_outer_art>0) {
-			row.total_outer_cartons_art=flt(row.total_selling_packs_art/row.nb_selling_packs_in_outer_art)
-  	}	
-		if (row.total_outer_cartons_art && row.total_outer_cartons_art!=0 && row.cbm_per_outer_art) {
-			row.total_cbm=flt(row.total_outer_cartons_art*row.cbm_per_outer_art)
-		}	
-		frm.refresh_field("items")	
-	}
+
 });

@@ -266,7 +266,7 @@ function download_art_bulk_template(frm) {
 	data.push(["-----------------------------------------------------------------------------"]);
 	$.each(frappe.get_meta('Sales Order Item').fields, (i, df) => {
 		// don't include the read-only field in the template
-		if (frappe.model.is_value_type(df.fieldtype) && (df.fieldname == 'item_code' || df.fieldname == 'qty' || df.fieldname == 'uom	')) {
+		if (frappe.model.is_value_type(df.fieldtype) && (df.fieldname == 'item_code' || df.fieldname == 'qty' || df.fieldname == 'uom')) {
 			data[1].push(df.label);
 			data[2].push(df.fieldname);
 			let description = (df.description || "") + ' ';

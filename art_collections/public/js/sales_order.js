@@ -372,7 +372,12 @@ function upload_art_bulk_items(frm) {
 					}
 				})
 			}
+			if (frm.doc.delivery_date) {
+				frm.update_in_all_rows('items', 'delivery_date', frm.doc.delivery_date);
+			}
+
 			frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
+
 		}
 	});
 	return false;

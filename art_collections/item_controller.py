@@ -6,10 +6,18 @@ from art_collections.api import get_average_daily_outgoing_art,get_average_deliv
 
 def item_custom_validation(self,method):
 	set_uom_quantity_of_inner_in_outer(self)
+	set_weight_for_stock_uom_of_packing_dimensions(self)
 	# set_custom_item_name(self)
 	# fix : shopping_cart
 	# sync_description_with_web_long_description(self)
 	# update_flag_table(self)
+
+def set_weight_for_stock_uom_of_packing_dimensions(self):
+	if self.weight_per_unit:
+		for uom in self.product_packing_dimensions_art:
+			if uom.uom==self.stock_uom:
+				uom.weight=self.weight_per_unit
+
 def set_uom_quantity_of_inner_in_outer(self):
 	inner_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'inner_carton_uom')
 	outer_carton_uom = frappe.db.get_single_value('Art Collections Settings', 'outer_carton_uom')

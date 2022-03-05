@@ -9,20 +9,20 @@ frappe.ui.form.on('Sales Order', {
 	},
 
 	onload_post_render: function (frm) {
-		frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_type')
+		frappe.call('art_collections.item_controller.get_saleable_warehouse_list')
 			.then(saleable_warehouse_type => {
 				if (saleable_warehouse_type) {
 					frm.set_query('set_warehouse', () => {
 						return {
 							filters: {
-								warehouse_type: ['=', saleable_warehouse_type]
+								warehouse_type: ['in', saleable_warehouse_type.message]
 							}
 						}
 					})
 					frm.set_query('warehouse', 'items', () => {
 						return {
 							filters: {
-								warehouse_type: ['=', saleable_warehouse_type]
+								warehouse_type: ['in', saleable_warehouse_type.message]
 							}
 						}
 					})

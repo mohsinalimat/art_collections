@@ -166,11 +166,9 @@ frappe.ui.form.on('Item', {
                item_code: frm.doc.name,
             },
             callback: function (r) {
-               if (!r.exc) {
-                  console.log(r)
-                  if (r.message) {
+               if (r.message) {
                      frm.set_intro(r.message,false)
-                  }}}})
+                  }}})
       }      
       if (frm.doc.__islocal == undefined && frm.doc.is_stock_item){
 			frm.add_custom_button(__("Purchase History"), function() {

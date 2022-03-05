@@ -79,8 +79,10 @@ group by PO_item.item_code
 col_o as (select B.item_code,
 COALESCE(sum(B.actual_qty),0) as total_saleable_stock 
 from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
-where WH.warehouse_type in (SELECT value from `tabSingles` 
-where doctype='Art Collections Settings' and field in ('saleable_warehouse_type','reserved_warehouse_type'))
+where WH.warehouse_type in (
+select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  
+where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')
+)
 group by B.item_code
 ),
 col_p as (SELECT  SO_item.item_code , SUM(SO_item.stock_qty) - SUM(SO_item.delivered_qty) as qty_sold_to_be_delivered FROM  `tabSales Order Item` as SO_item

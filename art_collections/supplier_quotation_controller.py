@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, cstr
-from art_collections.item_controller.get_qty_of_outer_cartoon
-from art_collections.item_controller.get_cbm_per_outer_carton
+from art_collections.item_controller import get_cbm_per_outer_carton
+from art_collections.item_controller import get_qty_of_outer_cartoon
 
 def supplier_quotation_custom_validation(self,method):
 	fill_item_pack_details(self)

@@ -6,6 +6,8 @@ from frappe.utils import flt, cstr
 from frappe.utils import getdate,format_date
 from frappe.utils import nowdate,add_days
 from frappe.utils.data import today
+from art_collections.item_controller import get_cbm_per_outer_carton
+from art_collections.item_controller import get_qty_of_outer_cartoon
 
 def purchase_order_custom_validation(self,method):
 	fill_item_pack_details(self)

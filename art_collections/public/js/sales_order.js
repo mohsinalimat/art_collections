@@ -139,6 +139,7 @@ frappe.ui.form.on('Sales Order', {
 frappe.ui.form.on("Sales Order Item", {
 	item_code: function (frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
+		console.log('row',row)
 		if (row.item_code && frm.doc.customer) {
 			frappe.db.get_value('Customer Item Directive', { customer: frm.doc.customer, item_code: row.item_code }, 'remarks')
 				.then(r => {
@@ -299,6 +300,7 @@ function download_art_bulk_template(frm) {
 }
 
 function upload_art_bulk_items(frm) {
+	let excel_uom_data={}
 	let me = this
 	const value_formatter_map = {
 		"Date": val => val ? frappe.datetime.user_to_str(val) : val,
@@ -333,52 +335,43 @@ function upload_art_bulk_items(frm) {
 								d[fieldnames[ci]] = value_formatter_map[df.fieldtype] ?
 									value_formatter_map[df.fieldtype](value) :
 									value;
+								if (fieldname=='uom') {
+									excel_uom_data[d.name]=value
+									
+								}
 							}
 						});
 					}
 				}
 			});
 			frm.refresh_field('items');
-			let items = frm.doc.items
-			for (let index = 0; index < items.length; index++) {
-				let visited = false
-				const d = items[index];
-				frappe.call({
-					method: "art_collections.sales_order_controller.get_item_details",
-					args: {
-						"item_code": d.item_code,
-						"qty": d.qty
-					},
-					callback: function (r, rt) {
-						if (r.message) {
-							$.each(r.message, function (k, v) {
-								if (k == 'is_sales_item') {
-									if (v == '0' && visited == false) {
-
-										frm.add_child('discontinued_sales_item_ct', r.message)
-										cur_frm.get_field("items").grid.grid_rows[index].remove();
-										let visited = true
-									}
-
-								} else {
-									if (k != 'uom' || (d.uom == '' && k == 'uom')) {
-										frappe.model.set_value('Sales Order Item', d.name, k, v);
-
-									}
-
-								}
-							});
-						}
+			var me  = this;
+			var item_code_promises = [];
+			var uom_promises = [];
+			// trigger item_code to get all item fields
+			frm.doc.items.forEach(child_row => {
+				item_code_promises.push(frm.script_manager.trigger("item_code",child_row.doctype, child_row.name)	);
+			})	
+			Promise.all(item_code_promises).then(function(responses) {
+				if (frm.doc.delivery_date) {
+					frm.update_in_all_rows('items', 'delivery_date', frm.doc.delivery_date);
+				}
+				// put excel UOM value back
+				frm.doc.items.forEach(child_row => {
+					if (excel_uom_data[child_row.name]!='') {
+						uom_promises.push(frappe.model.set_value('Sales Order Item', child_row.name, 'uom',excel_uom_data[child_row.name] ))
 					}
-				})
-			}
-			if (frm.doc.delivery_date) {
-				frm.update_in_all_rows('items', 'delivery_date', frm.doc.delivery_date);
-			}
+				})						
+				Promise.all(uom_promises).then(function(responses) {
+						frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
+					}).catch(function(reason) {
+					console.log(reason);
+					});
 
-			frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
-
-		}
+			}).catch(function(reason) {
+			console.log(reason);
+			});					
+	}
 	});
 	return false;
 }

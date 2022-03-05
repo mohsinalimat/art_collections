@@ -46,21 +46,21 @@
   },
   {
    "fieldname": "saleable_warehouse_type",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Saleable Warehouse Type",
-   "options": "Warehouse Type"
+   "options": "Art Warehouse Types"
   },
   {
    "fieldname": "damage_warehouse_type",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Damage Warehouse Type",
-   "options": "Warehouse Type"
+   "options": "Art Warehouse Types"
   },
   {
    "fieldname": "reserved_warehouse_type",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Reserved Warehouse Type",
-   "options": "Warehouse Type"
+   "options": "Art Warehouse Types"
   },
   {
    "fieldname": "default_email_template_sb_section",
@@ -117,7 +117,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-02-25 06:39:06.403098",
+ "modified": "2022-03-05 05:57:55.654589",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

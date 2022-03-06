@@ -19,6 +19,7 @@ def get_data(filters=None):
         """with fn as (
 SELECT  
 GROUP_CONCAT(DISTINCT supplier.supplier_name) as supplier,
+item.name,
 item.item_code ,
 item.item_name,  
 GROUP_CONCAT(DISTINCT catalogue.parent) as catalogue_type,
@@ -35,7 +36,7 @@ left outer join `tabItem Supplier` as supplier_item
 on supplier_item.parent =item.name 
 left outer join `tabSupplier` as supplier
 on supplier_item.supplier =supplier.name 
-group by item.item_code 
+group by item.name 
 ),
 col_i as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_financial_year ,
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
@@ -121,15 +122,15 @@ IF((col_s.months_since_first_purchase_receipt<=12),
 (col_l.avg_qty_sold_per_month+((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_m.total_po_qty_to_be_received)),
 (((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_m.total_po_qty_to_be_received)+col_u_last_month.last_year_same_month_stock ))
 as col_u
-from fn left outer join col_l on col_l.item_code = fn.item_code 
-left outer join col_i on col_i.item_code =fn.item_code 
-left outer join col_k on col_k.item_code =fn.item_code 
-left outer join col_j on col_j.item_code =fn.item_code 
-left outer join col_m on col_m.item_code =fn.item_code 
-left outer join col_o on col_o.item_code =fn.item_code 
-left outer join col_p on col_p.item_code =fn.item_code
-left outer join col_s on col_s.item_code =fn.item_code
-left outer join col_u_last_month on col_u_last_month.item_code =fn.item_code
+from fn left outer join col_l on col_l.item_code = fn.name 
+left outer join col_i on col_i.item_code =fn.name 
+left outer join col_k on col_k.item_code =fn.name 
+left outer join col_j on col_j.item_code =fn.name 
+left outer join col_m on col_m.item_code =fn.name 
+left outer join col_o on col_o.item_code =fn.name 
+left outer join col_p on col_p.item_code =fn.name
+left outer join col_s on col_s.item_code =fn.name
+left outer join col_u_last_month on col_u_last_month.item_code =fn.name
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,

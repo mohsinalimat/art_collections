@@ -19,12 +19,11 @@ def get_data(filters=None):
 	data = frappe.db.sql(
         """with fn as (
 SELECT  
+item.name,
 item.item_code ,
 item.item_name,  
 ucd.conversion_factor as inner_conversion_factor,
 price.price_list_rate,
-rule.min_qty,
-rule.rate as price_rule_rate,
 barcode.barcode ,
 GROUP_CONCAT(DISTINCT supplier.supplier_name) as supplier,
 GROUP_CONCAT(DISTINCT catalogue.parent) as catalogue_type,
@@ -47,18 +46,19 @@ select value from `tabSingles` where doctype='Selling Settings' and field='selli
 and %(to_date)s between ifnull(price.valid_from, '2000-01-01') and ifnull(price.valid_upto, '2500-12-31')
 left outer join `tabPricing Rule Item Code` tpric  
 on tpric.item_code=item.name 
-left outer join `tabPricing Rule` rule
-on rule.name=tpric.parent 
-and rule.selling =1
-and %(to_date)s between ifnull(rule.valid_from, '2000-01-01') and ifnull(rule.valid_upto, '2500-12-31')
 left outer join `tabItem Barcode` barcode  
-on barcode.parent=item.name
+on barcode.parent=item.name and barcode.idx=(select min(idx) from `tabItem Barcode` where parent=item.name)
 left outer join `tabItem Universe Page Art` universe_item
 on item.name = universe_item.item
 left outer join `tabCatalogue Directory Art` universe_catalogue
 on universe_catalogue.name=universe_item.parent
 and universe_catalogue.node_type='Universe'
-group by item.item_code 
+group by item.name 
+),
+col_e as (select  ROW_NUMBER() over (PARTITION BY tpric.item_code ORDER BY tpr.priority DESC,tpr.creation DESC )  rn,
+tpric.item_code,tpr.min_qty as min_qty ,tpr.rate  as price_rule_rate
+from `tabPricing Rule` tpr inner join `tabPricing Rule Item Code` tpric on tpric.parent = tpr.name and tpr.selling =1 
+and %(to_date)s between ifnull(tpr.valid_from, '2000-01-01') and ifnull(tpr.valid_upto, '2500-12-31')
 ),
 col_i as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_financial_year ,
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
@@ -126,9 +126,9 @@ where SI.docstatus = 1
 and (SI.posting_date BETWEEN %(month_start_date)s and %(month_end_date)s)
 group by SI_item.item_code )
 SELECT 
-fn.supplier,fn.item_code,fn.item_name,fn.catalogue_type,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
-fn.price_list_rate,fn.price_rule_rate,
-fn.min_qty,fn.barcode,
+fn.supplier,fn.item_code,fn.item_name,fn.catalogue_type,fn.universe_title,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
+fn.price_list_rate,col_e.price_rule_rate,
+col_e.min_qty,fn.barcode,
 CONCAT(col_j.notion_ca,' ',col_k.notion_qty) as best_amt_qty,
 col_i.qty_sold_in_financial_year,
 col_j.revenue_for_last_12_months,
@@ -146,15 +146,16 @@ IF((col_s.months_since_first_purchase_receipt<=12),
 (col_l.avg_qty_sold_per_month+((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_m.total_po_qty_to_be_received)),
 (((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_m.total_po_qty_to_be_received)+col_u_last_month.last_year_same_month_stock ))
 as col_u
-from fn left outer join col_l on col_l.item_code = fn.item_code 
-left outer join col_i on col_i.item_code =fn.item_code 
-left outer join col_k on col_k.item_code =fn.item_code 
-left outer join col_j on col_j.item_code =fn.item_code 
-left outer join col_m on col_m.item_code =fn.item_code 
-left outer join col_o on col_o.item_code =fn.item_code 
-left outer join col_p on col_p.item_code =fn.item_code
-left outer join col_s on col_s.item_code =fn.item_code
-left outer join col_u_last_month on col_u_last_month.item_code =fn.item_code
+from fn left outer join col_l on col_l.item_code = fn.name 
+left outer join col_i on col_i.item_code =fn.name 
+left outer join col_k on col_k.item_code =fn.name 
+left outer join col_j on col_j.item_code =fn.name 
+left outer join col_m on col_m.item_code =fn.name 
+left outer join col_o on col_o.item_code =fn.name 
+left outer join col_p on col_p.item_code =fn.name
+left outer join col_s on col_s.item_code =fn.name
+left outer join col_u_last_month on col_u_last_month.item_code =fn.name
+left outer join col_e on col_e.item_code =fn.name and col_e.rn=1
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,

@@ -114,6 +114,15 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Item Trail",
+   "link_to": "Item Trail",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Sales",
    "link_type": "DocType",
@@ -356,7 +365,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-02-24 11:34:33.684975",
+ "modified": "2022-03-06 08:20:38.152598",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

@@ -24,22 +24,31 @@ def get_print_context(name):
     ctx["items"] = list(
         frappe.db.sql(
             """
-        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-        tw.warehouse_name, poi.price_list_rate,  
-        poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
-        poi.qty, poi.image, po.overall_directive_art,
-        coalesce(ucd.conversion_factor,0) * poi.qty nb_selling_packs_in_inner_art
+        select 
+            i.item_name, 
+            i.item_code, 
+            tib.barcode,
+            poi.supplier_part_no , 
+            i.customs_tariff_number ,
+            poi.qty, 
+            poi.stock_uom , 
+            poi.base_net_rate , 
+            poi.base_net_amount  
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
-        left outer join tabWarehouse tw on tw.name = poi.warehouse 
         inner join tabItem i on i.name = poi.item_code
-        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        left outer join `tabItem Barcode` tib on tib.parent = i.name 
+            and tib.idx  = (
+                select min(idx) from `tabItem Barcode` tib2
+                where parent = i.name
+            )
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
+            and ucd.parenttype='Item' 
+            and ucd.uom = (
                 select value from tabSingles
                 where doctype like 'Art Collections Settings' 
                 and field = 'inner_carton_uom' 
-            )
+            )   
         where poi.parent = %(name)s
     """,
             dict(name=name),

@@ -5,48 +5,24 @@
         <table class="table" style="border:1px solid #000;">
             <!-- <colgroup>
                 <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
-                <col style="width: 4%">
             </colgroup> -->
             <thead>
                 <tr>
-                    <th>{{_('Zone')}}</th>
-                    <th>{{_('Ref')}}</th>
-                    <th>{{_('Your Ref.')}}</th>
-                    <th>{{_('Description')}}</th>
-                    <th>{{_('Barcode')}}</th>
-                    <th>{{_('HScode')}}</th>
-                    <th>{{_('Weight')}}</th>
-                    <th>{{_('Inner Qty')}}</th>
-                    <th>{{_('Qty')}}</th>
-                    <th>{{_('Gross Price')}}</th>
-                    {% if ctx.has_discount %}
-                    <th>{{_('Discount')}}</th>
-                    {% endif %}
-                    <th>{{_('Net Price')}}</th>
-                    <th>{{_('Total Line')}}</th>
-                    <th>{{_('Photo')}}</th>
+                    <th>{{ _("Item code") }} </th>
+                    <th>{{ _("Supplier items") }} </th>
+                    <th>{{ _("Barcode") }} </th>
+                    <th>{{ _("HSCode") }} </th>
+                    <th>{{ _("Quantity") }} </th>
+                    <th>{{ _("Stock UOM") }} </th>
+                    <th>{{ _("Rate (EUR)") }} </th>
+                    <th>{{ _("Amount (EUR)") }} </th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in items %}
                 <tr>
-                    <td>{{ d.warehouse_name or "" }}</td>
-                    <td>{{ d.item_name or "" }}</td>
-                    <td>{{ d.customer_code or "" }} </td>
-                    <td>{{ d.description or "" }}</td>
-                    <!-- <td>{{ d.barcode or "" }}</td> -->
+                    <td>{{ d.item_code or "" }}</td>
+                    <td>{{ d.supplier_part_no or "" }}</td>
                     <td>
                         {% if d.barcode %}
                         <img alt="{{d.barcode}}"
@@ -54,22 +30,10 @@
                         {% endif %}
                     </td>
                     <td>{{ d.customs_tariff_number or "" }}</td>
-                    <td>{{ d.weight or 0 }}</td>
-                    <td class="text-right">{{ d.nb_selling_packs_in_inner_art or "" }}</td>
-                    <td class="text-right">{{ d.qty or "" }}</td>
-                    <td class="text-right">{{ d.price_list_rate or "" }}</td>
-                    {% if ctx.has_discount %}
-                    <td class="text-right">{{ d.discount_amount or ""}}</td>
-                    {% endif %}
-                    <td class="text-right">{{ d.net_rate or "" }}</td>
-                    <td class="text-right">{{ d.net_amount or "" }}</td>
-                    <td>
-                        {% if d.image %}
-                        <img src="{{ d.image or '' }}" alt="item image">
-                        {% else %}
-                        &nbsp;
-                        {% endif %}
-                    </td>
+                    <td>{{ d.qty or "" }}</td>
+                    <td>{{ d.stock_uom or "" }}</td>
+                    <td>{{ d.base_net_rate or "" }}</td>
+                    <td>{{ d.base_net_amount or "" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

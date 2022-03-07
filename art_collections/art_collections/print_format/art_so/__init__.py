@@ -25,24 +25,39 @@ def get_print_context(name):
     ctx["items"] = list(
         frappe.db.sql(
             """
-        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-        tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
-        soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
-        soi.qty, soi.image, so.overall_directive_art,
-        if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock,
-        coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
-        from `tabSales Order Item` soi
+        select 
+            i.item_name, 
+            i.item_code,
+            i.customer_code, 
+            tib.barcode,
+            soi.uom,
+            soi.stock_uom, 
+            soi.qty, 
+            soi.stock_qty , 
+            soi.base_net_rate , 
+            soi.base_net_amount , 
+            soi.stock_uom_rate ,
+            i.customs_tariff_number ,
+            ucd.conversion_factor ,
+            if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock
+        from 
+            `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent
-        left outer join tabWarehouse tw on tw.name = soi.warehouse 
         inner join tabItem i on i.name = soi.item_code
-        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
+        left outer join `tabItem Barcode` tib on tib.parent = i.name 
+            and tib.idx  = (
+                select min(idx) from `tabItem Barcode` tib2
+                where parent = i.name
+            )
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
+            and ucd.parenttype='Item' 
+            and ucd.uom = (
                 select value from tabSingles
                 where doctype like 'Art Collections Settings' 
                 and field = 'inner_carton_uom' 
             )        
-        where soi.parent = %(name)s
+        where 
+            soi.parent = %(name)s
     """,
             dict(name=name),
             as_dict=True,

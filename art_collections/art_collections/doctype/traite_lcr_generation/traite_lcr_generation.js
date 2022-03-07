@@ -10,5 +10,15 @@ frappe.ui.form.on('Traite LCR Generation', {
 				frm.reload_doc();
 			}
 		});
+	},
+
+	setup: function (frm) {
+		frm.set_query('company_bank_account', () => {
+			return {
+				filters: {
+					is_company_account: 1
+				}
+			}
+		})
 	}
 });

@@ -195,103 +195,6 @@ def sample_write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=N
     wb.save(filename="dest_filename")
 
 
-# sales order print format
-def get_print_context_for_art_collectons_sales_order(name):
-    doc = frappe.get_doc("Sales Order", name)
-
-    ctx = {"doc": {}}
-
-    ctx["items"] = list(
-        frappe.db.sql(
-            """
-        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-        tw.warehouse_name, soi.price_list_rate, soi.total_saleable_qty_cf, 
-        soi.net_rate, soi.net_amount, soi.description, soi.total_weight, 
-        soi.qty, soi.image, so.overall_directive_art,
-        if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock,
-        coalesce(ucd.conversion_factor,0) * soi.qty nb_selling_packs_in_inner_art
-        from `tabSales Order Item` soi
-        inner join `tabSales Order` so on so.name = soi.parent
-        left outer join tabWarehouse tw on tw.name = soi.warehouse 
-        inner join tabItem i on i.name = soi.item_code
-        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )        
-        where soi.parent = %(name)s
-    """,
-            dict(name=name),
-            as_dict=True,
-            # debug=1,
-        )
-    )
-
-    ctx["has_discount"] = any(x.discount_amount for x in doc.items)
-
-    shipping_cost = 0
-    taxes_cost = 0
-    for tax in doc.taxes:
-        account_type = frappe.db.get_value("Account", tax.account_head, "account_type")
-        if account_type == "Tax":
-            taxes_cost += tax.base_tax_amount
-        else:
-            shipping_cost += tax.base_tax_amount
-    ctx["shipping_cost"] = shipping_cost
-    ctx["taxes_cost"] = taxes_cost
-    return ctx
-
-
-# purchase order print format
-def get_print_context_for_art_collectons_purchase_order(name):
-    doc = frappe.get_doc("Purchase Order", name)
-
-    ctx = {"doc": {}}
-
-    ctx["items"] = list(
-        frappe.db.sql(
-            """
-        select i.item_name, i.customer_code, tib.barcode, i.customs_tariff_number,
-        tw.warehouse_name, poi.price_list_rate,  
-        poi.net_rate, poi.net_amount, poi.description, poi.total_weight, 
-        poi.qty, poi.image, po.overall_directive_art,
-        coalesce(ucd.conversion_factor,0) * poi.qty nb_selling_packs_in_inner_art
-        from `tabPurchase Order Item` poi
-        inner join `tabPurchase Order` po on po.name = poi.parent
-        left outer join tabWarehouse tw on tw.name = poi.warehouse 
-        inner join tabItem i on i.name = poi.item_code
-        left outer join `tabItem Barcode` tib on tib.parent = i.name and tib.idx = 1 
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )
-        where poi.parent = %(name)s
-    """,
-            dict(name=name),
-            as_dict=True,
-        )
-    )
-
-    ctx["has_discount"] = any(x.discount_amount for x in doc.items)
-
-    shipping_cost = 0
-    taxes_cost = 0
-    for tax in doc.taxes:
-        account_type = frappe.db.get_value("Account", tax.account_head, "account_type")
-        if account_type == "Tax":
-            taxes_cost += tax.base_tax_amount
-        else:
-            shipping_cost += tax.base_tax_amount
-    ctx["shipping_cost"] = shipping_cost
-    ctx["taxes_cost"] = taxes_cost
-
-    return ctx
-
-
 def get_so_excel_data(docname):
     items = frappe.db.sql(
         """
@@ -352,20 +255,24 @@ def get_so_excel_data(docname):
 
 
 SO_COLUMNS = [
-    ("warehouse_name", "Zone"),
+    # Item code ,Barcode ,HSCode ,Weight per unit ,Length (of stock_uom) ,Width (of stock_uom) ,
+    # Thickness (of stock_uom) ,Quantity ,UOM ,Rate (EUR) ,Stock UOM ,UOM Conversion Factor ,
+    # Qty as per stock UOM ,Rate of Stock UOM (EUR) ,Pricing rule > Min Qty* ,Pricing rule > Rate* ,Photo
     ("item_name", "Ref"),
-    ("customer_code", "Your Ref. "),
-    ("description", "Description"),
     ("barcode", "Barcode"),
     ("customs_tariff_number", "HScode"),
-    ("weight", "Weight"),
+    ("weight", "Weight per unit"),
+    ("qty", "Quantity"),
+    ("net_rate", "Net Price"),
+    ("image", "Photo"),
+    #
+    ("warehouse_name", "Zone"),
+    ("customer_code", "Your Ref. "),
+    ("description", "Description"),
     ("nb_selling_packs_in_inner_art", "Inner Qty"),
-    ("qty", "Qty"),
     ("price_list_rate", "Gross Price"),
     ("discount_amount", "Discount"),
-    ("net_rate", "Net Price"),
     ("net_amount", "Total Line"),
-    ("image", "Photo"),
 ]
 
 

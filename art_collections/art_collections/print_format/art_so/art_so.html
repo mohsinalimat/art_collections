@@ -1,0 +1,228 @@
+{% macro render_items(items, message) %}
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table" style="border:1px solid #000;">
+            <!-- <colgroup>
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+            </colgroup> -->
+            <thead>
+                <tr>
+                    <th>{{ _('Zone') }}</th>
+                    <th>{{ _('Ref') }}</th>
+                    <th>{{ _('Your Ref.') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Barcode') }}</th>
+                    <th>{{ _('HScode') }}</th>
+                    <th>{{ _('Weight') }}</th>
+                    <th>{{ _('Inner Qty') }}</th>
+                    <th>{{ _('Qty') }}</th>
+                    <th>{{ _('Gross Price') }}</th>
+                    {% if ctx.has_discount %}
+                    <th>{{ _('Discount') }}</th>
+                    {% endif %}
+                    <th>{{ _('Net Price') }}</th>
+                    <th>{{ _('Total Line') }}</th>
+                    <th>{{ _('Photo') }}</th>
+                </tr>
+                {% if message %}
+                <tr>
+                    <td colspan="{{ 14 if ctx.has_discount else 13}}">
+                        <span class="lilly">
+                            {{message}}
+
+                        </span>
+                    </td>
+                </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for d in items %}
+                <tr>
+                    <td>{{ d.warehouse_name or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.customer_code or "" }} </td>
+                    <td>{{ d.description or "" }}</td>
+                    <!-- <td>{{ d.barcode or "" }}</td> -->
+                    <td>
+                        {% if d.barcode %}
+                        <img alt="{{d.barcode}}"
+                            src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
+                        {% endif %}
+                    </td>
+                    <td>{{ d.customs_tariff_number or "" }}</td>
+                    <td>{{ d.weight or 0 }}</td>
+                    <td class="text-right">{{ d.stock_qty or "" }}</td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                    <td class="text-right">{{ d.price_list_rate or "" }}</td>
+                    {% if ctx.has_discount %}
+                    <td class="text-right">{{ d.discount_amount or ""}}</td>
+                    {% endif %}
+                    <td class="text-right">{{ d.net_rate or "" }}</td>
+                    <td class="text-right">{{ d.net_amount or "" }}</td>
+                    <td>
+                        {% if d.image %}
+                        <img src="{{ frappe.utils.quoted(d.image ) | abs_url }}" alt="item image">
+                        {% else %}
+                        &nbsp;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endmacro %}
+
+<style>
+
+</style>
+
+{% set ctx = get_print_context_for_art_collectons_sales_order(doc.name)%}
+
+<div class="row" style="padding-top:0.5rem;">
+    <div class="col-xs-2 logodiv">
+        <img src="/files/logo01.png" class="logofirst" />
+    </div>
+    <div class="col-xs-6 logodiv">
+        <img src="/files/logo02.png" class="logosec" />
+    </div>
+    <div class="col-xs-4" style="text-align:right">
+        <p>{{ _('Sales order :') }}{{ doc.name }} </p>
+        <p>{{ _('Date :') }}{{ doc.transaction_date }} </p>
+        <p>{{ _('Your order no:') }}{{ doc.po_no or "" }} </p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="addressbox">
+            <p class="lilly title">{{ _('Bill to')}}</p>
+            <p>{{ doc.address_display }}
+            </p>
+            <p>{{ _('Email:') }}{{ doc.contact_email or "" }}</p>
+            <p>{{ _('VAT:') }}{{ "" }}</p>
+
+            <p>{{ _('Sales contact:') }} <span class="lilly">{{ doc.contact_person }}</span> <span
+                    class="width-50"></span>
+                {{ _('Operator:') }} <span class="lilly">{{ doc.owner }}</span> </p>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="addressbox">
+            <p class="lilly title">{{ _('Ship to') }}</p>
+            <p>
+                {{ doc.shipping_address or "Shipping Address" }}</p>
+            <p>{{ _('To deliver on:')}} {{ doc.delivery_date or "" }}
+                <br>{{ _('Payment method and Due date:')}}
+                <br>{{ _('Ordered from:')}} {{ doc.po_no or "" }}
+            </p>
+            <hr>
+            <p>{{ _('Comments:') }}{{ ctx.overall_directive_art or "" }}</p>
+        </div>
+    </div>
+</div>
+
+{% set items_in_stock = ctx.get("items") | selectattr("in_stock",'eq',1) | list %}
+{% set items_out_of_stock = ctx.get("items") | selectattr("in_stock","eq",0) | list %}
+
+<!-- In Stock -->
+{% if items_in_stock | len %}
+{{ render_items(items_in_stock, _('In Stock')) }}
+{% endif %}
+<!-- Temporarily Out of Stock -->
+{% if items_out_of_stock | len %}
+{{ render_items(items_out_of_stock, _('Temporarily Out of Stock')) }}
+{% endif %}
+
+<!-- Sales Order Discountinued Items -->
+{% set discontinued_sales_item_ct = doc.get("discontinued_sales_item_ct") | list %}
+{% if discontinued_sales_item_ct | len %}
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table" style="border:1px solid #000;">
+            <thead>
+                <tr>
+                    <th>{{ _('Item Code') }}</th>
+                    <th>{{ _('Item Name') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Qty') }}</th>
+                </tr>
+                <tr>
+                    <td colspan="12">
+                        <span class="lilly">
+                            {{ _('Out of Stock and Discontinued') }}
+                        </span>
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in discontinued_sales_item_ct %}
+                <tr>
+                    <td>{{ d.item_code or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.description or "" }}</td>
+                    <td class="text-right">{{ d.qty or "" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-xs-8">
+        <div>
+            {{doc.terms}}
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <table class="table-total">
+            <tr>
+                <th>{{ _('Total') }}</th>
+                <td>{{doc.net_total}}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Deduction') }}</th>
+                <td>{{doc.discount_amount}}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Shipping Cost')}}</th>
+                <td>{{ctx.shipping_cost}}</td>
+            </tr>
+            <tr>
+            <tr>
+                <th>{{doc.taxes_and_charges }}</th>
+                <td>{{ctx.taxes_cost}}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Grand Total') }}</th>
+                <td>{{doc.grand_total}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div>
+    {% if not no_letterhead and footer %}
+    <div class="letter-head-footer">
+        {{ footer }}
+    </div>
+    {% endif %}
+    <p class="text-right small page-number visible-pdf">
+        {{ _("Page {0} of {1}").format('<span class="page"></span>', '<span class="topage"></span>') }}
+    </p>
+</div>

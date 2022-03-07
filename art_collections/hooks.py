@@ -120,12 +120,13 @@ doc_events = {
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {
         "validate": "art_collections.directive_controller.get_directive",
-        "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic"
+        "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic",
     },
     "Sales Order": {
         "validate": [
             "art_collections.directive_controller.get_directive",
-            "art_collections.sales_order_controller.update_total_saleable_qty"],
+            "art_collections.sales_order_controller.update_total_saleable_qty",
+        ],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.excel_controller.on_submit_sales_order",
@@ -135,7 +136,7 @@ doc_events = {
     "Purchase Order": {
         "on_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit",
-            "art_collections.excel_controller.on_submit_purchase_order"
+            "art_collections.excel_controller.on_submit_purchase_order",
         ],
         "on_update_after_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit"
@@ -145,32 +146,28 @@ doc_events = {
         "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
     },
     "Supplier Quotation": {
-        "validate": ["art_collections.supplier_quotation_controller.supplier_quotation_custom_validation",
-        "art_collections.directive_controller.get_directive"]
+        "validate": [
+            "art_collections.supplier_quotation_controller.supplier_quotation_custom_validation",
+            "art_collections.directive_controller.get_directive",
+        ]
     },
     "Request for Quotation": {
-        "validate": ["art_collections.request_for_quotation_controller.request_for_quotation_custom_validation",
-        "art_collections.directive_controller.get_directive"]
+        "validate": [
+            "art_collections.request_for_quotation_controller.request_for_quotation_custom_validation",
+            "art_collections.directive_controller.get_directive",
+        ]
     },
     "Address": {
         "autoname": "art_collections.address_controller.set_address_title_based_on_customer",
-        "validate": "art_collections.address_controller.fetch_default_mode_of_payment"
+        "validate": "art_collections.address_controller.fetch_default_mode_of_payment",
     },
-    "Quotation": {
-        "validate": "art_collections.directive_controller.get_directive"
-    },  
-    "Delivery Note" : {
-        "validate": "art_collections.directive_controller.get_directive"
-    },   
-    "Sales Invoice" : {
-        "validate": "art_collections.directive_controller.get_directive"
-    },   
-    "Purchase Invoice" : {
+    "Quotation": {"validate": "art_collections.directive_controller.get_directive"},
+    "Delivery Note": {"validate": "art_collections.directive_controller.get_directive"},
+    "Sales Invoice": {"validate": "art_collections.directive_controller.get_directive"},
+    "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
     },
-    "Pick List" : {
-        "validate": "art_collections.directive_controller.get_directive"
-    }           
+    "Pick List": {"validate": "art_collections.directive_controller.get_directive"},
 }
 
 # Scheduled Tasks
@@ -180,11 +177,11 @@ scheduler_events = {
     # "all": [
     # 	"art_collections.tasks.all"
     # ],
-	"cron": {
-		"15 00 * * *": [
-			"art_collections.item_controller.allow_order_still_stock_last",
-		]
-	},	    
+    "cron": {
+        "15 00 * * *": [
+            "art_collections.item_controller.allow_order_still_stock_last",
+        ]
+    },
     "daily": ["art_collections.scheduler_task_controller.daily"]
     # "hourly": [
     # 	"art_collections.tasks.hourly"
@@ -242,8 +239,8 @@ fixtures = [
 
 jenv = {
     "methods": [
-        "get_print_context_for_art_collectons_sales_order:art_collections.excel_controller.get_print_context_for_art_collectons_sales_order",
-        "get_print_context_for_art_collectons_purchase_order:art_collections.excel_controller.get_print_context_for_art_collectons_purchase_order"
+        "get_print_context_for_art_collectons_sales_order:art_collections.art_collections.print_format.art_so.get_print_context",
+        "get_print_context_for_art_collectons_purchase_order:art_collections.art_collections.print_format.po_art.get_print_context",
     ],
     "filters": [],
 }

@@ -21,52 +21,52 @@ frappe.ui.form.on('Purchase Order', {
 				});
 		}
 	},
-	refresh: function(frm){
+	refresh: function (frm) {
 		frm.add_custom_button(
 			__("Product Excel"),
 			function () {
-			  frappe.call({
-				method: "art_collections.excel_controller.make_excel",
-				args: {
-				  docname: frm.doc.name,
-				  doctype: frm.doc.doctype,
-				},
-				callback: function () {
-				  frm.reload_doc();
-				},
-			  });
+				frappe.call({
+					method: "art_collections.purchase_order_controller._make_excel_attachment",
+					args: {
+						docname: frm.doc.name,
+						doctype: frm.doc.doctype,
+					},
+					callback: function () {
+						frm.reload_doc();
+					},
+				});
 			},
 			__("Create")
-		  );
-		
+		);
+
 	}
 
 });
 
 
- frappe.ui.form.on("Purchase Order Item", {
-	item_code: function(frm, cdt, cdn) {
+frappe.ui.form.on("Purchase Order Item", {
+	item_code: function (frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
 		if (row.item_code) {
 			frappe.db.get_value('Item', row.item_code, 'min_order_qty')
-			.then(r => {
-					row.min_order_qty_cf=r.message.min_order_qty
-			})	
-			
+				.then(r => {
+					row.min_order_qty_cf = r.message.min_order_qty
+				})
+
 
 		}
 		if (row.item_code && frm.doc.supplier) {
-			frappe.db.get_value('Supplier Item Directive', {supplier: frm.doc.supplier,item_code:row.item_code}, ['remarks','name'])
-			.then(r => {
+			frappe.db.get_value('Supplier Item Directive', { supplier: frm.doc.supplier, item_code: row.item_code }, ['remarks', 'name'])
+				.then(r => {
 					if (r.message) {
-						let remarks=r.message.remarks
-						let supplier_item_directive_link=r.message.name
-						row.supplier_item_directive_link_cf=supplier_item_directive_link
-						row.supplier_item_directive_art=remarks
+						let remarks = r.message.remarks
+						let supplier_item_directive_link = r.message.name
+						row.supplier_item_directive_link_cf = supplier_item_directive_link
+						row.supplier_item_directive_art = remarks
 					}
-			})
-				
-		}		
+				})
+
+		}
 	},
 
 });

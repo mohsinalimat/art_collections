@@ -93,7 +93,7 @@ frappe.ui.form.on('Sales Order', {
 			__("Product Excel"),
 			function () {
 				frappe.call({
-					method: "art_collections.excel_controller.make_sales_order_excel",
+					method: "art_collections.sales_order_controller._make_excel_attachment",
 					args: {
 						docname: frm.doc.name,
 						doctype: frm.doc.doctype,
@@ -139,7 +139,7 @@ frappe.ui.form.on('Sales Order', {
 frappe.ui.form.on("Sales Order Item", {
 	item_code: function (frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
-		console.log('row',row)
+		console.log('row', row)
 		if (row.item_code && frm.doc.customer) {
 			frappe.db.get_value('Customer Item Directive', { customer: frm.doc.customer, item_code: row.item_code }, 'remarks')
 				.then(r => {
@@ -189,38 +189,37 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 		// create each new promise for item iteration
 		let p = new Promise(resolve => {
 
-			frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', {item_code: d.item_code}).then(
-				r => 
-			{
-				let raise_warning = false
-				let nb_selling_packs_in_inner_art = r.message
-				if ( (d.uom==d.stock_uom) && nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
-					if (d.qty >= nb_selling_packs_in_inner_art) {
-						let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
-						if (allowed_selling_packs_in_inner != 0) {
+			frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', { item_code: d.item_code }).then(
+				r => {
+					let raise_warning = false
+					let nb_selling_packs_in_inner_art = r.message
+					if ((d.uom == d.stock_uom) && nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
+						if (d.qty >= nb_selling_packs_in_inner_art) {
+							let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
+							if (allowed_selling_packs_in_inner != 0) {
+								raise_warning = true
+							}
+						} else {
 							raise_warning = true
 						}
-					} else {
-						raise_warning = true
-					}
-					if (raise_warning == true) {
-						let warning_html =
-							`<p>
+						if (raise_warning == true) {
+							let warning_html =
+								`<p>
 								${__("#<b>{3}</b> : Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>", [d.item_name, nb_selling_packs_in_inner_art, d.qty, d.idx])}
 							</p>`;
-						warning_html_messages.push(warning_html)
-						// resolve on warning
-						resolve();
-					} else {
-						// resolve on no warning
+							warning_html_messages.push(warning_html)
+							// resolve on warning
+							resolve();
+						} else {
+							// resolve on no warning
+							resolve();
+						}
+					}
+					else {
+						// when nb_selling_packs_in_inner_art ==0 
 						resolve();
 					}
 				}
-				else {
-					// when nb_selling_packs_in_inner_art ==0 
-					resolve();
-				}
-			}
 			);
 
 		});
@@ -300,7 +299,7 @@ function download_art_bulk_template(frm) {
 }
 
 function upload_art_bulk_items(frm) {
-	let excel_uom_data={}
+	let excel_uom_data = {}
 	let me = this
 	const value_formatter_map = {
 		"Date": val => val ? frappe.datetime.user_to_str(val) : val,
@@ -335,9 +334,9 @@ function upload_art_bulk_items(frm) {
 								d[fieldnames[ci]] = value_formatter_map[df.fieldtype] ?
 									value_formatter_map[df.fieldtype](value) :
 									value;
-								if (fieldname=='uom') {
-									excel_uom_data[d.name]=value
-									
+								if (fieldname == 'uom') {
+									excel_uom_data[d.name] = value
+
 								}
 							}
 						});
@@ -345,33 +344,33 @@ function upload_art_bulk_items(frm) {
 				}
 			});
 			frm.refresh_field('items');
-			var me  = this;
+			var me = this;
 			var item_code_promises = [];
 			var uom_promises = [];
 			// trigger item_code to get all item fields
 			frm.doc.items.forEach(child_row => {
-				item_code_promises.push(frm.script_manager.trigger("item_code",child_row.doctype, child_row.name)	);
-			})	
-			Promise.all(item_code_promises).then(function(responses) {
+				item_code_promises.push(frm.script_manager.trigger("item_code", child_row.doctype, child_row.name));
+			})
+			Promise.all(item_code_promises).then(function (responses) {
 				if (frm.doc.delivery_date) {
 					frm.update_in_all_rows('items', 'delivery_date', frm.doc.delivery_date);
 				}
 				// put excel UOM value back
 				frm.doc.items.forEach(child_row => {
-					if (excel_uom_data[child_row.name]!='') {
-						uom_promises.push(frappe.model.set_value('Sales Order Item', child_row.name, 'uom',excel_uom_data[child_row.name] ))
+					if (excel_uom_data[child_row.name] != '') {
+						uom_promises.push(frappe.model.set_value('Sales Order Item', child_row.name, 'uom', excel_uom_data[child_row.name]))
 					}
-				})						
-				Promise.all(uom_promises).then(function(responses) {
-						frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
-					}).catch(function(reason) {
+				})
+				Promise.all(uom_promises).then(function (responses) {
+					frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
+				}).catch(function (reason) {
 					console.log(reason);
-					});
+				});
 
-			}).catch(function(reason) {
-			console.log(reason);
-			});					
-	}
+			}).catch(function (reason) {
+				console.log(reason);
+			});
+		}
 	});
 	return false;
 }

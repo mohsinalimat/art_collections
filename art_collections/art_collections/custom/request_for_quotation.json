@@ -33,7 +33,7 @@
    "in_preview": 0,
    "in_standard_filter": 0,
    "insert_after": "status",
-   "label": "Total CBM",
+   "label": "Total CBM (m3)",
    "length": 0,
    "mandatory_depends_on": null,
    "modified": "2022-02-03 06:55:22.929747",

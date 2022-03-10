@@ -208,7 +208,7 @@ def validate_minimum_order_amount_as_per_customer_group(self):
                         )
                     )
                 
-                frappe.msgprint(msg= msg,title= _('Minimum Order Amount Alert'),indicator= 'orange' alert=True)
+                frappe.msgprint(msg= msg,title= _('Minimum Order Amount Alert'),indicator= 'orange', alert=True)
 
 
 def valiate_payment_terms_and_credit_limit_for_customer(self):

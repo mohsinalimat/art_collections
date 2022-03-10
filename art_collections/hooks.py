@@ -129,14 +129,14 @@ doc_events = {
         ],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
-            "art_collections.excel_controller.on_submit_sales_order",
+            "art_collections.sales_order_controller.on_submit_sales_order",
         ],
         "on_update": "art_collections.sales_order_controller.sales_order_custom_validation",
     },
     "Purchase Order": {
         "on_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit",
-            "art_collections.excel_controller.on_submit_purchase_order",
+            "art_collections.purchase_order_controller.on_submit_purchase_order",
         ],
         "on_update_after_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit"

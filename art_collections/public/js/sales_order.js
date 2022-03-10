@@ -186,45 +186,47 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 	let warning_html_messages = []
 
 	$.each(frm.doc.items || [], function (i, d) {
-		// create each new promise for item iteration
-		let p = new Promise(resolve => {
+		if (d.item_code!=undefined) {
+			// create each new promise for item iteration
+			let p = new Promise(resolve => {
 
-			frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', { item_code: d.item_code }).then(
-				r => {
-					let raise_warning = false
-					let nb_selling_packs_in_inner_art = r.message
-					if ((d.uom == d.stock_uom) && nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
-						if (d.qty >= nb_selling_packs_in_inner_art) {
-							let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
-							if (allowed_selling_packs_in_inner != 0) {
+				frappe.call('art_collections.item_controller.get_qty_of_inner_cartoon', { item_code: d.item_code }).then(
+					r => {
+						let raise_warning = false
+						let nb_selling_packs_in_inner_art = r.message
+						if ((d.uom == d.stock_uom) && nb_selling_packs_in_inner_art && nb_selling_packs_in_inner_art > 0) {
+							if (d.qty >= nb_selling_packs_in_inner_art) {
+								let allowed_selling_packs_in_inner = d.qty % nb_selling_packs_in_inner_art
+								if (allowed_selling_packs_in_inner != 0) {
+									raise_warning = true
+								}
+							} else {
 								raise_warning = true
 							}
-						} else {
-							raise_warning = true
+							if (raise_warning == true) {
+								let warning_html =
+									`<p>
+									${__("#<b>{3}</b> : Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>", [d.item_name, nb_selling_packs_in_inner_art, d.qty, d.idx])}
+								</p>`;
+								warning_html_messages.push(warning_html)
+								// resolve on warning
+								resolve();
+							} else {
+								// resolve on no warning
+								resolve();
+							}
 						}
-						if (raise_warning == true) {
-							let warning_html =
-								`<p>
-								${__("#<b>{3}</b> : Item {0} : qty should be in multiples of <b>{1}</b> (inner selling packs). It is <b>{2}</b>", [d.item_name, nb_selling_packs_in_inner_art, d.qty, d.idx])}
-							</p>`;
-							warning_html_messages.push(warning_html)
-							// resolve on warning
-							resolve();
-						} else {
-							// resolve on no warning
+						else {
+							// when nb_selling_packs_in_inner_art ==0 
 							resolve();
 						}
 					}
-					else {
-						// when nb_selling_packs_in_inner_art ==0 
-						resolve();
-					}
-				}
-			);
+				);
 
-		});
-		// push all promises p to array
-		promises.push(p);
+			});
+			// push all promises p to array
+			promises.push(p);
+	}	
 	});
 
 	// start-- once the for loop od item is over need to run below code

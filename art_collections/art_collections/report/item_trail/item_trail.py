@@ -55,6 +55,23 @@ on universe_catalogue.name=universe_item.parent
 and universe_catalogue.node_type='Universe'
 group by item.name 
 ),
+customer_revenue as 
+(
+	SELECT SI.customer,sum(SI.base_net_total) as customer_revenue_for_last_12_months
+	FROM `tabSales Invoice Item` SI_item 
+	inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
+	where SI.posting_date > DATE_ADD('2022-03-10',INTERVAL -12 MONTH) 
+	and SI.docstatus =1
+	group by SI.customer
+	ORDER by customer_revenue_for_last_12_months desc limit 10
+),
+item_customer_pair as(select SI_item.item_code , GROUP_CONCAT(DISTINCT customer_revenue.customer) customer
+from customer_revenue
+inner join `tabSales Invoice` SI on SI.customer = customer_revenue.customer
+inner join `tabSales Invoice Item` SI_item on SI_item.parent = SI.name 
+where SI.posting_date > DATE_ADD('2022-03-10',INTERVAL -12 MONTH) 
+and SI.docstatus =1
+group by SI_item.item_code),
 col_e as (select  ROW_NUMBER() over (PARTITION BY tpric.item_code ORDER BY tpr.priority DESC,tpr.creation DESC )  rn,
 tpric.item_code,tpr.min_qty as min_qty ,tpr.rate  as price_rule_rate
 from `tabPricing Rule` tpr inner join `tabPricing Rule Item Code` tpric on tpric.parent = tpr.name and tpr.selling =1 
@@ -115,11 +132,12 @@ col_p as (SELECT  SO_item.item_code , SUM(SO_item.stock_qty) - SUM(SO_item.deliv
 where SO_item.docstatus = 1
 group by SO_item.item_code
 ),
-col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt
+col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt,
+ROW_NUMBER() over (PARTITION by PR_item.item_code order by PR.posting_date desc ) as rn
 FROM  `tabPurchase Receipt` as PR
 inner join `tabPurchase Receipt Item` PR_item
 on PR.name =PR_item.parent 
-where PR.docstatus =1 
+where PR.docstatus =1
 ),
 col_u_last_month as (SELECT  SI_item.item_code , SUM(SI_item.stock_qty) as last_year_same_month_stock 
 FROM  `tabSales Invoice Item` as SI_item
@@ -151,7 +169,8 @@ col_s.months_since_first_purchase_receipt,
 IF((col_s.months_since_first_purchase_receipt<=12),
 (col_l.avg_qty_sold_per_month+((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_total_po_qty_to_be_received.total_po_qty_to_be_received)),
 (((col_l.avg_qty_sold_per_month*8)+col_p.qty_sold_to_be_delivered)-(col_o.total_saleable_stock+col_total_po_qty_to_be_received.total_po_qty_to_be_received)+col_u_last_month.last_year_same_month_stock ))
-as col_u
+as col_u,
+item_customer_pair.customer as best_customer
 from fn left outer join col_l on col_l.item_code = fn.name 
 left outer join col_i on col_i.item_code =fn.name 
 left outer join col_k on col_k.item_code =fn.name 
@@ -159,10 +178,11 @@ left outer join col_j on col_j.item_code =fn.name
 left outer join col_total_po_qty_to_be_received on col_total_po_qty_to_be_received.item_code =fn.name 
 left outer join col_o on col_o.item_code =fn.name 
 left outer join col_p on col_p.item_code =fn.name
-left outer join col_s on col_s.item_code =fn.name
+left outer join col_s on col_s.item_code =fn.name and col_s.rn=1
 left outer join col_u_last_month on col_u_last_month.item_code =fn.name
 left outer join col_e on col_e.item_code =fn.name and col_e.rn=1
-left outer join col_sold_qty_to_deliver on col_sold_qty_to_deliver.item_code=fn.name
+left outer join col_sold_qty_to_deliver on col_sold_qty_to_deliver.item_code=fn.name 
+left outer join item_customer_pair on item_customer_pair.item_code=fn.name
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,
@@ -332,7 +352,7 @@ def get_columns(filters):
             "width": 120
         },	
 	        {
-            "label": _("AD:best_customer"),
+            "label": _("Best Customer"),
             "fieldname": "best_customer",
             "width": 200
         }

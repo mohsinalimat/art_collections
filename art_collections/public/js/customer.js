@@ -20,6 +20,7 @@ frappe.ui.form.on('Customer', {
         let customer_target_art=frm.doc.customer_target_art
 
         //  check (a) empty discount percentage (b) to value > from value
+        if (customer_target_art!=undefined && customer_target_art.length>1) {
         for (let index = 0; index < customer_target_art.length; index++) {
             let discount_percent = customer_target_art[index].discount_percent;
             let to_value = customer_target_art[index].to_value;
@@ -37,9 +38,9 @@ frappe.ui.form.on('Customer', {
                 });
             }            
         }        
-
+        }
         // check boundary condition
-        if (customer_target_art.length>1) {
+        if (customer_target_art!=undefined && customer_target_art.length>1) {
             for (let index = 0; index < customer_target_art.length; index++) {
                 let first_fiscal_year = customer_target_art[index].fiscal_year;
                 let first_to_value = customer_target_art[index].to_value;
@@ -62,7 +63,7 @@ frappe.ui.form.on('Customer', {
 
     },
     refresh: function (frm) {
-        if (cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
+        if (cur_frm.doc.__onload!=undefined && cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)
 
             if (str.indexOf('No address added yet.')!=-1) {

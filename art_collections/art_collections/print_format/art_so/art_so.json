@@ -13,7 +13,7 @@
  "html": "{% include \"art_collections/art_collections/print_format/art_so/art_so.html\"  %}",
  "idx": 0,
  "line_breaks": 0,
- "modified": "2022-03-07 01:35:16.015186",
+ "modified": "2022-03-10 12:14:40.658039",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art SO",

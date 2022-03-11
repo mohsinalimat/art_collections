@@ -32,8 +32,10 @@ item.is_sales_item ,
 item.is_purchase_item ,
 item.availability_date_art 
 from `tabItem` as item
+left outer join `tabCatalogue Directory Art` catalogue_directory 
+on catalogue_directory.node_type='Catalogue'
 left outer join `tabItem Universe Page Art` catalogue
-on item.name = catalogue.item
+on item.name = catalogue.item and catalogue.parent = catalogue_directory.name
 left outer join `tabUOM Conversion Detail` ucd
 on ucd.parent = item.name and ucd.uom = (select value from `tabSingles` where doctype='Art Collections Settings' and field='inner_carton_uom')
 left outer join `tabItem Supplier` as supplier_item 

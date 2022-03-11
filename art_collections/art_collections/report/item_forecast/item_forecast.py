@@ -28,8 +28,10 @@ item.is_purchase_item ,
 ucd.conversion_factor as inner_conversion_factor,
 item.availability_date_art 
 from `tabItem` as item
+left outer join `tabCatalogue Directory Art` catalogue_directory 
+on catalogue_directory.node_type='Catalogue'
 left outer join `tabItem Universe Page Art` catalogue
-on item.name = catalogue.item
+on item.name = catalogue.item and catalogue.parent = catalogue_directory.name
 left outer join `tabUOM Conversion Detail` ucd
 on ucd.parent = item.name and ucd.uom = (select value from `tabSingles` where doctype='Art Collections Settings' and field='inner_carton_uom')
 left outer join `tabItem Supplier` as supplier_item 
@@ -90,11 +92,12 @@ col_p as (SELECT  SO_item.item_code , SUM(SO_item.stock_qty) - SUM(SO_item.deliv
 where SO_item.docstatus = 1
 group by SO_item.item_code
 ),
-col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt
+col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt,
+ROW_NUMBER() over (PARTITION by PR_item.item_code order by PR.posting_date desc ) as rn
 FROM  `tabPurchase Receipt` as PR
 inner join `tabPurchase Receipt Item` PR_item
 on PR.name =PR_item.parent 
-where PR.docstatus =1 
+where PR.docstatus =1
 ),
 col_u_last_month as (SELECT  SI_item.item_code , SUM(SI_item.stock_qty) as last_year_same_month_stock 
 FROM  `tabSales Invoice Item` as SI_item
@@ -126,11 +129,11 @@ from fn left outer join col_l on col_l.item_code = fn.name
 left outer join col_i on col_i.item_code =fn.name 
 left outer join col_k on col_k.item_code =fn.name 
 left outer join col_j on col_j.item_code =fn.name 
-left outer join col_m on col_m.item_code =fn.name 
-left outer join col_o on col_o.item_code =fn.name 
-left outer join col_p on col_p.item_code =fn.name
-left outer join col_s on col_s.item_code =fn.name
-left outer join col_u_last_month on col_u_last_month.item_code =fn.name
+left outer join col_m on col_m.item_code =fn.name
+left outer join col_o on col_o.item_code =fn.name  
+left outer join col_p on col_p.item_code =fn.name 
+left outer join col_s on col_s.item_code =fn.name and col_s.rn=1
+left outer join col_u_last_month on col_u_last_month.item_code =fn.name 
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,

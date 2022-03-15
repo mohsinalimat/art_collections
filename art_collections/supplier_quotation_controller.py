@@ -12,7 +12,7 @@ def fill_item_pack_details(self):
 	total_cbm_art=0
 	
 	for item in self.items:
-		item.total_outer_cartons_art=flt(item.stock_qty*(get_qty_of_outer_cartoon(item.item_code)))
+		item.total_outer_cartons_art=flt(item.stock_qty/(get_qty_of_outer_cartoon(item.item_code))) if get_qty_of_outer_cartoon(item.item_code) else 0
 		item.cbm_per_outer_art=flt(get_cbm_per_outer_carton(item.item_code))
 
 		if item.total_outer_cartons_art!=0 and item.cbm_per_outer_art:

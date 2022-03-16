@@ -62,7 +62,7 @@ customer_revenue as
 	SELECT SI.customer,sum(SI.base_net_total) as customer_revenue_for_last_12_months
 	FROM `tabSales Invoice Item` SI_item 
 	inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
-	where SI.posting_date > DATE_ADD('2022-03-10',INTERVAL -12 MONTH) 
+	where SI.posting_date > DATE_ADD(%(to_date)s,INTERVAL -12 MONTH) 
 	and SI.docstatus =1
 	group by SI.customer
 	ORDER by customer_revenue_for_last_12_months desc limit 10
@@ -71,7 +71,7 @@ item_customer_pair as(select SI_item.item_code , GROUP_CONCAT(DISTINCT customer_
 from customer_revenue
 inner join `tabSales Invoice` SI on SI.customer = customer_revenue.customer
 inner join `tabSales Invoice Item` SI_item on SI_item.parent = SI.name 
-where SI.posting_date > DATE_ADD('2022-03-10',INTERVAL -12 MONTH) 
+where SI.posting_date > DATE_ADD(%(to_date)s,INTERVAL -12 MONTH) 
 and SI.docstatus =1
 group by SI_item.item_code),
 col_e as (select  ROW_NUMBER() over (PARTITION BY tpric.item_code ORDER BY tpr.priority DESC,tpr.creation DESC )  rn,
@@ -83,19 +83,17 @@ col_i as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_financ
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
 FROM `tabSales Invoice Item` SI_item 
 inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
-where SI.posting_date > DATE_ADD(%(year_start_date)s,INTERVAL -12 MONTH)
+where SI.posting_date >= %(year_start_date)s
 and SI.docstatus =1
 group by SI_item.item_code 
 order by SUM(SI_item.stock_qty) DESC
 ),
-col_l as (select 
-tsi.item_code,
-(ROUND(sum(qty) /DATEDIFF(DATE_ADD(CURRENT_DATE,INTERVAL 1 DAY),min(tso.posting_date)),2))*30 as avg_qty_sold_per_month
-from `tabSales Invoice` tso 
-inner join `tabSales Invoice Item` as tsi
-on tso.name = tsi.parent
-and tso.docstatus = 1
-group by tsi.item_code),
+col_l as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty)/12 as avg_qty_sold_per_month 
+FROM `tabSales Invoice Item` SI_item 
+inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
+where SI.posting_date > DATE_ADD(%(to_date)s,INTERVAL -12 MONTH)
+and SI.docstatus =1
+group by SI_item.item_code ),
 col_k as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_last_12_months ,
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
 FROM `tabSales Invoice Item` SI_item 
@@ -114,9 +112,12 @@ and SI.docstatus =1
 group by SI_item.item_code  
 order by SUM(SI_item.net_amount) DESC 
 ),
-col_total_po_qty_to_be_received as (SELECT  PO_item.item_code  , SUM(PO_item.stock_qty) - SUM(PO_item.received_qty) as total_po_qty_to_be_received FROM  `tabPurchase Order Item` as PO_item
-where PO_item.docstatus = 1
-group by PO_item.item_code
+col_total_po_qty_to_be_received as (SELECT item_code,
+ if((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)>actual_qty,
+((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)-actual_qty),0)
+as total_po_qty_to_be_received
+FROM `tabBin`
+group by item_code
 ),
 col_sold_qty_to_deliver as (select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver,item_code from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") group by so_item.item_code 
@@ -130,9 +131,8 @@ where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehou
 )
 group by B.item_code
 ),
-col_p as (SELECT  SO_item.item_code , SUM(SO_item.stock_qty) - SUM(SO_item.delivered_qty) as qty_sold_to_be_delivered FROM  `tabSales Order Item` as SO_item
-where SO_item.docstatus = 1
-group by SO_item.item_code
+col_p as (SELECT item_code,(reserved_qty+reserved_qty_for_production+reserved_qty_for_sub_contract) as qty_sold_to_be_delivered FROM `tabBin`
+group by item_code
 ),
 col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt,
 ROW_NUMBER() over (PARTITION by PR_item.item_code order by PR.posting_date desc ) as rn

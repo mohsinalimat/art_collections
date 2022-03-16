@@ -1,3 +1,4 @@
+from distutils.log import debug
 import frappe
 from frappe import _
 from frappe.utils import get_year_start,add_months,get_first_day,get_last_day
@@ -16,7 +17,7 @@ def get_data(filters=None):
 		month_end_date=get_last_day(add_months(filters.to_date,-12))
 
 	data = frappe.db.sql(
-        """with fn as (
+		"""with fn as (
 SELECT  
 GROUP_CONCAT(DISTINCT supplier.supplier_name) as supplier,
 item.name,
@@ -44,19 +45,17 @@ col_i as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_financ
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
 FROM `tabSales Invoice Item` SI_item 
 inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
-where SI.posting_date > DATE_ADD(%(year_start_date)s,INTERVAL -12 MONTH)
+where SI.posting_date >= %(year_start_date)s
 and SI.docstatus =1
 group by SI_item.item_code 
 order by SUM(SI_item.stock_qty) DESC
 ),
-col_l as (select 
-tsi.item_code,
-(ROUND(sum(qty) /DATEDIFF(DATE_ADD(CURRENT_DATE,INTERVAL 1 DAY),min(tso.posting_date)),2))*30 as avg_qty_sold_per_month
-from `tabSales Invoice` tso 
-inner join `tabSales Invoice Item` as tsi
-on tso.name = tsi.parent
-and tso.docstatus = 1
-group by tsi.item_code),
+col_l as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty)/12 as avg_qty_sold_per_month 
+FROM `tabSales Invoice Item` SI_item 
+inner join `tabSales Invoice` SI on SI.name = SI_item.parent 
+where SI.posting_date > DATE_ADD(%(to_date)s,INTERVAL -12 MONTH)
+and SI.docstatus =1
+group by SI_item.item_code ),
 col_k as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_last_12_months ,
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
 FROM `tabSales Invoice Item` SI_item 
@@ -75,9 +74,12 @@ and SI.docstatus =1
 group by SI_item.item_code  
 order by SUM(SI_item.net_amount) DESC 
 ),
-col_m as (SELECT  PO_item.item_code  , SUM(PO_item.stock_qty) - SUM(PO_item.received_qty) as total_po_qty_to_be_received FROM  `tabPurchase Order Item` as PO_item
-where PO_item.docstatus = 1
-group by PO_item.item_code
+col_m as (SELECT item_code,
+ if((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)>actual_qty,
+((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)-actual_qty),0)
+as total_po_qty_to_be_received
+FROM `tabBin`
+group by item_code 
 ),
 col_o as (select B.item_code,
 COALESCE(sum(B.actual_qty),0) as total_saleable_stock 
@@ -88,9 +90,8 @@ where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehou
 )
 group by B.item_code
 ),
-col_p as (SELECT  SO_item.item_code , SUM(SO_item.stock_qty) - SUM(SO_item.delivered_qty) as qty_sold_to_be_delivered FROM  `tabSales Order Item` as SO_item
-where SO_item.docstatus = 1
-group by SO_item.item_code
+col_p as (SELECT item_code,(reserved_qty+reserved_qty_for_production+reserved_qty_for_sub_contract) as qty_sold_to_be_delivered FROM `tabBin`
+group by item_code
 ),
 col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt,
 ROW_NUMBER() over (PARTITION by PR_item.item_code order by PR.posting_date desc ) as rn
@@ -140,136 +141,136 @@ left outer join col_u_last_month on col_u_last_month.item_code =fn.name
 			'year_start_date':year_start_date,
 			'month_start_date':month_start_date,
 			'month_end_date':month_end_date
-		},as_dict=1)
+		},as_dict=1,debug=1)
 	return data
 
 
 def get_columns(filters):
-    columns = [
-        {
-            "label": _("Supplier"),
-            "fieldname": "supplier",
-            "width": 200
-        },
-        {
-            "label": _("Item Code"),
-            "fieldtype": "Link",
-            "fieldname": "item_code",
-            "options": "Item",
-            "width": 220
-        },
-        {
-            "label": _("Item Name"),
-            "fieldname": "item_name",
-            "width": 200
-        },		
-        {
-            "label": _("Catalogue Type"),
-            "fieldname": "catalogue_type",
-            "width": 200
-        },	
-        {
-            "label": _("Is Sales Item"),
-            "fieldtype": "Int",
-            "fieldname": "is_sales_item",
-            "width": 50
-        },	
-        {
-            "label": _("Is Purchase Item"),
-            "fieldtype": "Int",
-            "fieldname": "is_purchase_item",
-            "width": 50
-        },	
-        {
-            "label": _("Inner Conversion"),
-            "fieldtype": "Int",
-            "fieldname": "inner_conversion_factor",
-            "width": 50
-        },
-        {
-            "label": _("Best"),
-            "fieldname": "best_amt_qty",
-            "width": 200
-        },	
-        {
-            "label": _("Qty Sold in FY"),
-            "fieldtype": "Float",
-            "fieldname": "qty_sold_in_financial_year",
-            "width": 120
-        },	
-        {
-            "label": _("Revenue for 12 months"),
-            "fieldtype": "Currency",
-            "fieldname": "revenue_for_last_12_months",
-            "options": "currency",
-            "width": 120
-        },
-        {
-            "label": _("Qty Sold in 12 months"),
-            "fieldtype": "Float",
-            "fieldname": "qty_sold_in_last_12_months",
-            "width": 120
-        },															
-        {
-            "label": _("Avg Qty sold per month"),
-            "fieldtype": "Float",
-            "fieldname": "avg_qty_sold_per_month",
-            "width": 140
-        },
-        {
-            "label": _("Total PO qty to be received"),
-            "fieldtype": "Float",
-            "fieldname": "total_po_qty_to_be_received",
-            "width": 140
-        },		
-        {
-            "label": _("Availability Date"),
-            "fieldtype": "Date",
-            "fieldname": "availability_date_art",
-            "width": 140
-        },
-        {
-            "label": _("Total Saleable Stock"),
-            "fieldtype": "Float",
-            "fieldname": "total_saleable_stock",
-            "width": 140
-        },	
-        {
-            "label": _("Qty Sold to be delivered"),
-            "fieldtype": "Float",
-            "fieldname": "qty_sold_to_be_delivered",
-            "width": 140
-        },		
-        {
-            "label": _("Stock Disposable"),
-            "fieldtype": "Float",
-            "fieldname": "stock_disposable",
-            "width": 140
-        },	
-        {
-            "label": _("NBR Mois"),
-            "fieldtype": "Float",
-            "fieldname": "nbr_mois",
-            "width": 140
-        },	
-        {
-            "label": _("Months since first purchase"),
-            "fieldtype": "Int",
-            "fieldname": "months_since_first_purchase_receipt",
-            "width": 50
-        },						
-        {
-            "label": _("commander"),
-            "fieldtype": "Float",
-            "fieldname": "commander",
-            "width": 140
-        },	
-        {
-            "label": _("col_u"),
-            "fieldtype": "Float",
-            "fieldname": "col_u",
-            "width": 140
-        }																						
-    ]
+	columns = [
+		{
+			"label": _("Supplier"),
+			"fieldname": "supplier",
+			"width": 200
+		},
+		{
+			"label": _("Item Code"),
+			"fieldtype": "Link",
+			"fieldname": "item_code",
+			"options": "Item",
+			"width": 220
+		},
+		{
+			"label": _("Item Name"),
+			"fieldname": "item_name",
+			"width": 200
+		},		
+		{
+			"label": _("Catalogue Type"),
+			"fieldname": "catalogue_type",
+			"width": 200
+		},	
+		{
+			"label": _("Is Sales Item"),
+			"fieldtype": "Int",
+			"fieldname": "is_sales_item",
+			"width": 50
+		},	
+		{
+			"label": _("Is Purchase Item"),
+			"fieldtype": "Int",
+			"fieldname": "is_purchase_item",
+			"width": 50
+		},	
+		{
+			"label": _("Inner Conversion"),
+			"fieldtype": "Int",
+			"fieldname": "inner_conversion_factor",
+			"width": 50
+		},
+		{
+			"label": _("Best"),
+			"fieldname": "best_amt_qty",
+			"width": 200
+		},	
+		{
+			"label": _("Qty Sold in FY"),
+			"fieldtype": "Float",
+			"fieldname": "qty_sold_in_financial_year",
+			"width": 120
+		},	
+		{
+			"label": _("Revenue for 12 months"),
+			"fieldtype": "Currency",
+			"fieldname": "revenue_for_last_12_months",
+			"options": "currency",
+			"width": 120
+		},
+		{
+			"label": _("Qty Sold in 12 months"),
+			"fieldtype": "Float",
+			"fieldname": "qty_sold_in_last_12_months",
+			"width": 120
+		},															
+		{
+			"label": _("Avg Qty sold per month"),
+			"fieldtype": "Float",
+			"fieldname": "avg_qty_sold_per_month",
+			"width": 140
+		},
+		{
+			"label": _("Total PO qty to be received"),
+			"fieldtype": "Float",
+			"fieldname": "total_po_qty_to_be_received",
+			"width": 140
+		},		
+		{
+			"label": _("Availability Date"),
+			"fieldtype": "Date",
+			"fieldname": "availability_date_art",
+			"width": 140
+		},
+		{
+			"label": _("Total Saleable Stock"),
+			"fieldtype": "Float",
+			"fieldname": "total_saleable_stock",
+			"width": 140
+		},	
+		{
+			"label": _("Qty Sold to be delivered"),
+			"fieldtype": "Float",
+			"fieldname": "qty_sold_to_be_delivered",
+			"width": 140
+		},		
+		{
+			"label": _("Stock Disposable"),
+			"fieldtype": "Float",
+			"fieldname": "stock_disposable",
+			"width": 140
+		},	
+		{
+			"label": _("NBR Mois"),
+			"fieldtype": "Float",
+			"fieldname": "nbr_mois",
+			"width": 140
+		},	
+		{
+			"label": _("Months since first purchase"),
+			"fieldtype": "Int",
+			"fieldname": "months_since_first_purchase_receipt",
+			"width": 50
+		},						
+		{
+			"label": _("commander"),
+			"fieldtype": "Float",
+			"fieldname": "commander",
+			"width": 140
+		},	
+		{
+			"label": _("col_u"),
+			"fieldtype": "Float",
+			"fieldname": "col_u",
+			"width": 140
+		}																						
+	]
 
-    return columns	
+	return columns	

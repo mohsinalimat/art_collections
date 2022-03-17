@@ -155,7 +155,7 @@ def get_stock_qty_for_saleable_warehouse(item_code):
 	warehouse_type = [d.warehouse_type for d in warehouse_type]
 	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
 	where WH.warehouse_type in ({warehouse_type}) and B.item_code = '{item_code}' """
-	.format(item_code=item_code,warehouse_type=(', '.join(['%s'] * len(warehouse_type)))),tuple(warehouse_type),as_dict=1,debug=1)
+	.format(item_code=item_code,warehouse_type=(', '.join(['%s'] * len(warehouse_type)))),tuple(warehouse_type),as_dict=1,debug=0)
 	return total_in_stock 	
 
 @frappe.whitelist()

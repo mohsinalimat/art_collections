@@ -129,14 +129,17 @@ doc_events = {
         ],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
-            "art_collections.sales_order_controller.on_submit_sales_order",
+            "art_collections.controllers.excel.sales_order.on_submit_sales_order",
         ],
-        "on_update": "art_collections.sales_order_controller.sales_order_custom_validation",
+        "on_update": [
+            "art_collections.sales_order_controller.sales_order_custom_validation",
+            "art_collections.controllers.excel.sales_order.on_submit_sales_order",
+        ],
     },
     "Purchase Order": {
         "on_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit",
-            "art_collections.purchase_order_controller.on_submit_purchase_order",
+            "art_collections.controllers.excel.purchase_order.on_submit_purchase_order",
         ],
         "on_update_after_submit": [
             "art_collections.purchase_order_controller.purchase_order_custom_on_submit"
@@ -144,6 +147,9 @@ doc_events = {
             # "art_collections.purchase_order_controller.purchase_order_update_schedule_date_of_item",
         ],
         "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
+        "on_update": [
+            "art_collections.controllers.excel.purchase_order.on_submit_purchase_order",
+        ],
     },
     "Supplier Quotation": {
         "validate": [
@@ -155,15 +161,25 @@ doc_events = {
         "validate": [
             "art_collections.request_for_quotation_controller.request_for_quotation_custom_validation",
             "art_collections.directive_controller.get_directive",
-        ]
+        ],
+        "on_submit": "art_collections.controllers.excel.request_for_quotation_excel.on_submit_request_for_quotation",
     },
     "Address": {
         "autoname": "art_collections.address_controller.set_address_title_based_on_customer",
         "validate": "art_collections.address_controller.fetch_default_mode_of_payment",
     },
-    "Quotation": {"validate": "art_collections.directive_controller.get_directive"},
-    "Delivery Note": {"validate": "art_collections.directive_controller.get_directive"},
-    "Sales Invoice": {"validate": "art_collections.directive_controller.get_directive"},
+    "Quotation": {
+        "validate": "art_collections.directive_controller.get_directive",
+        "on_submit": "art_collections.controllers.excel.quotation_excel.on_submit_quotation",
+    },
+    "Delivery Note": {
+        "validate": "art_collections.directive_controller.get_directive",
+        "on_submit": "art_collections.controllers.excel.delivery_note_excel.on_submit_delivery_note",
+    },
+    "Sales Invoice": {
+        "validate": "art_collections.directive_controller.get_directive",
+        "on_submit": "art_collections.controllers.excel.sales_invoice_excel.on_submit_sales_invoice",
+    },
     "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
     },

@@ -33,7 +33,10 @@ def get_print_context(name):
             poi.qty, 
             poi.stock_uom , 
             poi.base_net_rate , 
-            poi.base_net_amount  
+            poi.base_net_amount ,
+            case when i.image is null then '&nbsp;'
+                when SUBSTR(i.image,1,4) = 'http' then i.image
+                else concat('{}/',i.image) end image
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
         inner join tabItem i on i.name = poi.item_code

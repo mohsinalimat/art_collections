@@ -16,6 +16,7 @@
                     <th>{{ _("Stock UOM") }} </th>
                     <th>{{ _("Rate (EUR)") }} </th>
                     <th>{{ _("Amount (EUR)") }} </th>
+                    <th>{{ _("Photo") }} </th>
                 </tr>
             </thead>
             <tbody>
@@ -34,6 +35,9 @@
                     <td>{{ d.stock_uom or "" }}</td>
                     <td>{{ d.base_net_rate or "" }}</td>
                     <td>{{ d.base_net_amount or "" }}</td>
+                    <td>
+                        <img src="{{ d.image}}" height="60px" width="60px" alt="item image">
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -69,3 +69,21 @@ def sample_write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=N
                 column=col, row=row, value="{0}".format(get_column_letter(col))
             )
     wb.save(filename="dest_filename")
+
+
+def attach_file(content, **args):
+    _file = frappe.get_doc(
+        {
+            "doctype": "File",
+            "file_name": "{}.xlsx".format(args.get("docname")),
+            "attached_to_doctype": args.get("doctype"),
+            "attached_to_name": args.get("docname"),
+            "is_private": 1,
+            "content": content,
+        }
+    )
+    _file.save()
+    frappe.db.commit()
+    frappe.publish_realtime(
+        "show_sales_order_email_dialog", {"user": frappe.session.user}
+    )

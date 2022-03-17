@@ -39,7 +39,10 @@ def get_print_context(name):
             soi.stock_uom_rate ,
             i.customs_tariff_number ,
             ucd.conversion_factor ,
-            if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock
+            if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock ,
+            case when i.image is null then ''
+                when SUBSTR(i.image,1,4) = 'http' then i.image
+                else concat('{}/',i.image) end image
         from 
             `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent

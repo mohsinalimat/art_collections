@@ -53,6 +53,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Traite LCR Generation",
+   "link_to": "Traite LCR Generation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Reports",
    "link_type": "DocType",
    "onboard": 0,
@@ -365,7 +374,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-03-06 08:20:38.152598",
+ "modified": "2022-03-22 08:12:50.629159",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

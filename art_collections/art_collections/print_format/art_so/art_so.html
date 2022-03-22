@@ -18,6 +18,7 @@
                     <th>{{ _("Qty as per stock UOM") }} </th>
                     <th>{{ _("Rate of Stock UOM (EUR)") }} </th>
                     <th>{{ _("Amount (EUR)") }} </th>
+                    <th>{{ _("Photo") }} </th>
                 </tr>
                 {% if message %}
                 <tr>
@@ -47,6 +48,9 @@
                     <td class="text-right">{{ d.stock_qty }}</td>
                     <td class="text-right">{{ d.stock_uom_rate }}</td>
                     <td class="text-right">{{ d.base_net_amount }}</td>
+                    <td>
+                        <img src="{{ d.image}}" height="45px" width="45px" alt="item image">
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

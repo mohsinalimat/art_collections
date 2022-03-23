@@ -17,7 +17,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 app_include_css = ["/assets/css/pos_list.min.css"]
-# app_include_js = "/assets/art_collections/js/art_collections.js"
+app_include_js = "/assets/art_collections/js/art_collections.js"
 
 # include js, css files in header of web template
 web_include_css = "/assets/art_collections/css/art_collections.css"
@@ -133,7 +133,6 @@ doc_events = {
         ],
         "on_update": [
             "art_collections.sales_order_controller.sales_order_custom_validation",
-            "art_collections.controllers.excel.sales_order.on_submit_sales_order",
         ],
     },
     "Purchase Order": {
@@ -147,9 +146,6 @@ doc_events = {
             # "art_collections.purchase_order_controller.purchase_order_update_schedule_date_of_item",
         ],
         "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
-        "on_update": [
-            "art_collections.controllers.excel.purchase_order.on_submit_purchase_order",
-        ],
     },
     "Supplier Quotation": {
         "validate": [

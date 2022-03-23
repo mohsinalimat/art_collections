@@ -84,6 +84,4 @@ def attach_file(content, **args):
     )
     _file.save()
     frappe.db.commit()
-    frappe.publish_realtime(
-        "show_sales_order_email_dialog", {"user": frappe.session.user}
-    )
+    frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)

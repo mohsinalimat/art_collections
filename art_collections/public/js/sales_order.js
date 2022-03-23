@@ -1,11 +1,7 @@
 frappe.ui.form.on('Sales Order', {
 
 	setup: function (frm) {
-		frappe.realtime.on("show_sales_order_email_dialog", function () {
-			frm.reload_doc().then(() => {
-				show_email_dialog(frm);
-			});
-		});
+
 	},
 
 	onload_post_render: function (frm) {
@@ -30,21 +26,21 @@ frappe.ui.form.on('Sales Order', {
 			})
 	},
 	shipping_address_name: function (frm) {
-		frappe.db.get_value('Address', frm.doc.shipping_address_name, ['delivery_by_appointment_art', 'delivery_contact_art', 'delivery_appointment_contact_detail_art','country'])
+		frappe.db.get_value('Address', frm.doc.shipping_address_name, ['delivery_by_appointment_art', 'delivery_contact_art', 'delivery_appointment_contact_detail_art', 'country'])
 			.then(r => {
 				let values = r.message;
 				if (values) {
 					let delivery_by_appointment_art = values.delivery_by_appointment_art
 					let delivery_contact_art = values.delivery_contact_art
 					let delivery_appointment_contact_detail_art = values.delivery_appointment_contact_detail_art
-					let country=values.country
+					let country = values.country
 					if (country) {
-						frappe.db.get_list('Shipping Rule Country', {fields: ['parent'],filters: {country: country}})
-						.then(records => {
-							if (records.length>0) {
-								frm.set_value('shipping_rule', records[0].parent)
-							}
-						})	
+						frappe.db.get_list('Shipping Rule Country', { fields: ['parent'], filters: { country: country } })
+							.then(records => {
+								if (records.length > 0) {
+									frm.set_value('shipping_rule', records[0].parent)
+								}
+							})
 					}
 					frm.set_value({
 						delivery_by_appointment_art: delivery_by_appointment_art,
@@ -86,7 +82,7 @@ frappe.ui.form.on('Sales Order', {
 
 	},
 	refresh: function (frm) {
-		frm.page.add_menu_item(__('Send Email'), function () { show_email_dialog(frm); });
+		frm.page.add_menu_item(__('Send Email'), function () { frappe.show_email_dialog(frm); });
 
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
@@ -162,40 +158,13 @@ frappe.ui.form.on("Sales Order Item", {
 	}
 });
 
-function show_email_dialog(frm) {
-	// show email dialog with pre-set values for default print format 
-	// and email template and attach_print
-
-	let composer = new frappe.views.CommunicationComposer({
-		doc: frm.doc,
-		frm: frm,
-		subject: __(frm.meta.name) + ': ' + frm.docname,
-		recipients: frm.doc.email || frm.doc.email_id || frm.doc.contact_email,
-		attach_document_print: true,
-		real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name
-	});
-
-
-	frappe.db.get_single_value('Art Collections Settings', 'sales_order_email_template')
-		.then(email_template => {
-			setTimeout(() => {
-				composer.dialog.fields_dict['select_attachments'].$wrapper.find("input").attr("checked", "checked");
-				composer.dialog.fields_dict['content'].set_value("");
-				composer.dialog.set_values({
-					"email_template": email_template,
-					// "select_print_format": 'Art Collections Sales Order'
-				});
-			}, 900);
-		});
-}
-
 
 function create_warning_dialog_for_inner_qty_check(frm) {
 	let promises = [];
 	let warning_html_messages = []
 
 	$.each(frm.doc.items || [], function (i, d) {
-		if (d.item_code!=undefined) {
+		if (d.item_code != undefined) {
 			// create each new promise for item iteration
 			let p = new Promise(resolve => {
 
@@ -235,7 +204,7 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 			});
 			// push all promises p to array
 			promises.push(p);
-	}	
+		}
 	});
 
 	// start-- once the for loop od item is over need to run below code

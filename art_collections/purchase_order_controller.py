@@ -46,8 +46,10 @@ def fill_item_pack_details(self):
 
     self.total_outer_cartons_ordered_art = total_outer_cartons_ordered_art
     self.total_cbm_art = total_cbm_art
-    self.filling_percentage_of_20_foot_container_art = (total_cbm_art * 100) / 33
-    self.filling_percentage_of_40_foot_container_art = (total_cbm_art * 100) / 67
+    twenty_foot_filling_percentage=frappe.db.get_single_value('Art Collections Settings', 'filling_percentage_for_20_foot_container') or 28
+    forty_foot_filling_percentage=frappe.db.get_single_value('Art Collections Settings', 'filling_percentage_for_40_foot_container') or 63
+    self.filling_percentage_of_20_foot_container_art = (total_cbm_art * 100) / twenty_foot_filling_percentage
+    self.filling_percentage_of_40_foot_container_art = (total_cbm_art * 100) / forty_foot_filling_percentage
 
 
 def purchase_order_custom_on_submit(self, method):

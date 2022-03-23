@@ -122,7 +122,7 @@ frappe.ui.form.on('Sales Order', {
 	validate: function (frm) {
 
 		// ignore_warning is set to true in warning popup's success route
-		if (frm.doc.ignore_warning) {
+		if (frm.ignore_warning) {
 			return;
 		}
 		frappe.validated = false;
@@ -248,7 +248,7 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 
 		if (warning_html_messages.length > 0) {
 			let proceed_action = () => {
-				frm.doc.ignore_warning = true;
+				frm.ignore_warning = true;
 				frm.save();
 			};
 			frappe.warn(
@@ -259,7 +259,7 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 			);
 		} else {
 			// no warning , so set the flag and save
-			frm.doc.ignore_warning = true;
+			frm.ignore_warning = true;
 			frm.save();
 		}
 	});

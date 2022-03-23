@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+from ast import If
+from distutils.log import debug
 from re import I
 import frappe
 from frappe import _
@@ -8,84 +10,106 @@ def get_directive(self,method):
     directive_list=[]
     if self.doctype=='Quotation':
         if self.quotation_to=='Customer' and self.party_name:
-            directive=get_entity_directive(self.doctype,self.quotation_to,self.party_name)
-            if directive:
-                directive_list.append(directive)
+            customer_directive=get_entity_directive(self.doctype,self.quotation_to,self.party_name)
             customer_group=frappe.db.get_value('Customer', self.party_name, 'customer_group')
-            directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
-            if directive:
-                directive_list.append(directive)            
+            customer_group_directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
+
+            customer_only_directive=get_only_entity_directive(self.doctype,self.quotation_to,self.party_name)
+            customer_group_only_directive=get_only_entity_group_directive(self.doctype,'Customer Group',customer_group)
+            if customer_only_directive:
+                directive_list.append(customer_only_directive)
+            if customer_group_only_directive:
+                directive_list.append(customer_group_only_directive)
+
             for item in self.items:
-                directive=get_item_directive(self.doctype,'Item',item.item_code)
-                if directive:
-                    directive_list.append(directive)                 
-                directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
-                if directive:
-                    directive_list.append(directive)                              
-    elif self.doctype=='Sales Order' or self.doctype=='Delivery Note' or self.doctype=='Sales Invoice':
-        directive=get_entity_directive(self.doctype,'Customer',self.customer)
-        if directive:
-            directive_list.append(directive)
+                item_directive=get_item_directive(self.doctype,'Item',item.item_code)
+                if item_directive and ((customer_directive and item_directive[0].directive_name==customer_directive[0].directive_name) 
+                or (customer_group_directive and item_directive[0].directive_name==customer_group_directive[0].directive_name)):
+                    directive_list.append(item_directive)                 
+                item_group_directive=get_item_group_directive(self.doctype,'Item Group',item.item_group) 
+
+                if item_group_directive and ((customer_directive and item_group_directive[0].directive_name == customer_directive[0].directive_name) 
+                or (customer_group_directive and item_group_directive[0].directive_name == customer_group_directive[0].directive_name)):
+                    directive_list.append(item_group_directive)                              
+
+
+    elif self.doctype=='Sales Order' or self.doctype=='Delivery Note' or self.doctype=='Sales Invoice' or self.doctype=='Pick List':
+        if self.doctype =='Pick List':
+            items=self.locations
+        else:
+            items=self.items
+        customer_directive=get_entity_directive(self.doctype,'Customer',self.customer)
         customer_group=frappe.db.get_value('Customer', self.customer, 'customer_group')
-        directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
-        if directive:
-            directive_list.append(directive)            
-        for item in self.items:
-            directive=get_item_directive(self.doctype,'Item',item.item_code)
-            if directive:
-                directive_list.append(directive)                 
-            directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
-            if directive:
-                directive_list.append(directive) 
-    elif self.doctype=='Pick List':
-        directive=get_entity_directive(self.doctype,'Customer',self.customer)
-        if directive:
-            directive_list.append(directive)
-        customer_group=frappe.db.get_value('Customer', self.customer, 'customer_group')
-        directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
-        if directive:
-            directive_list.append(directive)            
-        for item in self.locations:
-            directive=get_item_directive(self.doctype,'Item',item.item_code)
-            if directive:
-                directive_list.append(directive)                 
-            directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
-            if directive:
-                directive_list.append(directive)                 
+        customer_group_directive=get_entity_group_directive(self.doctype,'Customer Group',customer_group)
+
+        customer_only_directive=get_only_entity_directive(self.doctype,'Customer',self.customer)
+        customer_group_only_directive=get_only_entity_group_directive(self.doctype,'Customer Group',customer_group)
+        if customer_only_directive:
+            directive_list.append(customer_only_directive)
+        if customer_group_only_directive:
+            directive_list.append(customer_group_only_directive)
+
+        for item in items:
+            item_directive=get_item_directive(self.doctype,'Item',item.item_code)
+            if item_directive and ((customer_directive and item_directive[0].directive_name==customer_directive[0].directive_name) 
+            or (customer_group_directive and item_directive[0].directive_name==customer_group_directive[0].directive_name)):
+                directive_list.append(item_directive)                 
+            item_group_directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
+            if item_group_directive and ((customer_directive and item_group_directive[0].directive_name == customer_directive[0].directive_name) 
+            or (customer_group_directive and item_group_directive[0].directive_name == customer_group_directive[0].directive_name)):
+                directive_list.append(item_group_directive)
+               
+     
     elif self.doctype=='Purchase Receipt' or self.doctype=='Purchase Invoice' or self.doctype=='Supplier Quotation':
-        directive=get_entity_directive(self.doctype,'Supplier',self.supplier)
-        if directive:
-            directive_list.append(directive)
+        supplier_directive=get_entity_directive(self.doctype,'Supplier',self.supplier)
         supplier_group=frappe.db.get_value('Supplier', self.supplier, 'supplier_group')
-        directive=get_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
-        if directive:
-            directive_list.append(directive)            
+        supplier_group_directive=get_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
+       
+        supplier_only_directive=get_only_entity_directive(self.doctype,'Supplier',self.supplier)
+        supplier_group_only_directive=get_only_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
+        if supplier_only_directive:
+            directive_list.append(supplier_only_directive)
+        if supplier_group_only_directive:
+            directive_list.append(supplier_group_only_directive)
+
         for item in self.items:
-            directive=get_item_directive(self.doctype,'Item',item.item_code)
-            if directive:
-                directive_list.append(directive)                 
-            directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
-            if directive:
-                directive_list.append(directive) 
+            item_directive=get_item_directive(self.doctype,'Item',item.item_code)
+            if item_directive and ((supplier_directive and item_directive[0].directive_name==supplier_directive[0].directive_name) 
+            or (supplier_group_directive and item_directive[0].directive_name==supplier_group_directive[0].directive_name)):
+                directive_list.append(item_directive)                 
+            item_group_directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
+            if item_group_directive and ((supplier_directive and item_group_directive[0].directive_name == supplier_directive[0].directive_name) 
+            or (supplier_group_directive and item_group_directive[0].directive_name == supplier_group_directive[0].directive_name)):
+                directive_list.append(item_group_directive) 
+       
+                 
     elif self.doctype=='Request for Quotation':
         for supplier in self.suppliers:
-            directive=get_entity_directive(self.doctype,'Supplier',supplier.supplier)
-            if directive:
-                directive_list.append(directive)
+            
+            supplier_directive=get_entity_directive(self.doctype,'Supplier',supplier.supplier)
             supplier_group=frappe.db.get_value('Supplier', supplier.supplier, 'supplier_group')
-            directive=get_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
-            if directive:
-                directive_list.append(directive)            
-        for item in self.items:
-            directive=get_item_directive(self.doctype,'Item',item.item_code)
-            if directive:
-                directive_list.append(directive)                 
-            directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
-            if directive:
-                directive_list.append(directive) 
+            supplier_group_directive=get_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
+        
+            supplier_only_directive=get_only_entity_directive(self.doctype,'Supplier',supplier.supplier)
+            supplier_group_only_directive=get_only_entity_group_directive(self.doctype,'Supplier Group',supplier_group)
+            if supplier_only_directive:
+                directive_list.append(supplier_only_directive)
+            if supplier_group_only_directive:
+                directive_list.append(supplier_group_only_directive)            
+            
+            for item in self.items:
+                item_directive=get_item_directive(self.doctype,'Item',item.item_code)
+                if item_directive and ((supplier_directive and item_directive[0].directive_name==supplier_directive[0].directive_name) 
+                or (supplier_group_directive and item_directive[0].directive_name==supplier_group_directive[0].directive_name)):
+                    directive_list.append(item_directive)                 
+                item_group_directive=get_item_group_directive(self.doctype,'Item Group',item.item_group)  
+                if item_group_directive and ((supplier_directive and item_group_directive[0].directive_name == supplier_directive[0].directive_name) 
+                or (supplier_group_directive and item_group_directive[0].directive_name == supplier_group_directive[0].directive_name)):
+                    directive_list.append(item_group_directive) 
 
     unique_directive_list = []
     unique_directive_name=[]
+    print('-'*100,directive_list)
     for x in directive_list:
         for d in x:
             if d.directive_name not in unique_directive_name:
@@ -172,3 +196,31 @@ def get_child_groups(group_type, group_name):
 	child_groups = [d.name for d in frappe.get_all(group_type,
 		filters= {'lft': ('>=', group_details.lft),'rgt': ('<=', group_details.rgt)})]
 	return child_groups or {}    
+
+def get_only_entity_directive(doctype,entity_type,entity_name):
+    directive = frappe.db.sql("""
+SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
+where doctypes.directive_doctype = %s
+and directive.disabled =0
+and directive.apply_on = %s
+and directive.apply_for_value = %s
+and (directive.apply_for_items is NULL  or directive.apply_for_items ='')""", (doctype,entity_type,entity_name),as_dict=True)
+    return directive if len(directive)>0 else None
+
+def get_only_entity_group_directive(doctype,group_type,group_name):
+    result_directive=[]
+    directives = frappe.db.sql("""
+SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive,directive.apply_for_value
+FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
+where doctypes.directive_doctype ='%s'
+and directive.disabled =0
+and directive.apply_on = '%s'
+and (directive.apply_for_items is NULL  or directive.apply_for_items ='')
+""" %(doctype,group_type),as_dict=True)
+    if len(directives)>0:
+        for directive in directives:
+            child_groups_list=get_child_groups(group_type,directive.apply_for_value)
+            if group_name in child_groups_list:
+                result_directive.append(directive)
+    return result_directive if len(result_directive)>0 else None     

@@ -20,7 +20,10 @@
   "item_defaults_section",
   "inner_carton_uom",
   "outer_carton_uom",
-  "product_uom"
+  "product_uom",
+  "section_break_17",
+  "filling_percentage_for_20_foot_container",
+  "filling_percentage_for_40_foot_container"
  ],
  "fields": [
   {
@@ -112,12 +115,26 @@
    "fieldtype": "Link",
    "label": "Selling Pack Invalid Qty Sales Order Notification",
    "options": "Notification"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "filling_percentage_for_20_foot_container",
+   "fieldtype": "Int",
+   "label": "Filling % for 20 Foot Container"
+  },
+  {
+   "fieldname": "filling_percentage_for_40_foot_container",
+   "fieldtype": "Int",
+   "label": "Filling % for 40 Foot Container"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-03-05 05:57:55.654589",
+ "modified": "2022-03-23 06:37:43.314327",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

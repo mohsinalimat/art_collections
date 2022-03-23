@@ -732,7 +732,7 @@
    "collapsible_depends_on": null,
    "columns": 0,
    "creation": "2019-05-27 12:14:08.771306",
-   "default": null,
+   "default": "FOB",
    "depends_on": "",
    "description": null,
    "docstatus": 0,

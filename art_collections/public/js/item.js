@@ -234,8 +234,25 @@ frappe.ui.form.on('Product Packing Dimensions', {
       if (row.uom==frm.doc.stock_uom && frm.doc.weight_per_unit && row.weight==undefined) {
 		   frappe.model.set_value(cdt, cdn, 'weight', frm.doc.weight_per_unit);
       }
-	}
+	},
+   length: function(frm, cdt, cdn) {
+      let row=locals[cdt][cdn]
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+	},
+   width: function(frm, cdt, cdn) {
+      let row=locals[cdt][cdn]
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+	},
+   thickness: function(frm, cdt, cdn) {
+      let row=locals[cdt][cdn]
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+	},      
 });
+
+function calculate_cbm(length,width,thickness) {
+   let cbm=(length*width*thickness)/1000000
+   return cbm
+}
 
 function new_item_name(frm) {
    

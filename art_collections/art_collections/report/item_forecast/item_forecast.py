@@ -160,11 +160,6 @@ def get_columns(filters):
 			"width": 220
 		},
 		{
-			"label": _("Item Name"),
-			"fieldname": "item_name",
-			"width": 200
-		},		
-		{
 			"label": _("Catalogue Type"),
 			"fieldname": "catalogue_type",
 			"width": 200
@@ -248,7 +243,7 @@ def get_columns(filters):
 			"width": 140
 		},	
 		{
-			"label": _("NBR Mois"),
+			"label": _("Months of Stock Coverage"),
 			"fieldtype": "Float",
 			"fieldname": "nbr_mois",
 			"width": 140
@@ -260,13 +255,13 @@ def get_columns(filters):
 			"width": 50
 		},						
 		{
-			"label": _("commander"),
+			"label": _("Order forecast"),
 			"fieldtype": "Float",
 			"fieldname": "commander",
 			"width": 140
 		},	
 		{
-			"label": _("col_u"),
+			"label": _("M+1 order forecast"),
 			"fieldtype": "Float",
 			"fieldname": "col_u",
 			"width": 140

@@ -206,11 +206,6 @@ def get_columns(filters):
             "width": 220
         },
         {
-            "label": _("Item Name"),
-            "fieldname": "item_name",
-            "width": 200
-        },	
-        {
             "label": _("Inner Conversion"),
             "fieldtype": "Int",
             "fieldname": "inner_conversion_factor",
@@ -224,13 +219,13 @@ def get_columns(filters):
             "width": 120
         },	
         {
-            "label": _("Min Qty"),
+            "label": _("Large Package"),
             "fieldtype": "Float",
             "fieldname": "min_qty",
             "width": 120
         },			
         {
-            "label": _("Price Rule Rate"),
+            "label": _("Large Package Rate"),
             "fieldtype": "Currency",
             "fieldname": "price_rule_rate",
             "options": "currency",
@@ -264,7 +259,7 @@ def get_columns(filters):
             "width": 50
         },		
         {
-            "label": _("Avec Appro"),
+            "label": _("Months Of Stock With Supply"),
             "fieldtype": "Float",
             "fieldname": "avec_appro",
             "width": 120
@@ -294,7 +289,7 @@ def get_columns(filters):
             "width": 140
         },		
         {
-            "label": _("Total Qty in PO to deliver"),
+            "label": _("Total PO Qty to be received"),
             "fieldtype": "Float",
             "fieldname": "po_to_delivered",
             "width": 120
@@ -312,14 +307,14 @@ def get_columns(filters):
             "width": 140
         },	
         {
-            "label": _("Disposable Plus PO to deliver"),
+            "label": _("Disposable plus PO to receive"),
             "fieldtype": "Float",
             "fieldname": "stock_disposable_plus_po_to_delivered",
             "width": 120
         },		
 
         {
-            "label": _("NBR Mois"),
+            "label": _("Months of Stock Coverage"),
             "fieldtype": "Float",
             "fieldname": "nbr_mois",
             "width": 140
@@ -348,7 +343,7 @@ def get_columns(filters):
             "width": 200
         },
         {
-            "label": _("Réappro"),
+            "label": _("Order Forecast"),
             "fieldtype": "Float",
             "fieldname": "commander",
             "width": 120

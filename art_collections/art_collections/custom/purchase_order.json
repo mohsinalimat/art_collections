@@ -347,7 +347,7 @@
    "parentfield": null,
    "parenttype": null,
    "permlevel": 0,
-   "precision": "",
+   "precision": "3",
    "print_hide": 0,
    "print_hide_if_no_value": 0,
    "print_width": null,

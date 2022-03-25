@@ -43,7 +43,7 @@
    "depends_on": "eval:!doc.__local",
    "fieldname": "tsv_file",
    "fieldtype": "Attach",
-   "label": "TSV File"
+   "label": "CSV File"
   },
   {
    "fieldname": "amended_from",
@@ -65,7 +65,7 @@
   {
    "fieldname": "tsv_file_data",
    "fieldtype": "Long Text",
-   "label": "TSV File Data"
+   "label": "CSV File Data"
   },
   {
    "description": "Filter only Company Bank Accounts",
@@ -82,7 +82,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-03-01 10:14:52.427702",
+ "modified": "2022-03-25 13:54:33.998386",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Traite LCR Generation",

@@ -69,7 +69,7 @@ class TraiteLCRGeneration(Document):
         _file = frappe.get_doc(
             {
                 "doctype": "File",
-                "file_name": "{}.tsv".format(self.name),
+                "file_name": "{}.csv".format(self.name),
                 "is_private": 1,
                 "content": self.tsv_file_data,
             }
@@ -197,12 +197,14 @@ TRAITE_LCR_TSV = """
         where 
             tsv_generated_cf = 0 
             and docstatus = 1 
-            and (mode_of_payment_art = 'Traite' or mode_of_payment_art like '%%LCR%%')
             and due_date <= %(generation_date)s               
+            and 1 = case 
+                    when mode_of_payment_art like '%%LCR%%' then 1
+                    when mode_of_payment_art = 'Traite' and is_traite_received_cf = 1 then 1
+                else 0 end
 """
 
-TRAITE_LCR_TSV_HEADER = """
-        select 
+TRAITE_LCR_TSV_HEADER = """select 
                 '03'rcode, 
                 '60'ocode,
                 LPAD(CAST(1+ROW_NUMBER() over (order by creation) as CHAR),8,'0') rec_num,

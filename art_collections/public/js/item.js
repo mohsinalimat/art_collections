@@ -237,20 +237,24 @@ frappe.ui.form.on('Product Packing Dimensions', {
 	},
    length: function(frm, cdt, cdn) {
       let row=locals[cdt][cdn]
-		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+         var product_packing_dimensions_art = frappe.get_doc(cdt, cdn);
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness,product_packing_dimensions_art));
 	},
    width: function(frm, cdt, cdn) {
       let row=locals[cdt][cdn]
-		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+      var product_packing_dimensions_art = frappe.get_doc(cdt, cdn);
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness,product_packing_dimensions_art));
 	},
-   thickness: function(frm, cdt, cdn) {
+   thickness: function(frm, cdt, cdn,) {
       let row=locals[cdt][cdn]
-		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness));
+      var product_packing_dimensions_art = frappe.get_doc(cdt, cdn);
+		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness,product_packing_dimensions_art));
 	},      
 });
 
-function calculate_cbm(length,width,thickness) {
-   let cbm=(length*width*thickness)/1000000
+function calculate_cbm(length,width,thickness,product_packing_dimensions_art) {
+   // to set float precision for child table field : flt(value, precision("child_field_name",frappe.get_doc(cdt, cdn)))
+   let cbm=flt((length*width*thickness)/1000000,precision("cbm",product_packing_dimensions_art))
    return cbm
 }
 

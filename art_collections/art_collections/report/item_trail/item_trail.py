@@ -25,7 +25,6 @@ item.item_name,
 ucd.conversion_factor as inner_conversion_factor,
 price.price_list_rate,
 barcode.barcode ,
-GROUP_CONCAT(DISTINCT supplier.supplier_name) as supplier,
 GROUP_CONCAT(DISTINCT catalogue.parent) as catalogue_type,
 GROUP_CONCAT(DISTINCT universe_catalogue.name) as universe_title,
 item.is_sales_item ,
@@ -38,10 +37,6 @@ left outer join `tabItem Universe Page Art` catalogue
 on item.name = catalogue.item and catalogue.parent = catalogue_directory.name
 left outer join `tabUOM Conversion Detail` ucd
 on ucd.parent = item.name and ucd.uom = (select value from `tabSingles` where doctype='Art Collections Settings' and field='inner_carton_uom')
-left outer join `tabItem Supplier` as supplier_item 
-on supplier_item.parent =item.name 
-left outer join `tabSupplier` as supplier
-on supplier_item.supplier =supplier.name 
 left outer join `tabItem Price` price 
 on price.item_code=item.name and price.price_list =(
 select value from `tabSingles` where doctype='Selling Settings' and field='selling_price_list')
@@ -78,6 +73,11 @@ col_e as (select  ROW_NUMBER() over (PARTITION BY tpric.item_code ORDER BY tpr.p
 tpric.item_code,tpr.min_qty as min_qty ,tpr.rate  as price_rule_rate
 from `tabPricing Rule` tpr inner join `tabPricing Rule Item Code` tpric on tpric.parent = tpr.name and tpr.selling =1 
 and %(to_date)s between ifnull(tpr.valid_from, '2000-01-01') and ifnull(tpr.valid_upto, '2500-12-31')
+),
+col_supplier as (select GROUP_CONCAT(DISTINCT supplier) as supplier, pr_item.item_code
+from `tabPurchase Receipt` pr inner join `tabPurchase Receipt Item` pr_item on pr.name=pr_item.parent
+where pr.docstatus =1
+group by pr_item.item_code
 ),
 col_i as (SELECT SI_item.item_code ,SUM(SI_item.stock_qty) as qty_sold_in_financial_year ,
 case when ROW_NUMBER() over (order by SUM(SI_item.stock_qty)DESC )< 101 then 'Qté' else '' end as notion_qty
@@ -149,7 +149,7 @@ where SI.docstatus = 1
 and (SI.posting_date BETWEEN %(month_start_date)s and %(month_end_date)s)
 group by SI_item.item_code )
 SELECT 
-fn.supplier,fn.item_code,fn.item_name,fn.catalogue_type,fn.universe_title,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
+col_supplier.supplier,fn.item_code,fn.item_name,fn.catalogue_type,fn.universe_title,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
 fn.price_list_rate,col_e.price_rule_rate,
 col_e.min_qty,fn.barcode,
 CONCAT(col_j.notion_ca,' ',col_k.notion_qty) as best_amt_qty,
@@ -185,6 +185,7 @@ left outer join col_u_last_month on col_u_last_month.item_code =fn.name
 left outer join col_e on col_e.item_code =fn.name and col_e.rn=1
 left outer join col_sold_qty_to_deliver on col_sold_qty_to_deliver.item_code=fn.name 
 left outer join item_customer_pair on item_customer_pair.item_code=fn.name
+left outer join col_supplier on col_supplier.item_code=fn.name
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,

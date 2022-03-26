@@ -22,19 +22,26 @@ SELECT
 item.name,
 item.item_code ,
 item.item_name,  
-GROUP_CONCAT(DISTINCT catalogue.parent) as catalogue_type,
 item.is_sales_item ,
 item.is_purchase_item ,
 ucd.conversion_factor as inner_conversion_factor,
 item.availability_date_art 
 from `tabItem` as item
-left outer join `tabCatalogue Directory Art` catalogue_directory 
-on catalogue_directory.node_type='Catalogue'
-left outer join `tabItem Universe Page Art` catalogue
-on item.name = catalogue.item and catalogue.parent = catalogue_directory.name
 left outer join `tabUOM Conversion Detail` ucd
 on ucd.parent = item.name and ucd.uom = (select value from `tabSingles` where doctype='Art Collections Settings' and field='inner_carton_uom')
 group by item.name 
+),
+col_catalogue_type as (SELECT GROUP_CONCAT(DISTINCT catalogue_directory_parent.catalogue_type) as catalogue_type,
+universe_item.item FROM 
+`tabCatalogue Directory Art` catalogue_directory_parent 
+left outer join 
+`tabCatalogue Directory Art` catalogue_directory 
+on catalogue_directory_parent.lft < catalogue_directory.lft and catalogue_directory_parent.rgt > catalogue_directory.rgt 
+inner join `tabItem Universe Page Art` universe_item
+on  universe_item.parent = catalogue_directory.name
+where catalogue_directory_parent.node_type='Catalogue'
+and catalogue_directory.node_type='Universe'
+group by universe_item.item
 ),
 col_supplier as (select GROUP_CONCAT(DISTINCT supplier) as supplier, pr_item.item_code
 from `tabPurchase Receipt` pr inner join `tabPurchase Receipt Item` pr_item on pr.name=pr_item.parent
@@ -108,7 +115,7 @@ where SI.docstatus = 1
 and (SI.posting_date BETWEEN %(month_start_date)s and %(month_end_date)s)
 group by SI_item.item_code )
 SELECT 
-col_supplier.supplier,fn.item_code,fn.item_name,fn.catalogue_type,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
+col_supplier.supplier,fn.item_code,fn.item_name,col_catalogue_type.catalogue_type,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
 CONCAT(col_j.notion_ca,' ',col_k.notion_qty) as best_amt_qty,
 col_i.qty_sold_in_financial_year,
 col_j.revenue_for_last_12_months,
@@ -136,6 +143,7 @@ left outer join col_p on col_p.item_code =fn.name
 left outer join col_s on col_s.item_code =fn.name and col_s.rn=1
 left outer join col_u_last_month on col_u_last_month.item_code =fn.name 
 left outer join col_supplier on col_supplier.item_code=fn.name
+left outer join col_catalogue_type on col_catalogue_type.item=fn.name
 """,		values = {
 			'from_date': filters.from_date,
 			'to_date': filters.to_date,

@@ -1,4 +1,7 @@
 frappe.ui.form.on('Purchase Order', {
+	onload: function(frm) {
+		set_shipping_date(frm);
+	},		
 	after_save: function (frm) {
 		if (frm.doc.supplier) {
 			frappe.db.get_value('Supplier', frm.doc.supplier, 'minimum_order_amount_art')
@@ -39,7 +42,16 @@ frappe.ui.form.on('Purchase Order', {
 			__("Create")
 		);
 
-	}
+	},
+	validate: function(frm) {
+		set_shipping_date(frm);
+	},	
+	items_on_form_rendered: function(frm) {
+		set_shipping_date(frm);
+	},
+	shipping_date_art: function(frm) {
+		set_shipping_date(frm);
+	}	
 
 });
 
@@ -68,5 +80,22 @@ frappe.ui.form.on("Purchase Order Item", {
 
 		}
 	},
+	shipping_date_art: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		if (row.shipping_date_art) {
+			if(!frm.doc.shipping_date_art) {
+				// copy child table value
+				erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "shipping_date_art");
+			} else {
+				set_shipping_date(frm);
+			}
+		}
+	}	
 
 });
+
+function set_shipping_date(frm) {
+	if(frm.doc.shipping_date_art){
+		erpnext.utils.copy_value_in_all_rows(frm.doc, frm.doc.doctype, frm.doc.name, "items", "shipping_date_art");
+	}
+}

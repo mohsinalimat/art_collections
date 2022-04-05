@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "ART-SPL-.YY.MM.-.#",
+ "creation": "2022-04-01 07:46:45.454326",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier_packing_list_detail",
+  "total_qty_of_stock_uom",
+  "total_outer_qty",
+  "total_cbm"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier_packing_list_detail",
+   "fieldtype": "Table",
+   "label": "Supplier Packing List Detail",
+   "options": "Supplier Packing List Detail Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_qty_of_stock_uom",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Qty of Stock UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_outer_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total outer qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_cbm",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total CBM (m3)",
+   "precision": "3",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-04-01 07:46:45.454326",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Supplier Packing List Art",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

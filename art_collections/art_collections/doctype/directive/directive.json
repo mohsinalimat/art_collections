@@ -8,8 +8,9 @@
  "field_order": [
   "directive_name",
   "disabled",
-  "column_break_3",
   "show_as_alert",
+  "show_on_print",
+  "column_break_3",
   "directive_type",
   "directive",
   "section_break_7",
@@ -85,6 +86,7 @@
   },
   {
    "default": "0",
+   "description": "Show in pop-up",
    "fieldname": "show_as_alert",
    "fieldtype": "Check",
    "label": "Show as Alert",
@@ -111,11 +113,19 @@
   {
    "fieldname": "section_break_13",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "description": "checked > shown in Directive on Print (directive_print_cf)\nunchecked > shown in Internal Directive (directive_cf)",
+   "fieldname": "show_on_print",
+   "fieldtype": "Check",
+   "label": "Show on Print",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-02-18 12:07:28.156515",
+ "modified": "2022-04-05 14:29:05.361062",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

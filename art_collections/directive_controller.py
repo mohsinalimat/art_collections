@@ -5,8 +5,7 @@ from re import I
 import frappe
 from frappe import _
 import operator
-import itertools 
-
+import itertools
 
 def get_directive(self,method):
     directive_list=[]
@@ -77,20 +76,35 @@ def get_directive(self,method):
                 unique_directive_name.append(d.directive_name)  
     unique_directive_list= sorted(unique_directive_list, key=operator.itemgetter("directive_type"))           
     directive_content=''
+    print_directive_content=''
     alert_content=''
     last_directive_type=''
+    last_print_directive_type=''
+    last_alert_directive_type=''
     for directive in unique_directive_list:
-        if last_directive_type!=directive.directive_type:
-            directive_content+=directive.directive_type
-            directive_content+='\n'
-            directive_content+=directive.directive
-        else:
-            directive_content+=directive.directive  
-        if unique_directive_list.index(directive) != len(unique_directive_list)-1:
-            directive_content+='\n\n'
+        if directive.show_on_print==0 :
+            if last_directive_type!=directive.directive_type:
+                directive_content+=directive.directive_type
+                directive_content+='\n'
+                directive_content+=directive.directive
+            else:
+                directive_content+=directive.directive  
+            if unique_directive_list.index(directive) != len(unique_directive_list)-1:
+                directive_content+='\n\n'
+            last_directive_type=directive.directive_type     
+        elif directive.show_on_print==1:
+            if last_print_directive_type!=directive.directive_type:
+                print_directive_content+=directive.directive_type
+                print_directive_content+='\n'
+                print_directive_content+=directive.directive
+            else:
+                print_directive_content+=directive.directive  
+            if unique_directive_list.index(directive) != len(unique_directive_list)-1:
+                print_directive_content+='\n\n'
+            last_print_directive_type=directive.directive_type
         if directive.show_as_alert==1:
 
-            if last_directive_type!=directive.directive_type:
+            if last_alert_directive_type!=directive.directive_type:
                 alert_content+= '<b>'+directive.directive_type+'</b>'
                 alert_content+='<br>'
                 alert_content+="<br />".join(directive.directive.split("\n"))  
@@ -98,14 +112,20 @@ def get_directive(self,method):
                 alert_content+="<br />".join(directive.directive.split("\n"))  
             if unique_directive_list.index(directive) != len(unique_directive_list)-1:
                 alert_content+='<br><br>'     
-        last_directive_type=directive.directive_type             
+        last_alert_directive_type=directive.directive_type             
+    
     if len(directive_content)>0:
         self.directive_art=directive_content
     else:
         self.directive_art=None
+ 
+    if len(print_directive_content)>0:
+        self.directive_print_art=print_directive_content
+    else:
+        self.directive_print_art=None        
+ 
     if len(alert_content)>0:
         frappe.msgprint(msg= _(alert_content),title= _('Directive Alert'),indicator= 'orange')     
-
 
 # def get_entity_directive(doctype,entity_type,entity_name):
 #     directive = frappe.db.sql("""
@@ -170,7 +190,7 @@ def get_child_groups(group_type, group_name):
 
 def get_only_entity_directive(doctype,entity_type,entity_name):
     directive = frappe.db.sql("""
-SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
 FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
 where doctypes.directive_doctype = %s
 and directive.disabled =0
@@ -182,7 +202,7 @@ and (directive.apply_for_items is NULL  or directive.apply_for_items ='')""", (d
 def get_only_entity_group_directive(doctype,group_type,group_name):
     result_directive=[]
     directives = frappe.db.sql("""
-SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive,directive.apply_for_value
+SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive,directive.apply_for_value
 FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
 where doctypes.directive_doctype ='%s'
 and directive.disabled =0
@@ -200,7 +220,7 @@ and (directive.apply_for_items is NULL  or directive.apply_for_items ='')
 def get_combined_entity_item_directive(doctype,entity_type,entity_name,entity_group_type,entity_group_type_name,item_name,item_group_name):
     result_directive=[]
     item_entity_directives=frappe.db.sql("""
-            SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+            SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
             where doctypes.directive_doctype = '%s'
             and directive.disabled =0
@@ -211,7 +231,7 @@ def get_combined_entity_item_directive(doctype,entity_type,entity_name,entity_gr
 """ %(doctype,entity_type,entity_name,item_name),as_dict=True)
 
     item_entity_group_directives=frappe.db.sql("""
-            SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+            SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
             where doctypes.directive_doctype = '%s'
             and directive.disabled =0
@@ -225,7 +245,7 @@ def get_combined_entity_item_directive(doctype,entity_type,entity_name,entity_gr
 """ %(doctype,entity_group_type,entity_group_type,entity_group_type,entity_group_type_name,entity_group_type,entity_group_type_name,item_name),as_dict=True)
 
     item_group_entity_directive=frappe.db.sql("""
-            SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+            SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
             where doctypes.directive_doctype = '%s'
             and directive.disabled =0
@@ -241,7 +261,7 @@ def get_combined_entity_item_directive(doctype,entity_type,entity_name,entity_gr
 """ %(doctype,entity_type,entity_name,item_group_name,item_group_name),as_dict=True)
 
     item_group_entity_group_directive=frappe.db.sql("""
-            SELECT  directive.directive_name,directive.show_as_alert,directive.directive_type,directive.directive
+            SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
             where doctypes.directive_doctype = '%s'
             and directive.disabled =0

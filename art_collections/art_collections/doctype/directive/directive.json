@@ -58,7 +58,7 @@
    "reqd": 1
   },
   {
-   "description": "Filter On DocType :  QN,SO,DN,SI,PR,PI,SQ,RFQ",
+   "description": "Filter On DocType :  QN,SO,DN,SI,PR,PO,PI,SQ,RFQ",
    "fieldname": "show_directive_on_doctypes_art",
    "fieldtype": "Table",
    "label": "Show Directive on Doctypes",
@@ -125,7 +125,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-05 14:29:05.361062",
+ "modified": "2022-04-07 12:26:06.551261",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

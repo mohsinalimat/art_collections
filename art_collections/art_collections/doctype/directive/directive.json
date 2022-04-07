@@ -116,7 +116,7 @@
   },
   {
    "default": "0",
-   "description": "checked > shown in Directive on Print (directive_print_cf)\nunchecked > shown in Internal Directive (directive_cf)",
+   "description": "checked &gt; shown in 'Print Directive' <br>\nunchecked &gt; shown in 'Internal Directive'",
    "fieldname": "show_on_print",
    "fieldtype": "Check",
    "label": "Show on Print",
@@ -125,7 +125,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-07 12:26:06.551261",
+ "modified": "2022-04-07 12:33:41.869376",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

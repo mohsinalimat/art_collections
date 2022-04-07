@@ -145,7 +145,8 @@ doc_events = {
             # "art_collections.purchase_order_controller.purchase_order_update_delivery_date_of_item",
             # "art_collections.purchase_order_controller.purchase_order_update_schedule_date_of_item",
         ],
-        "validate": "art_collections.purchase_order_controller.purchase_order_custom_validation",
+        "validate": ["art_collections.purchase_order_controller.purchase_order_custom_validation",
+        "art_collections.directive_controller.get_directive"]
     },
     "Supplier Quotation": {
         "validate": [

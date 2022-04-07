@@ -40,7 +40,7 @@ def get_directive(self,method):
             entity_group_type='Customer Group',entity_group_type_name=customer_group,item_name=item.item_code,item_group_name=item.item_group)
             directive_list.append(combined_entity_item_directive)            
      
-    elif self.doctype=='Purchase Receipt' or self.doctype=='Purchase Invoice' or self.doctype=='Supplier Quotation':
+    elif self.doctype=='Purchase Receipt' or self.doctype=='Purchase Invoice' or self.doctype=='Purchase Order' or self.doctype=='Supplier Quotation':
         supplier_group=frappe.db.get_value('Supplier', self.supplier, 'supplier_group')
         supplier_only_directive=get_only_entity_directive(self.doctype,'Supplier',self.supplier)
         supplier_group_only_directive=get_only_entity_group_directive(self.doctype,'Supplier Group',supplier_group)

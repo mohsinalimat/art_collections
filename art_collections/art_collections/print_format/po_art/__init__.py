@@ -32,8 +32,8 @@ def get_print_context(name):
             i.customs_tariff_number ,
             poi.qty, 
             poi.stock_uom , 
-            poi.base_net_rate , 
-            poi.base_net_amount ,
+            poi.net_rate , 
+            poi.net_amount ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
                 else concat('{}/',i.image) end image

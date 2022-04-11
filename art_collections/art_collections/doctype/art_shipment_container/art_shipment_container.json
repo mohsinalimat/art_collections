@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-04-09 08:38:09.284088",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "container_name",
+  "type_of_reception",
+  "total_outer_qty",
+  "total_weight_kg",
+  "total_cbm",
+  "arrival_forecast_date",
+  "arrival_forecast_hour"
+ ],
+ "fields": [
+  {
+   "fieldname": "container_name",
+   "fieldtype": "Data",
+   "label": "Container Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "type_of_reception",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type of Reception",
+   "options": "\nFCL\nLCL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_outer_qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Outer Qty"
+  },
+  {
+   "fieldname": "total_weight_kg",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Weight (Kg"
+  },
+  {
+   "fieldname": "total_cbm",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total CBM (m3)",
+   "precision": "3"
+  },
+  {
+   "fieldname": "arrival_forecast_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Arrival Forecast Date"
+  },
+  {
+   "fieldname": "arrival_forecast_hour",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Arrival Forecast Hour"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-04-09 08:38:09.284088",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Art Shipment Container",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

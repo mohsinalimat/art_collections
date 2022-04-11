@@ -7,7 +7,9 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "supplier",
   "supplier_packing_list_detail",
+  "spl_unknown_item",
   "total_qty_of_stock_uom",
   "total_outer_qty",
   "total_cbm"
@@ -41,11 +43,24 @@
    "label": "Total CBM (m3)",
    "precision": "3",
    "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "spl_unknown_item",
+   "fieldtype": "Table",
+   "label": "SPL Unknown Item",
+   "options": "SPL Unknown Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-01 07:46:45.454326",
+ "modified": "2022-04-09 08:52:34.346584",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

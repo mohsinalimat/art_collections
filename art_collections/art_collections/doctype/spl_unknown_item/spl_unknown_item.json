@@ -1,0 +1,125 @@
+{
+ "actions": [],
+ "creation": "2022-04-09 08:51:44.187235",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "supplier_item_code",
+  "purchase_order",
+  "po_item",
+  "stock_uom",
+  "inner_conversion_factor",
+  "outer_conversion_factor",
+  "qty_of_outer",
+  "qty_of_stock_uom",
+  "outer_thickness",
+  "outer_width",
+  "cbm_per_outer",
+  "weight_per_outer",
+  "total_weight",
+  "total_cbm"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "fieldname": "supplier_item_code",
+   "fieldtype": "Data",
+   "label": "Supplier item code"
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Artyfetes Purchase order code",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "po_item",
+   "fieldtype": "Data",
+   "label": "PO Item"
+  },
+  {
+   "fieldname": "stock_uom",
+   "fieldtype": "Data",
+   "label": "Stock UOM"
+  },
+  {
+   "fieldname": "inner_conversion_factor",
+   "fieldtype": "Float",
+   "label": "Inner conversion factor"
+  },
+  {
+   "fieldname": "outer_conversion_factor",
+   "fieldtype": "Float",
+   "label": "Outer conversion factor"
+  },
+  {
+   "fieldname": "qty_of_outer",
+   "fieldtype": "Data",
+   "label": "Qty of outer"
+  },
+  {
+   "description": "Weight per outer",
+   "fieldname": "qty_of_stock_uom",
+   "fieldtype": "Data",
+   "label": "Qty of stock uom"
+  },
+  {
+   "fieldname": "outer_thickness",
+   "fieldtype": "Data",
+   "label": "Outer Thickness"
+  },
+  {
+   "fieldname": "outer_width",
+   "fieldtype": "Data",
+   "label": "outer width"
+  },
+  {
+   "fieldname": "cbm_per_outer",
+   "fieldtype": "Data",
+   "label": "CBM per outer"
+  },
+  {
+   "fieldname": "weight_per_outer",
+   "fieldtype": "Data",
+   "label": "Weight per outer"
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Data",
+   "label": "total weight"
+  },
+  {
+   "fieldname": "total_cbm",
+   "fieldtype": "Data",
+   "label": "total CBM"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-04-09 08:51:44.187235",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "SPL Unknown Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

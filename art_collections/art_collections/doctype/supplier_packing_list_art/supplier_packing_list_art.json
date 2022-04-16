@@ -16,6 +16,7 @@
  ],
  "fields": [
   {
+   "allow_bulk_edit": 1,
    "fieldname": "supplier_packing_list_detail",
    "fieldtype": "Table",
    "label": "Supplier Packing List Detail",
@@ -60,7 +61,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-09 08:52:34.346584",
+ "modified": "2022-04-16 09:26:42.855826",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

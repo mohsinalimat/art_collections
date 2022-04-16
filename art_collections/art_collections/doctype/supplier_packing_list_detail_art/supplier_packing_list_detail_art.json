@@ -9,7 +9,6 @@
   "item_code",
   "item_name",
   "supplier_item_code",
-  "supplier",
   "purchase_order",
   "po_item_code",
   "stock_uom",
@@ -17,6 +16,7 @@
   "outer_conversion_factor",
   "qty_of_outer",
   "qty_of_stock_uom",
+  "qty_as_per_spl",
   "outer_thickness",
   "outer_width",
   "outer_height",
@@ -31,6 +31,7 @@
   {
    "fieldname": "item_code",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Item Code",
    "options": "Item",
    "reqd": 1
@@ -46,14 +47,6 @@
    "fieldname": "supplier_item_code",
    "fieldtype": "Data",
    "label": "Supplier Item Code"
-  },
-  {
-   "fieldname": "supplier",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Supplier",
-   "options": "Supplier",
-   "reqd": 1
   },
   {
    "fieldname": "purchase_order",
@@ -78,11 +71,13 @@
   {
    "fieldname": "inner_conversion_factor",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Inner Conversion Factor"
   },
   {
    "fieldname": "outer_conversion_factor",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Outer Conversion Factor"
   },
   {
@@ -149,12 +144,17 @@
    "label": "Container",
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "qty_as_per_spl",
+   "fieldtype": "Float",
+   "label": "Qty as per SPL"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-04-01 07:50:34.756541",
+ "modified": "2022-04-15 06:56:42.847829",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Detail Art",

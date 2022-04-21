@@ -9,12 +9,11 @@
   "item_name",
   "supplier_item_code",
   "purchase_order",
-  "po_item",
   "stock_uom",
   "inner_conversion_factor",
   "outer_conversion_factor",
   "qty_of_outer",
-  "qty_of_stock_uom",
+  "qty_as_per_spl",
   "outer_thickness",
   "outer_width",
   "cbm_per_outer",
@@ -25,10 +24,9 @@
  "fields": [
   {
    "fieldname": "item_code",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Item Code",
-   "options": "Item"
+   "label": "Item Code"
   },
   {
    "fetch_from": "item_code.item_name",
@@ -45,14 +43,8 @@
   },
   {
    "fieldname": "purchase_order",
-   "fieldtype": "Link",
-   "label": "Artyfetes Purchase order code",
-   "options": "Purchase Order"
-  },
-  {
-   "fieldname": "po_item",
    "fieldtype": "Data",
-   "label": "PO Item"
+   "label": "Artyfetes Purchase order code"
   },
   {
    "fieldname": "stock_uom",
@@ -73,12 +65,6 @@
    "fieldname": "qty_of_outer",
    "fieldtype": "Data",
    "label": "Qty of outer"
-  },
-  {
-   "description": "Weight per outer",
-   "fieldname": "qty_of_stock_uom",
-   "fieldtype": "Data",
-   "label": "Qty of stock uom"
   },
   {
    "fieldname": "outer_thickness",
@@ -109,12 +95,18 @@
    "fieldname": "total_cbm",
    "fieldtype": "Data",
    "label": "total CBM"
+  },
+  {
+   "description": "Weight per outer",
+   "fieldname": "qty_as_per_spl",
+   "fieldtype": "Data",
+   "label": "Qty as per SPL"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-04-09 08:51:44.187235",
+ "modified": "2022-04-21 09:30:28.441763",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "SPL Unknown Item",

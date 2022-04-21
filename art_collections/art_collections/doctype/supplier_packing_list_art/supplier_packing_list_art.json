@@ -12,7 +12,10 @@
   "spl_unknown_item",
   "total_qty_of_stock_uom",
   "total_outer_qty",
-  "total_cbm"
+  "total_cbm",
+  "section_break_7",
+  "import_log",
+  "import_log_preview"
  ],
  "fields": [
   {
@@ -20,8 +23,7 @@
    "fieldname": "supplier_packing_list_detail",
    "fieldtype": "Table",
    "label": "Supplier Packing List Detail",
-   "options": "Supplier Packing List Detail Art",
-   "reqd": 1
+   "options": "Supplier Packing List Detail Art"
   },
   {
    "fieldname": "total_qty_of_stock_uom",
@@ -57,11 +59,25 @@
    "fieldtype": "Table",
    "label": "SPL Unknown Item",
    "options": "SPL Unknown Item"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "import_log",
+   "fieldtype": "Code",
+   "label": "Upload Log"
+  },
+  {
+   "fieldname": "import_log_preview",
+   "fieldtype": "HTML",
+   "label": "Upload Log Preview"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-16 09:26:42.855826",
+ "modified": "2022-04-21 13:04:57.229549",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

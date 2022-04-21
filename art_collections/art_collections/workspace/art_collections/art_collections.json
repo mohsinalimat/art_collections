@@ -315,6 +315,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Supplier Packing List",
+   "link_to": "Supplier Packing List Art",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Port",
    "link_to": "Port Art",
    "link_type": "DocType",
@@ -374,7 +383,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-03-22 08:12:50.629159",
+ "modified": "2022-04-16 08:44:38.482362",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

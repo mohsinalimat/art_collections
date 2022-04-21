@@ -38,7 +38,7 @@ def get_print_context(name):
             soi.base_net_amount , 
             soi.stock_uom_rate ,
             i.customs_tariff_number ,
-            ucd.conversion_factor ,
+            soi.conversion_factor ,
             if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
@@ -51,14 +51,7 @@ def get_print_context(name):
             and tib.idx  = (
                 select min(idx) from `tabItem Barcode` tib2
                 where parent = i.name
-            )
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' 
-            and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )        
+            )       
         where 
             soi.parent = %(name)s
     """,

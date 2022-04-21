@@ -19,7 +19,7 @@ import frappe
 def get_print_context(name):
     doc = frappe.get_doc("Purchase Order", name)
 
-    ctx = {"doc": {}}
+    ctx = {"doc": doc}
 
     ctx["items"] = list(
         frappe.db.sql(
@@ -44,14 +44,7 @@ def get_print_context(name):
             and tib.idx  = (
                 select min(idx) from `tabItem Barcode` tib2
                 where parent = i.name
-            )
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' 
-            and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )   
+            )  
         where poi.parent = %(name)s
     """,
             dict(name=name),

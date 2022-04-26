@@ -67,18 +67,6 @@ frappe.ui.form.on("Purchase Order Item", {
 
 
 		}
-		// if (row.item_code && frm.doc.supplier) {
-		// 	frappe.db.get_value('Supplier Item Directive', { supplier: frm.doc.supplier, item_code: row.item_code }, ['remarks', 'name'])
-		// 		.then(r => {
-		// 			if (r.message) {
-		// 				let remarks = r.message.remarks
-		// 				let supplier_item_directive_link = r.message.name
-		// 				row.supplier_item_directive_link_cf = supplier_item_directive_link
-		// 				row.supplier_item_directive_art = remarks
-		// 			}
-		// 		})
-
-		// }
 	},
 	shipping_date_art: function(frm, cdt, cdn) {
 		var row = locals[cdt][cdn];

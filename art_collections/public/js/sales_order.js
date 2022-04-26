@@ -141,22 +141,22 @@ frappe.ui.form.on('Sales Order', {
 
 
 });
-frappe.ui.form.on("Sales Order Item", {
-	item_code: function (frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
-		console.log('row', row)
-		if (row.item_code && frm.doc.customer) {
-			frappe.db.get_value('Customer Item Directive', { customer: frm.doc.customer, item_code: row.item_code }, 'remarks')
-				.then(r => {
-					if (r.message) {
-						let remarks = r.message.remarks
-						row.customer_item_directive_art = remarks
-					}
-				})
+// frappe.ui.form.on("Sales Order Item", {
+// 	item_code: function (frm, cdt, cdn) {
+// 		var row = locals[cdt][cdn];
+// 		console.log('row', row)
+// 		if (row.item_code && frm.doc.customer) {
+// 			frappe.db.get_value('Customer Item Directive', { customer: frm.doc.customer, item_code: row.item_code }, 'remarks')
+// 				.then(r => {
+// 					if (r.message) {
+// 						let remarks = r.message.remarks
+// 						row.customer_item_directive_art = remarks
+// 					}
+// 				})
 
-		}
-	}
-});
+// 		}
+// 	}
+// });
 
 
 function create_warning_dialog_for_inner_qty_check(frm) {

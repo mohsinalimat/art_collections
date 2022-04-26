@@ -5469,14 +5469,14 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2022-03-15 06:05:52.208485",
+   "creation": "2022-04-26 15:31:53.454237",
    "default_value": null,
    "doc_type": "Item",
    "docstatus": 0,
    "doctype_or_field": "DocType",
    "field_name": null,
    "idx": 0,
-   "modified": "2022-03-15 06:05:52.208485",
+   "modified": "2022-04-26 15:31:53.454237",
    "modified_by": "Administrator",
    "name": "Item-main-links_order",
    "owner": "Administrator",
@@ -5486,7 +5486,7 @@
    "property": "links_order",
    "property_type": "Small Text",
    "row_name": null,
-   "value": "[\"59ba5aa97f\", \"c96b189f65\"]"
+   "value": "[\"59ba5aa97f\"]"
   },
   {
    "_assign": null,

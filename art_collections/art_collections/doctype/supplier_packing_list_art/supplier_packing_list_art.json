@@ -15,7 +15,8 @@
   "total_cbm",
   "section_break_7",
   "import_log",
-  "import_log_preview"
+  "import_log_preview",
+  "amended_from"
  ],
  "fields": [
   {
@@ -73,11 +74,21 @@
    "fieldname": "import_log_preview",
    "fieldtype": "HTML",
    "label": "Upload Log Preview"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Supplier Packing List Art",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2022-04-21 13:04:57.229549",
+ "modified": "2022-04-26 10:28:41.119567",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

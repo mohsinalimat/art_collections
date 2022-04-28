@@ -22,6 +22,8 @@ SELECT
 item.name,
 item.item_code ,
 item.item_name,  
+item.disabled,
+item.is_stock_item,
 item.is_sales_item ,
 item.is_purchase_item ,
 ucd.conversion_factor as inner_conversion_factor,
@@ -115,7 +117,7 @@ where SI.docstatus = 1
 and (SI.posting_date BETWEEN %(month_start_date)s and %(month_end_date)s)
 group by SI_item.item_code )
 SELECT 
-col_supplier.supplier,fn.item_code,fn.item_name,col_catalogue_type.catalogue_type,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
+col_supplier.supplier,fn.item_code,fn.item_name,col_catalogue_type.catalogue_type,fn.disabled,fn.is_stock_item,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
 CONCAT(col_j.notion_ca,' ',col_k.notion_qty) as best_amt_qty,
 col_i.qty_sold_in_financial_year,
 col_j.revenue_for_last_12_months,
@@ -173,6 +175,18 @@ def get_columns(filters):
 			"fieldname": "catalogue_type",
 			"width": 200
 		},	
+        {
+            "label": _("Desabled"),
+            "fieldtype": "Int",
+            "fieldname": "disabled",
+            "width": 50
+        },      
+        {
+            "label": _("Maintain Stock"),
+            "fieldtype": "Int",
+            "fieldname": "is_stock_item",
+            "width": 50
+        }, 		
 		{
 			"label": _("Is Sales Item"),
 			"fieldtype": "Int",

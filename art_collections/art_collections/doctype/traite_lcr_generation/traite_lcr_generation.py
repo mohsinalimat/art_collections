@@ -207,7 +207,7 @@ TRAITE_LCR_TSV = """
 TRAITE_LCR_TSV_HEADER = """select 
                 '03'rcode, 
                 '60'ocode,
-                LPAD(CAST(1+ROW_NUMBER() over (order by creation) as CHAR),8,'0') rec_num,
+                LPAD('1',8,'0') rec_num,
                 DATE_FORMAT(NOW(),'%%d%%m%%y') submission_date,
                 SUBSTR(LPAD(coalesce(company,''),24,'~'),1,24) company, 
                 SUBSTR(LPAD(coalesce(bank,''),24,'~'),1,24) bank, 

@@ -30,18 +30,20 @@ class TraiteLCRGeneration(Document):
         f = StringIO()
 
         # header
-        tsv, data = get_tsv(
+        data = get_records(
             "Traite LCR TSV Header",
             {
                 "submission_date": self.generation_date,
                 "bank_account": self.company_bank_account,
             },
         )
+        tsv = get_header(data)
         f.write(tsv)
         f.write("\n")
 
         # lines from query report
-        tsv, data = get_tsv("Traite LCR TSV", {"generation_date": self.generation_date})
+        data = get_records("Traite LCR TSV", {"generation_date": self.generation_date})
+        tsv = get_lines(data)
         if data:
             f.write(tsv)
             f.write("\n")
@@ -53,7 +55,7 @@ class TraiteLCRGeneration(Document):
                 "08",
                 "60",
                 cstr(len(data) + 1).rjust(8, "0")[:8],
-                "~" * 90,
+                " " * 90,
                 cstr(total).rjust(12, "0")[:12],
             )
         )
@@ -71,17 +73,19 @@ class TraiteLCRGeneration(Document):
                 "doctype": "File",
                 "file_name": "{}.csv".format(self.name),
                 "is_private": 1,
-                "content": self.tsv_file_data,
+                "content": self.tsv_file_data.replace("~", ""),
             }
         )
         _file.save()
         self.tsv_file = _file.file_url
 
 
-def get_tsv(report_name, filters):
+def get_records(
+    report_name,
+    filters,
+):
     sql = frappe.db.get_value("Report", report_name, "query")
-    data = frappe.db.sql(sql, filters, as_dict=True)
-    return "\n".join(["".join(d.values()) for d in data]), data
+    return frappe.db.sql(sql, filters, as_dict=True)
 
 
 def check_reports_exist():
@@ -175,24 +179,20 @@ TRAITE_LCR_TSV = """
         select
                 '06'rcode, 
                 '60'ocode,
-                LPAD(CAST(1+ROW_NUMBER() over (order by creation) as CHAR),8,'0') rec_num,
-                REPEAT('~',18) _18,
-                SUBSTR(LPAD(coalesce(customer_name,''),24,'~'),1,24) customer_name, 
-                SUBSTR(LPAD(coalesce(bank_art,''),24,'~'),1,24) bank_art, 
+                1+ROW_NUMBER() over (order by creation) rec_num,
+                customer_name, 
+                bank_art, 
                 case 
                     when mode_of_payment_art = 'LCR' THEN 1
                     when mode_of_payment_art = 'Traite' THEN 0
                     else 'X' end mode_of_payment_art,
-                REPEAT('~',2) _2,
-                SUBSTR(LPAD(coalesce(establishment_code_art,''),5,'~'),1,5) establishment_code_art, 
-                SUBSTR(LPAD(coalesce(branch_code_art,''),5,'~'),1,5) branch_code_art, 
-                SUBSTR(LPAD(coalesce(bank_account_no_art,''),11,'~'),1,11) bank_account_no_art, 
-                SUBSTR(LPAD(''+(base_grand_total*100),12,'0'),1,12) base_grand_total,
-                REPEAT('~',4) _4,
+                establishment_code_art, 
+                branch_code_art, 
+                bank_account_no_art, 
+                cast(base_grand_total*100 as int) base_grand_total,
                 DATE_FORMAT(due_date,'%%d%%m%%y') due_date,
                 DATE_FORMAT(creation,'%%d%%m%%y') creation,
-                REPEAT('~',20) _20,
-                SUBSTR(LPAD(coalesce(customer,''),10,'~'),1,10) customer
+                customer
         from `tabSales Invoice` tsi
         where 
             tsv_generated_cf = 0 
@@ -207,14 +207,82 @@ TRAITE_LCR_TSV = """
 TRAITE_LCR_TSV_HEADER = """select 
                 '03'rcode, 
                 '60'ocode,
-                LPAD('1',8,'0') rec_num,
+                1 rec_num,
                 DATE_FORMAT(NOW(),'%%d%%m%%y') submission_date,
-                SUBSTR(LPAD(coalesce(company,''),24,'~'),1,24) company, 
-                SUBSTR(LPAD(coalesce(bank,''),24,'~'),1,24) bank, 
-                '3' type_of_input, 'E' currency_code, 
-                SUBSTR(LPAD(coalesce(establishment_code_art,''),5,'~'),1,5) establishment_code_art, 
-                SUBSTR(LPAD(coalesce(branch_code,''),5,'~'),1,5) branch_code, 
-                SUBSTR(LPAD(coalesce(bank_account_no,''),5,'~'),1,5) bank_account_no 
+                company, 
+                bank, 
+                '3' type_of_input, 
+                'E' currency_code, 
+                establishment_code_art, 
+                branch_code, 
+                bank_account_no 
         from `tabBank Account` tba 
         where name = %(bank_account)s
 """
+
+
+def get_header(data):
+    fmt = {
+        "rcode": "03",
+        "ocode": "60",
+        "rec_num": "00000001",
+        "filler1": " " * 12,
+        "submission_date": 6,
+        "company": 24,
+        "bank": 24,
+        "type_of_input": "3 ",
+        "currency_code": 1,
+        "establishment_code_art": 5,
+        "branch_code": 5,
+        "bank_account_no": 11,
+    }
+    out = ""
+    for d in data:
+        for col in fmt:
+            if isinstance(fmt[col], str):
+                out = out + fmt[col]
+            elif col == "bank_account_no":
+                out = out + cstr(d.get(col)).rjust(fmt[col], "0")
+            else:
+                out = out + cstr(d.get(col)).ljust(fmt[col], " ")
+    return out
+
+
+def get_lines(data):
+    fmt = {
+        "rcode": "06",
+        "ocode": "60",
+        "rec_num": 8,
+        "filler_1": " " * 18,
+        "customer_name": 24,
+        "bank_art": 24,
+        "mode_of_payment_art": 1,
+        "filler_2": " " * 2,
+        "establishment_code_art": 5,
+        "branch_code_art": 5,
+        "bank_account_no_art": 11,
+        "base_grand_total": 12,
+        "filler_3": " " * 4,
+        "due_date": 6,
+        "creation": 6,
+        "filler_4": " " * 20,
+        "customer": 10,
+    }
+    out = ""
+    for d in data:
+        for col in fmt:
+            if isinstance(fmt[col], str):
+                out = out + fmt[col]
+            elif col in (
+                "rec_num",
+                "base_grand_total",
+            ):
+                out = out + cstr(d.get(col)).rjust(fmt[col], "0")
+            elif col in (
+                "bank_account_no_art",
+                "customer",
+            ):
+                out = out + cstr(d.get(col)).rjust(fmt[col], " ")
+            else:
+                out = out + cstr(d.get(col)).ljust(fmt[col], " ")
+    return out

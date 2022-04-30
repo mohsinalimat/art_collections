@@ -277,12 +277,12 @@ def get_lines(data):
                 "rec_num",
                 "base_grand_total",
             ):
-                out = out + cstr(d.get(col)).rjust(fmt[col], "0")
+                out = out + cstr(d.get(col)).rjust(fmt[col], "0")[: fmt[col]]
             elif col in (
                 "bank_account_no_art",
                 "customer",
             ):
-                out = out + cstr(d.get(col)).rjust(fmt[col], " ")
+                out = out + cstr(d.get(col)).rjust(fmt[col], " ")[: fmt[col]]
             else:
-                out = out + cstr(d.get(col)).ljust(fmt[col], " ")
+                out = out + cstr(d.get(col)).ljust(fmt[col], " ")[: fmt[col]]
     return out

@@ -54,7 +54,7 @@ class TraiteLCRGeneration(Document):
             (
                 "08",
                 "60",
-                cstr(len(data) + 1).rjust(8, "0")[:8],
+                cstr(len(data) + 2).rjust(8, "0")[:8],
                 " " * 90,
                 cstr(total).rjust(12, "0")[:12],
             )

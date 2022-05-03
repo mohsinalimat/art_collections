@@ -57,6 +57,7 @@ class TraiteLCRGeneration(Document):
                 cstr(len(data) + 2).rjust(8, "0")[:8],
                 " " * 90,
                 cstr(total).rjust(12, "0")[:12],
+                " " * 46,
             )
         )
         f.write(footer)
@@ -245,6 +246,8 @@ def get_header(data):
                 out = out + cstr(d.get(col)).rjust(fmt[col], "0")
             else:
                 out = out + cstr(d.get(col)).ljust(fmt[col], " ")
+
+    out = out + " " * 58
     return out
 
 

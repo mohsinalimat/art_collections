@@ -25,7 +25,7 @@ def sales_order_custom_validation(self, method):
         valiate_payment_terms_and_credit_limit_for_customer(self)
         validate_inner_qty_and_send_notification(self)
         update_total_saleable_qty(self)
-        get_directive(self)
+        get_directive(self,method)
 
 
 def update_total_saleable_qty(self, method=None):

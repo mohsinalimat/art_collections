@@ -16,6 +16,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from frappe.utils import cint, get_site_url, get_url
+from art_collections.directive_controller import get_directive
 
 
 def sales_order_custom_validation(self, method):
@@ -23,6 +24,8 @@ def sales_order_custom_validation(self, method):
         validate_minimum_order_amount_as_per_customer_group(self)
         valiate_payment_terms_and_credit_limit_for_customer(self)
         validate_inner_qty_and_send_notification(self)
+        update_total_saleable_qty(self)
+        get_directive(self)
 
 
 def update_total_saleable_qty(self, method=None):

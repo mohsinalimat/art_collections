@@ -124,8 +124,8 @@ doc_events = {
     "Sales Order": {
         "validate": [
             "art_collections.sales_order_controller.sales_order_custom_validation",
-            "art_collections.sales_order_controller.update_total_saleable_qty",
-            "art_collections.directive_controller.get_directive",
+            # "art_collections.sales_order_controller.update_total_saleable_qty",
+            # "art_collections.directive_controller.get_directive",
         ],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",

@@ -123,16 +123,17 @@ doc_events = {
     },
     "Sales Order": {
         "validate": [
-            "art_collections.directive_controller.get_directive",
+            "art_collections.sales_order_controller.sales_order_custom_validation",
             "art_collections.sales_order_controller.update_total_saleable_qty",
+            "art_collections.directive_controller.get_directive",
         ],
         "on_submit": [
             "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.controllers.excel.sales_order.on_submit_sales_order",
         ],
-        "on_update": [
-            "art_collections.sales_order_controller.sales_order_custom_validation",
-        ],
+        # "on_update": [
+        #     "art_collections.sales_order_controller.sales_order_custom_validation",
+        # ],
     },
     "Purchase Order": {
         "on_submit": [

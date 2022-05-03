@@ -2,6 +2,10 @@ frappe.ui.form.on('Pick List', {
 	refresh: (frm) => {	
 		// it is required to trigger our custom 'add_get_items_button'
 		frm.remove_custom_button('Get Items');
+        if (frm.is_new()==undefined && frm.doc.docstatus == 0 && frm.doc.locations!=undefined && frm.doc.locations.length>1) {
+                frm.add_custom_button(__('Optimize Path'),
+                    () => frm.events.sort_as_per_warehouse(frm));
+        }		
 	},
 	setup: (frm) => {
 		frappe.db.get_single_value('Art Collections Settings', 'picker_role')
@@ -15,6 +19,35 @@ frappe.ui.form.on('Pick List', {
 					});
 				}
 			})
+	},
+	sort_as_per_warehouse: function (frm) {
+
+		function dynamicSort(property) {
+			var sortOrder = 1;
+			if(property[0] === "-") {
+				sortOrder = -1;
+				property = property.substr(1);
+			}
+			return function (a,b) {
+				/* next line works with strings and numbers, 
+				 * and you may want to customize it to your needs
+				 */
+				var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+				return result * sortOrder;
+			}
+		}
+
+		let locations = frm.doc.locations
+		locations.sort(dynamicSort('warehouse'))
+		frm.clear_table('locations')
+		for (const key in locations) {
+			if (Object.hasOwnProperty.call(locations, key)) {
+				const element = locations[key];
+				frm.add_child('locations',element)
+				
+			}
+		}
+		frm.save()		
 	},
 	add_get_items_button: (frm) => {
 		let purpose = frm.doc.purpose;

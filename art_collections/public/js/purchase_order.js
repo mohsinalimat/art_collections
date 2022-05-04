@@ -1,7 +1,7 @@
 frappe.ui.form.on('Purchase Order', {
-	onload: function(frm) {
+	onload: function (frm) {
 		set_shipping_date(frm);
-	},		
+	},
 	after_save: function (frm) {
 		if (frm.doc.supplier) {
 			frappe.db.get_value('Supplier', frm.doc.supplier, 'minimum_order_amount_art')
@@ -25,33 +25,38 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 	refresh: function (frm) {
-		frm.add_custom_button(
-			__("Product Excel"),
-			function () {
-				frappe.call({
-					method: "art_collections.purchase_order_controller._make_excel_attachment",
-					args: {
-						docname: frm.doc.name,
-						doctype: frm.doc.doctype,
-					},
-					callback: function () {
-						frm.reload_doc();
-					},
-				});
-			},
-			__("Create")
-		);
+		if (frm.page.get_inner_group_button(__('Create')).length == 0) {
+			frm.add_custom_button(
+				__("Product Excel"),
+				function () {
+					frappe.call({
+						method: "art_collections.controllers.excel.purchase_order._make_excel_attachment",
+						args: {
+							docname: frm.doc.name,
+							doctype: frm.doc.doctype,
+						},
+						callback: function () {
+							frm.reload_doc();
+						},
+					});
+				},
+				__("Create")
+			);
+		}
 
 	},
-	validate: function(frm) {
-		set_shipping_date(frm);
-	},	
-	items_on_form_rendered: function(frm) {
+
+	validate: function (frm) {
 		set_shipping_date(frm);
 	},
-	shipping_date_art: function(frm) {
+
+	items_on_form_rendered: function (frm) {
 		set_shipping_date(frm);
-	}	
+	},
+
+	shipping_date_art: function (frm) {
+		set_shipping_date(frm);
+	}
 
 });
 
@@ -68,22 +73,22 @@ frappe.ui.form.on("Purchase Order Item", {
 
 		}
 	},
-	shipping_date_art: function(frm, cdt, cdn) {
+	shipping_date_art: function (frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
 		if (row.shipping_date_art) {
-			if(!frm.doc.shipping_date_art) {
+			if (!frm.doc.shipping_date_art) {
 				// copy child table value
 				erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "shipping_date_art");
 			} else {
 				set_shipping_date(frm);
 			}
 		}
-	}	
+	}
 
 });
 
 function set_shipping_date(frm) {
-	if(frm.doc.shipping_date_art){
+	if (frm.doc.shipping_date_art) {
 		erpnext.utils.copy_value_in_all_rows(frm.doc, frm.doc.doctype, frm.doc.name, "items", "shipping_date_art");
 	}
 }

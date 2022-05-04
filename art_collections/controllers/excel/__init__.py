@@ -12,6 +12,7 @@ import xlrd
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
+from openpyxl.drawing.image import Image
 from frappe.utils import cint, get_site_url, get_url
 import frappe
 
@@ -19,13 +20,13 @@ import frappe
 ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
 
 
-def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
+def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None, index=0):
     # from xlsx utils with changes
     column_widths = column_widths or []
     if wb is None:
         wb = openpyxl.Workbook(write_only=True)
 
-    ws = wb.create_sheet(sheet_name, 0)
+    ws = wb.create_sheet(sheet_name, index)
 
     for i, column_width in enumerate(column_widths):
         if column_width:

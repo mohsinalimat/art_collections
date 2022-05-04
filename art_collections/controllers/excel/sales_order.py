@@ -3,12 +3,33 @@ import frappe
 from frappe import _
 import io
 import openpyxl
-from frappe.utils import cint, get_site_url, get_url
+from frappe.utils import cint, get_site_url, get_url, cstr
 from art_collections.controllers.excel import write_xlsx, attach_file
+from openpyxl.drawing.image import Image
+from io import BytesIO
+from openpyxl.utils import get_column_letter
 
 
 def on_submit_sales_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
+
+
+def add_images(data, workbook, worksheet=""):
+    ws = workbook.get_sheet_by_name(worksheet)
+    image_col = get_column_letter(len(data[0]) - 2)
+    for row, d in enumerate(data):
+        if d.image_url:
+            try:
+                item_file = frappe.get_doc("File", {"file_url": d.image_url})
+                image = openpyxl.drawing.image.Image(
+                    io.BytesIO(item_file.get_content())
+                )
+                image.height = 100
+                image.width = 100
+                ws.add_image(image, f"{image_col}{cstr(row+2)}")
+                ws.row_dimensions[row + 2].height = 100
+            except:
+                pass
 
 
 @frappe.whitelist()
@@ -37,7 +58,8 @@ def _make_excel_attachment(doctype, docname):
             tsoi.total_saleable_qty_cf ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
-                else concat('{}/',i.image) end image
+                else concat('{}',i.image) end image ,
+            i.image image_url
         from `tabSales Order` tso 
         inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name
         inner join tabItem i on i.name = tsoi.item_code
@@ -90,6 +112,7 @@ def _make_excel_attachment(doctype, docname):
         _("Rate of Stock UOM (EUR)"),
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
+        _("Photo Link"),
         _("Photo"),
     ]
 
@@ -114,18 +137,19 @@ def _make_excel_attachment(doctype, docname):
     ]
 
     wb = openpyxl.Workbook()
-
     excel_rows = [columns]
     for d in data:
         if d.total_saleable_qty_cf <= d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
-    write_xlsx(excel_rows, "In Stock Items", wb, [20] * len(columns))
+    write_xlsx(excel_rows, "In Stock Items", wb, [20] * len(columns), index=0)
+    add_images(data, workbook=wb, worksheet="In Stock Items")
 
     excel_rows = [columns]
     for d in data:
         if d.total_saleable_qty_cf > d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
-    write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]))
+    write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]), index=1)
+    add_images(data, workbook=wb, worksheet="Out of Stock Items")
 
     discontinued_items = frappe.db.sql(
         """
@@ -140,7 +164,8 @@ def _make_excel_attachment(doctype, docname):
             ucd.conversion_factor , 
             0  pricing_rule_min_qty , 
             0 pricing_rule_rate ,
-            i.is_existing_product_cf 
+            i.is_existing_product_cf ,
+            i.image image_url
         from `tabSales Order` tso 
         inner join `tabSales Order Discountinued Items CT` tsoi on tsoi.parent = tso.name
         inner join tabItem i on i.name = tsoi.item_code
@@ -191,7 +216,8 @@ def _make_excel_attachment(doctype, docname):
     excel_rows = [columns]
     for d in discontinued_items[:]:
         excel_rows.append([d.get(f) for f in fields])
-    write_xlsx(excel_rows, "Discontinued Items", wb, [20] * len(excel_rows[0]))
+    write_xlsx(excel_rows, "Discontinued Items", wb, [20] * len(excel_rows[0]), index=2)
+    add_images(data, workbook=wb, worksheet="Discontinued Items")
 
     # existing art works
     # art_works = frappe.db.sql(

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from locale import currency
 import frappe
 from frappe import _
 import io
@@ -26,12 +27,12 @@ def _make_excel_attachment(doctype, docname):
             i.customs_tariff_number ,
             poi.qty,
             poi.stock_uom , 
-            poi.base_net_rate , 
-			poi.base_net_amount ,
+            poi.rate , 
+			poi.amount ,
             i.is_existing_product_cf ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
-                else concat('{}/',i.image) end image            
+                else concat('{}',i.image) end image            
         from `tabPurchase Order Item` poi
         inner join `tabPurchase Order` po on po.name = poi.parent
         inner join tabItem i on i.name = poi.item_code
@@ -49,6 +50,8 @@ def _make_excel_attachment(doctype, docname):
         # debug=True,
     )
 
+    currency = frappe.db.get_value(doctype, docname, "currency")
+
     columns = [
         "Item Code",
         "Supplier items",
@@ -56,8 +59,8 @@ def _make_excel_attachment(doctype, docname):
         "HSCode",
         "Quantity",
         "Stock UOM",
-        "Rate (EUR)",
-        "Amount (EUR)",
+        f"Rate ({currency})",
+        f"Amount ({currency})",
         "Photo",
     ]
 
@@ -68,8 +71,8 @@ def _make_excel_attachment(doctype, docname):
         "customs_tariff_number",
         "qty",
         "stock_uom",
-        "base_net_rate",
-        "base_net_amount",
+        "rate",
+        "amount",
         "image",
     ]
 

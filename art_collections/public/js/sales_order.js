@@ -86,30 +86,33 @@ frappe.ui.form.on('Sales Order', {
 
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 
-		frm.add_custom_button(
-			__("Download ART Bulk Template"), function () { download_art_bulk_template(frm) }, __("Create")
-		);
+		if (frm.page.get_inner_group_button(__('Create')).length == 0) {
 
-		frm.add_custom_button(
-			__("Upload ART Bulk"), function () { upload_art_bulk_items(frm) }, __("Create")
-		);
+			frm.page.add_inner_button(
+				__("Download ART Bulk Template"), function () { download_art_bulk_template(frm) }, __("Create")
+			);
 
-		frm.add_custom_button(
-			__("Product Excel"),
-			function () {
-				frappe.call({
-					method: "art_collections.sales_order_controller._make_excel_attachment",
-					args: {
-						docname: frm.doc.name,
-						doctype: frm.doc.doctype,
-					},
-					callback: function () {
-						frm.reload_doc();
-					},
-				});
-			},
-			__("Create")
-		);
+			frm.page.add_inner_button(
+				__("Upload ART Bulk"), function () { upload_art_bulk_items(frm) }, __("Create")
+			);
+
+			frm.page.add_inner_button(
+				__("Product Excel"),
+				function () {
+					frappe.call({
+						method: "art_collections.controllers.excel.sales_order._make_excel_attachment",
+						args: {
+							docname: frm.doc.name,
+							doctype: frm.doc.doctype,
+						},
+						callback: function () {
+							frm.reload_doc();
+						},
+					});
+				},
+				__("Create")
+			);
+		}
 
 	},
 	needs_confirmation_art: function (frm) {

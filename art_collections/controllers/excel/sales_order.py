@@ -16,24 +16,26 @@ def on_submit_sales_order(doc, method=None):
 
 def add_images(data, workbook, worksheet=""):
     ws = workbook.get_sheet_by_name(worksheet)
-    image_col = get_column_letter(len(data[0]) - 2)
-    for row, d in enumerate(data):
-        if d.image_url:
+    image_col = "R"  # get_column_letter(len(data[0]) - 2)
+    for row, image_url in enumerate(data):
+        if image_url:
             try:
-                item_file = frappe.get_doc("File", {"file_url": d.image_url})
+                item_file = frappe.get_doc("File", {"file_url": image_url})
                 image = openpyxl.drawing.image.Image(
                     io.BytesIO(item_file.get_content())
                 )
                 image.height = 100
                 image.width = 100
-                ws.add_image(image, f"{image_col}{cstr(row+2)}")
-                ws.row_dimensions[row + 2].height = 100
+                ws.add_image(image, f"{image_col}{cstr(row+1)}")
+                ws.row_dimensions[row + 1].height = 90
             except:
                 pass
 
 
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
+
+    currency = frappe.db.get_value(doctype, docname, "currency")
 
     data = frappe.db.sql(
         """
@@ -99,17 +101,17 @@ def _make_excel_attachment(doctype, docname):
         _("Item Code"),
         _("Barcode"),
         _("HSCode"),
-        _("Weight per unit"),
-        _("Length (of stock_uom)"),
-        _("Width (of stock_uom)"),
-        _("Thickness (of stock_uom)"),
+        _("Weight per unit (Kg)"),
+        _("Length (cm)"),
+        _("Width (cm)"),
+        _("Thickness (cm)"),
         _("Quantity"),
         _("UOM"),
-        _("Rate (EUR)"),
+        _("Rate ") + f"({currency})",
         _("Stock UOM"),
         _("UOM Conversion Factor"),
         _("Qty as per stock UOM"),
-        _("Rate of Stock UOM (EUR)"),
+        _("Rate of Stock UOM") + f"({currency})",
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo Link"),
@@ -137,19 +139,21 @@ def _make_excel_attachment(doctype, docname):
     ]
 
     wb = openpyxl.Workbook()
-    excel_rows = [columns]
+    excel_rows, images = [columns], [""]
     for d in data:
         if d.total_saleable_qty_cf <= d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
+            images.append(d.get("image_url"))
     write_xlsx(excel_rows, "In Stock Items", wb, [20] * len(columns), index=0)
-    add_images(data, workbook=wb, worksheet="In Stock Items")
+    add_images(images, workbook=wb, worksheet="In Stock Items")
 
-    excel_rows = [columns]
+    excel_rows, images = [columns], [""]
     for d in data:
         if d.total_saleable_qty_cf > d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
+            images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]), index=1)
-    add_images(data, workbook=wb, worksheet="Out of Stock Items")
+    add_images(images, workbook=wb, worksheet="Out of Stock Items")
 
     discontinued_items = frappe.db.sql(
         """
@@ -191,9 +195,9 @@ def _make_excel_attachment(doctype, docname):
         _("Item Code"),
         _("Barcode"),
         _("HSCode"),
-        _("Length (of stock_uom)"),
-        _("Width (of stock_uom)"),
-        _("Thickness (of stock_uom)"),
+        _("Length (cm)"),
+        _("Width (cm)"),
+        _("Thickness (cm)"),
         _("Quantity"),
         _("UOM Conversion Factor"),
         _("Pricing rule > Min Qty*"),
@@ -211,13 +215,15 @@ def _make_excel_attachment(doctype, docname):
         "conversion_factor",
         "pricing_rule_min_qty",
         "pricing_rule_rate",
+        "image_url",
     ]
 
-    excel_rows = [columns]
+    excel_rows, images = [columns], [""]
     for d in discontinued_items[:]:
         excel_rows.append([d.get(f) for f in fields])
+        images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Discontinued Items", wb, [20] * len(excel_rows[0]), index=2)
-    add_images(data, workbook=wb, worksheet="Discontinued Items")
+    add_images(images, workbook=wb, worksheet="Discontinued Items")
 
     # existing art works
     # art_works = frappe.db.sql(

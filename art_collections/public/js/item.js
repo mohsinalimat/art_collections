@@ -40,14 +40,16 @@ frappe.ui.form.on('Item', {
       }
    },         
    validate:function (frm) {
-
-      for (let index = 0; index < frm.doc.existing_product_art_work_cf.length; index++) {
-         const row = frm.doc.existing_product_art_work_cf[index];
-         if (row.art_work_attachment==undefined){
-            frappe.throw(__("Art Work Attachment is required on row # <b>{0}</b>", [row.idx]));
-         }
-         
+      if (frm.doc.is_existing_product_cf==1) {
+         for (let index = 0; index < frm.doc.existing_product_art_work_cf.length; index++) {
+            const row = frm.doc.existing_product_art_work_cf[index];
+            if (row.art_work_attachment==undefined){
+               frappe.throw(__("Art Work Attachment is required on row # <b>{0}</b>", [row.idx]));
+            }
+            
+         }     
       }
+
 
       frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
 

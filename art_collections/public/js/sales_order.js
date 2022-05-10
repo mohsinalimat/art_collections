@@ -35,12 +35,14 @@ frappe.ui.form.on('Sales Order', {
 					let delivery_appointment_contact_detail_art = values.delivery_appointment_contact_detail_art
 					let country = values.country
 					if (country) {
-						frappe.db.get_list('Shipping Rule Country', { fields: ['parent'], filters: { country: country } })
-							.then(records => {
-								if (records.length > 0) {
-									frm.set_value('shipping_rule', records[0].parent)
-								}
-							})
+                        frappe.call('art_collections.sales_order_controller.get_shipping_rule', {
+                            country: country
+                        }).then(r => {
+                            let records=r.message
+                            if (records.length > 0) {
+                                frm.set_value('shipping_rule', records[0].name)
+                            }                            
+                        })
 					}
 					frm.set_value({
 						delivery_by_appointment_art: delivery_by_appointment_art,

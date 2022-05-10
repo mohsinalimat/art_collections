@@ -292,3 +292,8 @@ def get_item_details(item_code, qty):
         "description": item and item[0]["description"] or "",
         "item_group": item and item[0]["item_group"] or "",
     }
+
+@frappe.whitelist()
+def get_shipping_rule(country):
+    return frappe.db.sql("""select sr.name from `tabShipping Rule` sr inner join `tabShipping Rule Country` sr_country 
+    on sr.name=sr_country.parent where sr.disabled=0 and sr_country.country=%s order by sr.creation DESC  limit 1""",country,as_dict=1,debug=1)

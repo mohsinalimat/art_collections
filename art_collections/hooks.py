@@ -34,6 +34,7 @@ doctype_js = {
     "Item": "public/js/item.js",
     "Delivery Note": "public/js/delivery_note.js",
     "Sales Order": "public/js/sales_order.js",
+    "Quotation": "public/js/quotation.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Issue": "public/js/issue.js",
     "Pricing Rule": "public/js/pricing_rule.js",

@@ -215,6 +215,7 @@ def update_po_item_qty_based_on_qty_as_per_spl(spl_packing_list):
 	spl=frappe.get_doc('Supplier Packing List Art',spl_packing_list)
 	found_for_qty_update=False
 	unique_po_item_code=[]
+	po_item_alert_msg=[]
 	for spl_packing_item in spl.supplier_packing_list_detail:
 		supplier_packing_row=frappe.db.sql("""SELECT  sum(packing_list_detail.qty_as_per_spl) as qty_as_per_spl from `tabSupplier Packing List Detail Art` as packing_list_detail
 							where packing_list_detail.docstatus =1 and packing_list_detail.purchase_order=%s and packing_list_detail.po_item_code=%s
@@ -235,9 +236,12 @@ def update_po_item_qty_based_on_qty_as_per_spl(spl_packing_list):
 							]
 						)
 						update_child_qty_rate("Purchase Order", trans_item, spl_packing_item.purchase_order)
-						frappe.msgprint(_("Purchase Order:{0} , Item {1}, qty is updated to {2}." \
-						.format(getlink("Purchase Order", spl_packing_item.purchase_order),spl_packing_item.item_name,qty_as_per_spl)), indicator="green")
+						po_item_alert_msg.append(_("Purchase Order:{0} , Item {1}, qty is updated to {2}." \
+						.format(getlink("Purchase Order", spl_packing_item.purchase_order),spl_packing_item.item_name,qty_as_per_spl)))
 						found_for_qty_update=True
 		unique_po_item_code.append(spl_packing_item.po_item_code)
+	if len(po_item_alert_msg)>0:
+		msg='\n'.join(po_item_alert_msg)
+		frappe.msgprint(msg, indicator="green")
 	if found_for_qty_update==False:
 		frappe.msgprint(_("No Eligible item found for qty update."), indicator="yellow")

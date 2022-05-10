@@ -8,6 +8,7 @@ from art_collections.controllers.excel import write_xlsx, attach_file
 from openpyxl.drawing.image import Image
 from io import BytesIO
 from openpyxl.utils import get_column_letter
+import os
 
 
 def on_submit_sales_order(doc, method=None):
@@ -19,17 +20,19 @@ def add_images(data, workbook, worksheet=""):
     image_col = "R"  # get_column_letter(len(data[0]) - 2)
     for row, image_url in enumerate(data):
         if image_url:
-            try:
-                item_file = frappe.get_doc("File", {"file_url": image_url})
-                image = openpyxl.drawing.image.Image(
-                    io.BytesIO(item_file.get_content())
-                )
-                image.height = 100
-                image.width = 100
-                ws.add_image(image, f"{image_col}{cstr(row+1)}")
-                ws.row_dimensions[row + 1].height = 90
-            except:
-                pass
+            _filename, extension = os.path.splitext(image_url)
+            if extension in [".png", ".jpg"]:
+                try:
+                    item_file = frappe.get_doc("File", {"file_url": image_url})
+                    image = openpyxl.drawing.image.Image(
+                        io.BytesIO(item_file.get_content())
+                    )
+                    image.height = 100
+                    image.width = 100
+                    ws.add_image(image, f"{image_col}{cstr(row+1)}")
+                    ws.row_dimensions[row + 1].height = 90
+                except:
+                    pass
 
 
 @frappe.whitelist()
@@ -71,11 +74,11 @@ def _make_excel_attachment(doctype, docname):
                 where parent = i.name
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
-	        and tppd.uom = (
-	                select value from tabSingles
-	                where doctype like 'Art Collections Settings' 
-	                and field = 'inner_carton_uom' 
-	            )        
+            and tppd.uom = (
+                    select value from tabSingles
+                    where doctype like 'Art Collections Settings' 
+                    and field = 'inner_carton_uom' 
+                )        
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
             and ucd.parenttype='Item' and ucd.uom = (
                 select value from tabSingles
@@ -83,11 +86,11 @@ def _make_excel_attachment(doctype, docname):
                 and field = 'inner_carton_uom' 
             )
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
-       		and tprd.parent = tso.name 
-       	left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
-       		and tpr.selling = 1 and exists (
-       			select 1 from `tabPricing Rule Item Code` x 
-       			where x.parent = tpr.name and x.uom = tsoi.stock_uom)            
+               and tprd.parent = tso.name 
+           left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
+               and tpr.selling = 1 and exists (
+                   select 1 from `tabPricing Rule Item Code` x 
+                   where x.parent = tpr.name and x.uom = tsoi.stock_uom)            
         where tso.name = %s
     """.format(
             get_url()

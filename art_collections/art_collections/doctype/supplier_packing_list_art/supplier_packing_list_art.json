@@ -68,12 +68,14 @@
   {
    "fieldname": "import_log",
    "fieldtype": "Code",
-   "label": "Upload Log"
+   "label": "Upload Log",
+   "no_copy": 1
   },
   {
    "fieldname": "import_log_preview",
    "fieldtype": "HTML",
-   "label": "Upload Log Preview"
+   "label": "Upload Log Preview",
+   "no_copy": 1
   },
   {
    "fieldname": "amended_from",
@@ -88,7 +90,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-05-07 08:04:01.901894",
+ "modified": "2022-05-10 12:50:02.798375",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

@@ -216,32 +216,56 @@ def update_po_item_qty_based_on_qty_as_per_spl(spl_packing_list):
 	found_for_qty_update=False
 	unique_po_item_code=[]
 	po_item_alert_msg=[]
+	#po_details= [{"name": "PUR-ORD-2022-00021", "items": [{"item_code": "81287", "qty": 10.0, "docname": "a99206b395"}, {"item_code": "10865", "qty": 2.0, "docname": "be95649d5e"}]}]
+	po_details=[]
+	po_item_qty={}
 	for spl_packing_item in spl.supplier_packing_list_detail:
+		# get sum qty_as_per_spl of all submitted Supplier Packing List Detail
 		supplier_packing_row=frappe.db.sql("""SELECT  sum(packing_list_detail.qty_as_per_spl) as qty_as_per_spl from `tabSupplier Packing List Detail Art` as packing_list_detail
-							where packing_list_detail.docstatus =1 and packing_list_detail.purchase_order=%s and packing_list_detail.po_item_code=%s
+							where packing_list_detail.docstatus =1 and packing_list_detail.qty_as_per_spl > 0 and packing_list_detail.purchase_order=%s and packing_list_detail.po_item_code=%s
 							group by packing_list_detail.po_item_code""",(spl_packing_item.purchase_order,spl_packing_item.po_item_code),as_dict=1,debug=1)	
 		if spl_packing_item.po_item_code not in unique_po_item_code	:				
 			if len(supplier_packing_row)>0:
 				qty_as_per_spl=supplier_packing_row[0].qty_as_per_spl
 				if spl_packing_item.qty_of_stock_uom!=qty_as_per_spl and spl_packing_item.po_item_code and qty_as_per_spl>0:
-					qty = frappe.db.get_value('Purchase Order Item', spl_packing_item.po_item_code,'qty')
-					if qty!=qty_as_per_spl :
-						trans_item = json.dumps(
-							[
-								{
-									"item_code": spl_packing_item.item_code,
-									"qty": flt(qty_as_per_spl),
-									"docname": spl_packing_item.po_item_code,
-								},
-							]
-						)
-						update_child_qty_rate("Purchase Order", trans_item, spl_packing_item.purchase_order)
+					if qty_as_per_spl>0:
+						po_found=False
+						for po in po_details:
+							if po['name'] == spl_packing_item.purchase_order:
+								po_item_qty.update({spl_packing_item.po_item_code:flt(qty_as_per_spl)})
+								po_found=True
+						if po_found==False:
+							po_details.append({'name':spl_packing_item.purchase_order,'items':[]})
+							po_item_qty.update({spl_packing_item.po_item_code:flt(qty_as_per_spl)})
+								
 						po_item_alert_msg.append(_("Purchase Order:{0} , Item {1}, qty is updated to {2}." \
 						.format(getlink("Purchase Order", spl_packing_item.purchase_order),spl_packing_item.item_name,qty_as_per_spl)))
 						found_for_qty_update=True
 		unique_po_item_code.append(spl_packing_item.po_item_code)
+
 	if len(po_item_alert_msg)>0:
-		msg='\n'.join(po_item_alert_msg)
+		if len(po_details)>0:
+			#  add all po items of PO and ensure qty change for impcated docname
+			for po in po_details:
+				po["items"] = []
+				original_po_items = frappe.get_doc("Purchase Order", po["name"]).get("items")
+				for d in original_po_items:
+					item_found=False
+					for name,qty in po_item_qty.items():
+						if name==d.name:
+							item_found=True
+							# qty change for impcated docname
+							po["items"].append({"item_code": d.item_code, "qty": flt(qty), "docname": d.name})
+							break
+					if item_found==False:
+						po["items"].append({"item_code": d.item_code, "qty": d.qty, "docname": d.name})	
+						
+		for po in po_details:
+			trans_item = json.dumps(
+				po['items']
+			)
+			update_child_qty_rate("Purchase Order", trans_item, po['name'])
+		msg='<br>'.join(po_item_alert_msg)
 		frappe.msgprint(msg, indicator="green")
 	if found_for_qty_update==False:
 		frappe.msgprint(_("No Eligible item found for qty update."), indicator="yellow")

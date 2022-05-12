@@ -41,6 +41,7 @@ doctype_js = {
     "POS Profile": "public/js/pos_profile.js",
     "Supplier Quotation": "public/js/supplier_quotation.js",
     "Pick List": "public/js/pick_list.js",
+    "Stock Entry": "public/js/stock_entry.js",
     "Sales Invoice": "public/js/sales_invoice.js",
     "Website Item": "public/js/website_item.js",
     # "Request for Quotation": "public/js/request_for_quotation.js"

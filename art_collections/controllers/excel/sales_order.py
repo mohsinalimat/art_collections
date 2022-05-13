@@ -21,7 +21,7 @@ def add_images(data, workbook, worksheet=""):
     for row, image_url in enumerate(data):
         if image_url:
             _filename, extension = os.path.splitext(image_url)
-            if extension in [".png", ".jpg", "jpeg"]:
+            if extension in [".png", ".jpg", ".jpeg"]:
                 try:
                     item_file = frappe.get_doc("File", {"file_url": image_url})
                     content = item_file.get_content()

@@ -21,9 +21,10 @@ def add_images(data, workbook, worksheet=""):
     for row, image_url in enumerate(data):
         if image_url:
             _filename, extension = os.path.splitext(image_url)
-            if extension in [".png", ".jpg"]:
+            if extension in [".png", ".jpg", "jpeg"]:
                 try:
                     item_file = frappe.get_doc("File", {"file_url": image_url})
+                    content = item_file.get_content()
                     image = openpyxl.drawing.image.Image(
                         io.BytesIO(item_file.get_content())
                     )
@@ -31,7 +32,8 @@ def add_images(data, workbook, worksheet=""):
                     image.width = 100
                     ws.add_image(image, f"{image_col}{cstr(row+1)}")
                     ws.row_dimensions[row + 1].height = 90
-                except:
+                except Exception as e:
+                    print(e)
                     pass
 
 
@@ -86,7 +88,7 @@ def _make_excel_attachment(doctype, docname):
                 and field = 'inner_carton_uom' 
             )
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
-               and tprd.parent = tso.name 
+               and tprd.parent = tso.name and tprd.item_code = i.item_code 
            left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
                and tpr.selling = 1 and exists (
                    select 1 from `tabPricing Rule Item Code` x 

@@ -73,7 +73,7 @@
   },
   {
    "fieldname": "shipping_date",
-   "fieldtype": "Data",
+   "fieldtype": "Date",
    "label": "Shipping Date (ETA)"
   },
   {
@@ -121,7 +121,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-04-09 08:39:57.460898",
+ "modified": "2022-05-16 10:18:24.054370",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Shipment",

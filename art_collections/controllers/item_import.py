@@ -1,0 +1,249 @@
+# -*- coding: utf-8 -*-
+import frappe
+from frappe import _
+from frappe.utils import cstr
+from frappe.utils.csvutils import to_csv
+from openpyxl import load_workbook, Workbook
+from frappe.utils.xlsxutils import make_xlsx
+from frappe.utils import today, get_site_url
+from frappe.utils.xlsxutils import build_xlsx_response
+import io
+import os
+
+
+@frappe.whitelist()
+def download_template(docname=None):
+    template_path = frappe.get_app_path(
+        "art_collections", "controllers", "item_import_template.xlsx"
+    )
+
+    template = load_workbook(template_path)
+    sheet = template["Sheet1"]
+    sheet.delete_rows(6, sheet.max_row - 1)
+
+    data = get_records()
+
+    for row, d in enumerate(data):
+        for col, value in enumerate(d):
+            sheet.cell(row=row + 6, column=col + 1, value=value)
+    out = io.BytesIO()
+    template.save(out)
+    frappe.response["filename"] = _("Item") + ".xlsx"
+    frappe.response["filecontent"] = out.getvalue()
+    frappe.response["type"] = "binary"
+
+
+def start_item_import(doc, method):
+    # transform raw import file to frappe format and attach to doc
+    if doc.reference_doctype == "Item" and doc.import_art_item_file:
+
+        file_name = doc.import_art_item_file.split("/")[-1]
+        file_path = frappe.get_site_path("private", "files", file_name)
+
+        wb = load_workbook(filename=file_path)
+        template_columns = next(wb["Sheet2"].values)
+        header = next(wb["Sheet1"].values)
+
+        def get_values(col, row):
+            value = [row[idx] for idx, d in enumerate(header) if d == col]
+            if col in ["HS CODE"]:
+                return [cstr(x) for x in value]
+            return value
+
+        docs_to_create, items = [], []
+
+        for row in wb["Sheet1"].iter_rows(
+            min_row=6, max_row=6, max_col=00, values_only=True
+        ):
+            items.append([get_values(col, row) for col in template_columns])
+            # create docs (hscode, matiere) that do not exist
+            value = get_values("HS CODE", row)
+            if value:
+                print(value, "\n" * 5)
+                if not frappe.get_all(
+                    "Customs Tariff Number", {"name": cstr(value[0])}
+                ):
+                    frappe.get_doc(
+                        {
+                            "doctype": "Customs Tariff Number",
+                            "tariff_number": value[0],
+                        }
+                    ).insert()
+
+            value = get_values("Matiere (Item Components)", row)
+            if value:
+                print(value, "\n" * 5)
+                if not frappe.get_all("Matiere", {"name": cstr(value[0])}):
+                    frappe.get_doc(
+                        {"doctype": "Matiere", "matiere": cstr(value[0])}
+                    ).insert()
+
+        import_csv = [template_columns]
+        for item in items:
+            max_child_count = max([len(col) for col in item])
+            for i in range(len(item)):
+                item[i] = item[i] + ([""] * (max_child_count - len(item[i])))
+            for idx in range(max_child_count):
+                import_csv.append([col[idx] for col in item])
+            # print(item)
+
+        # remove blank rows
+        import_csv = [d for d in import_csv if not set(d) == [""]]
+
+        xlsx_file = make_xlsx(import_csv, "Data Import Template")
+        file_data = xlsx_file.getvalue()
+
+        # with open("sample_import.xlsx", "wb") as item_import_file:
+        #     item_import_file.write(file_data)
+
+        f = frappe.get_doc(
+            doctype="File",
+            content=file_data,
+            file_name="item_import %s.xlsx" % frappe.generate_hash("", 6),
+            is_private=1,
+        )
+
+        f.save(ignore_permissions=True)
+        doc.import_file = f.file_url
+
+
+def get_records():
+    return frappe.db.sql(
+        """
+with selling_pack as
+(
+	select 
+		ti.name, 
+		tucd.name id_uoms_selling_pack ,
+		tucd.uom uom_uoms_selling_pack ,
+		tucd.conversion_factor conversion_factor_uoms_selling_pack ,
+		tppd.name id_ppd_selling_pack , 
+		tppd.`length` length_ppd_selling_pack ,
+		tppd.thickness thickness_ppd_selling_pack ,
+		tppd.materials materials_ppd_selling_pack ,
+		tppd.uom uom_ppd_selling_pack ,
+		tppd.width width_ppd_selling_pack ,
+		tppd.weight weight_ppd_selling_pack ,
+		tppd.cbm cbm_ppd_selling_pack 
+	from tabItem ti
+	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Selling Pack'
+	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Selling Pack'
+),
+inner_carton as
+(
+	select 
+		ti.name, 
+		tucd.name id_uoms_inner_carton ,
+		tucd.uom uom_uoms_inner_carton ,
+		tucd.conversion_factor conversion_factor_uoms_inner_carton ,
+		tppd.name id_ppd_inner_carton , 
+		tppd.`length` length_ppd_inner_carton ,
+		tppd.thickness thickness_ppd_inner_carton ,
+		tppd.materials materials_ppd_inner_carton ,
+		tppd.uom uom_ppd_inner_carton ,
+		tppd.width width_ppd_inner_carton ,
+		tppd.weight weight_ppd_inner_carton ,		
+		tppd.cbm cbm_ppd_inner_carton 
+	from tabItem ti
+	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Inner Carton'
+	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Inner Carton'
+),
+maxi_inner as
+(
+	select 
+		ti.name, 
+		tucd.name id_uoms_maxi_inner ,
+		tucd.uom uom_uoms_maxi_inner ,
+		tucd.conversion_factor conversion_factor_uoms_maxi_inner ,
+		tppd.name id_ppd_maxi_inner , 
+		tppd.`length` length_ppd_maxi_inner ,
+		tppd.thickness thickness_ppd_maxi_inner ,
+		tppd.materials materials_ppd_maxi_inner ,
+		tppd.uom uom_ppd_maxi_inner ,
+		tppd.width width_ppd_maxi_inner ,
+		tppd.weight weight_ppd_maxi_inner ,		
+		tppd.cbm cbm_ppd_maxi_inner 
+	from tabItem ti
+	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Maxi Inner'
+	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Maxi Inner'
+),
+outer_carton as
+(
+	select 
+		ti.name, 
+		tucd.name id_uoms_outer_carton ,
+		tucd.uom uom_uoms_outer_carton ,
+		tucd.conversion_factor conversion_factor_uoms_outer_carton ,
+		tppd.name id_ppd_outer_carton , 
+		tppd.`length` length_ppd_outer_carton ,
+		tppd.thickness thickness_ppd_outer_carton ,
+		tppd.materials materials_ppd_outer_carton ,
+		tppd.uom uom_ppd_outer_carton ,
+		tppd.width width_ppd_outer_carton ,
+		tppd.weight weight_ppd_outer_carton ,		
+		tppd.cbm cbm_ppd_outer_carton 
+	from tabItem ti
+	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Outer Carton'
+	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Outer Carton'
+)
+select ti.item_code, ti.item_name , ti.item_group ,
+tis.supplier , tis.supplier_part_no , ti.min_order_qty , 
+ti.customs_tariff_number , ti.packing_type_art , ti.stock_uom , 
+ti.length_art , ti.width_art , ti.thickness_art , ti.weight_art , ti.main_design_color_art , 
+tica.name id_item_components , tica.matiere matiere_item_components ,
+tib.name id_barcodes, tib.barcode barcode_barcodes , 
+sel.id_uoms_selling_pack , 
+sel.uom_uoms_selling_pack , 
+sel.conversion_factor_uoms_selling_pack ,
+sel.id_ppd_selling_pack , 
+sel.length_ppd_selling_pack ,
+sel.thickness_ppd_selling_pack ,
+sel.materials_ppd_selling_pack ,
+sel.uom_ppd_selling_pack ,
+sel.width_ppd_selling_pack ,
+sel.weight_ppd_selling_pack ,
+sel.cbm_ppd_selling_pack ,
+ic.id_uoms_inner_carton , 
+ic.uom_uoms_inner_carton , 
+ic.conversion_factor_uoms_inner_carton ,
+ic.id_ppd_inner_carton , 
+ic.length_ppd_inner_carton ,
+ic.thickness_ppd_inner_carton ,
+ic.materials_ppd_inner_carton ,
+ic.uom_ppd_inner_carton ,
+ic.width_ppd_inner_carton ,
+ic.weight_ppd_inner_carton ,
+ic.cbm_ppd_inner_carton ,
+mi.id_uoms_maxi_inner , 
+mi.uom_uoms_maxi_inner , 
+mi.conversion_factor_uoms_maxi_inner ,
+mi.id_ppd_maxi_inner , 
+mi.length_ppd_maxi_inner ,
+mi.thickness_ppd_maxi_inner ,
+mi.materials_ppd_maxi_inner ,
+mi.uom_ppd_maxi_inner ,
+mi.width_ppd_maxi_inner ,
+mi.weight_ppd_maxi_inner ,
+mi.cbm_ppd_maxi_inner ,
+oc.id_uoms_outer_carton , 
+oc.uom_uoms_outer_carton , 
+oc.conversion_factor_uoms_outer_carton ,
+oc.id_ppd_outer_carton , 
+oc.length_ppd_outer_carton ,
+oc.thickness_ppd_outer_carton ,
+oc.materials_ppd_outer_carton ,
+oc.uom_ppd_outer_carton ,
+oc.width_ppd_outer_carton ,
+oc.weight_ppd_outer_carton ,
+oc.cbm_ppd_outer_carton
+from tabItem ti 
+left outer join `tabItem Supplier` tis on tis.parent = ti.name 
+left outer join `tabItem Components Art` tica on tica.parent = ti.name 
+left outer join `tabItem Barcode` tib on tib.parent = ti.name
+left outer join selling_pack sel on sel.name = ti.name
+left outer join inner_carton ic on ic.name = ti.name
+left outer join maxi_inner mi on mi.name = ti.name
+left outer join outer_carton oc on oc.name = ti.name
+-- where sel.id_ppd_selling_pack is not null limit 5
+    """
+    )

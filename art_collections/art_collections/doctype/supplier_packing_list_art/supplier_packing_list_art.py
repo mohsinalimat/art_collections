@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import cint, cstr, flt
+from frappe.utils import cint, cstr, flt,getdate,today
 import json
 from frappe import _
 from erpnext.controllers.accounts_controller import update_child_qty_rate
@@ -16,6 +16,53 @@ class SupplierPackingListArt(Document):
 	def validate(self):
 		self.compute_calculated_fields()
 		self.calculate_taxes_and_totals()
+		
+
+	def check_container_belongs_to_shipment(self):
+		for item in self.supplier_packing_list_detail:
+			container_list=frappe.db.get_list('Art Shipment Container',filters={'parent': item.shipment},fields=['container_name'],pluck='container_name')	
+			if item.container not in container_list:
+				frappe.throw(title=_('Container value doesnot match with shipment containers.'),
+				msg=_('Row #{0} : container is {1}, whereas it should be one of {2}.'.format(item.idx,frappe.bold(item.container),container_list)))
+
+	def set_arrival_forecast_data_in_po_item(self):
+		for item in self.supplier_packing_list_detail:
+			arrival_forecast_dates=frappe.db.get_list('Art Shipment Container',filters={'parent': item.shipment,'container_name':item.container},fields=['arrival_forecast_date'],pluck='arrival_forecast_date')
+			arrival_forecast_hours=frappe.db.get_list('Art Shipment Container',filters={'parent': item.shipment,'container_name':item.container},fields=['arrival_forecast_hour'],pluck='arrival_forecast_hour')
+			if len(arrival_forecast_dates)>0:
+				arrival_forecast_date = arrival_forecast_dates[0]
+				frappe.db.set_value('Purchase Order Item', item.po_item_code, {'arrival_forecast_date_art':arrival_forecast_date})
+				frappe.msgprint(_('Arrival forcast date updated to {0} for PO:{1}, PO Item:{2}'.format(arrival_forecast_date,item.purchase_order,item.item_code)),alert=1)				
+			if len(arrival_forecast_hours)>0:
+				arrival_forecast_hour = arrival_forecast_hours[0]	
+				frappe.db.set_value('Purchase Order Item', item.po_item_code, {'arrival_forecast_hour_art':arrival_forecast_hour})
+				frappe.msgprint(_('Arrival forcast hour updated to {0} for PO:{1}, PO Item:{2}'.format(arrival_forecast_hour,item.purchase_order,item.item_code)),alert=1)								
+			print('arrival_forecast_date,arrival_forecast_hour')
+			print(arrival_forecast_date,arrival_forecast_hour)
+				
+
+	def set_shipping_date_in_po_item(self):
+		for item in self.supplier_packing_list_detail:
+			shipping_date = frappe.db.get_value('Art Shipment', item.shipment, 'shipping_date')
+			po_item_shipping_date = frappe.db.get_value('Purchase Order Item', item.po_item_code, 'shipping_date_art')
+			print('shipping_date---po_item_shipping_date')
+			print(shipping_date,'--',po_item_shipping_date)
+			if po_item_shipping_date and shipping_date:
+				# po date expiring , hence put shipping date
+				if getdate(po_item_shipping_date) <= getdate(today()):
+					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
+					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. Eariler date had expired.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)					
+				# get the earliest date
+				elif getdate(po_item_shipping_date)>getdate(shipping_date):
+					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
+					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. New date being more recent.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
+				else:
+					#  no change, as new date is futuristic
+					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date not changed. as new date {2} being more futuristic.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
+			#  no po date
+			elif shipping_date and not po_item_shipping_date:
+				frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
+				frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. No earlier date present.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
 
 	def compute_calculated_fields(self):
 		if self.supplier_packing_list_detail:
@@ -31,6 +78,9 @@ class SupplierPackingListArt(Document):
 				frappe.throw(title=_('Missing value in supplier packing list'),msg=_('Row #{0} : shipment is required.'.format(item.idx)))
 			if not item.container:
 				frappe.throw(title=_('Missing value in supplier packing list'),msg=_('Row #{0} : container is required.'.format(item.idx)))
+		self.check_container_belongs_to_shipment()
+		self.set_arrival_forecast_data_in_po_item()
+		self.set_shipping_date_in_po_item()
 
 	def calculate_taxes_and_totals(self):
 		total_qty_of_stock_uom=0

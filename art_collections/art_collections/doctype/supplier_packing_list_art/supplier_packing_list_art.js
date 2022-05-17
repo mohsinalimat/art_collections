@@ -2,6 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Supplier Packing List Art', {
+	setup:function(frm){
+		frm.set_query('shipment', 'supplier_packing_list_detail', () => {
+			return {
+				filters: {
+					docstatus: 1
+				}
+			}
+		})		
+	},
 	onload_post_render: function (frm) {
 		frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload').addClass('hide')
 		let upload_art = frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload-art')

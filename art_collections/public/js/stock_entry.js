@@ -24,7 +24,7 @@ frappe.ui.form.on('Stock Entry', {
 		}
 
 		let items = frm.doc.items
-        let warehouse= frm.doc.purpose=='Material Transfer'? 's_warehouse' : 't_warehouse'
+        let warehouse='t_warehouse'
 		items.sort(dynamicSort(warehouse))
 		frm.clear_table('items')
 		for (const key in items) {

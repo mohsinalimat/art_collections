@@ -44,6 +44,7 @@ doctype_js = {
     "Stock Entry": "public/js/stock_entry.js",
     "Sales Invoice": "public/js/sales_invoice.js",
     "Website Item": "public/js/website_item.js",
+    "Data Import": "public/js/data_import.js",
     # "Request for Quotation": "public/js/request_for_quotation.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -147,8 +148,10 @@ doc_events = {
             # "art_collections.purchase_order_controller.purchase_order_update_delivery_date_of_item",
             # "art_collections.purchase_order_controller.purchase_order_update_schedule_date_of_item",
         ],
-        "validate": ["art_collections.purchase_order_controller.purchase_order_custom_validation",
-        "art_collections.directive_controller.get_directive"]
+        "validate": [
+            "art_collections.purchase_order_controller.purchase_order_custom_validation",
+            "art_collections.directive_controller.get_directive",
+        ],
     },
     "Supplier Quotation": {
         "validate": [
@@ -183,6 +186,9 @@ doc_events = {
         "validate": "art_collections.directive_controller.get_directive"
     },
     "Pick List": {"validate": "art_collections.directive_controller.get_directive"},
+    "Data Import": {
+        "validate": "art_collections.controllers.item_import.start_item_import"
+    },
 }
 
 # Scheduled Tasks

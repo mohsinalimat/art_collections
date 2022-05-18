@@ -158,7 +158,9 @@ def update_availability_date_of_item_based_on_po_shipping_date_art(self, method)
         required_by_date_with_buffer = add_days(
             po_item.shipping_date_art, item_availability_buffer_days
         )
-
+        print('po_item.shipping_date_art',po_item.shipping_date_art)
+        print("print(old_item_required_by_date,availability_date,required_by_date_with_buffer)")
+        print(old_item_required_by_date,availability_date,required_by_date_with_buffer)
         if old_item_required_by_date:
             # previous po is pending
             old_item_required_by_date_with_buffer = add_days(

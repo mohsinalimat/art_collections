@@ -11,6 +11,7 @@ from erpnext.controllers.accounts_controller import update_child_qty_rate
 from frappe.utils.csvutils import getlink
 from frappe.model.meta import get_field_precision
 from art_collections.item_controller import get_qty_of_inner_cartoon,get_qty_of_outer_cartoon
+from art_collections.purchase_order_controller import update_availability_date_of_item_based_on_po_shipping_date_art
 
 class SupplierPackingListArt(Document):
 	def validate(self):
@@ -42,18 +43,27 @@ class SupplierPackingListArt(Document):
 				
 
 	def set_shipping_date_in_po_item(self):
+		shipping_date_changed_in_po=False
+		po_impacted_list=[]
 		for item in self.supplier_packing_list_detail:
 			shipping_date = frappe.db.get_value('Art Shipment', item.shipment, 'shipping_date')
 			po_item_shipping_date = frappe.db.get_value('Purchase Order Item', item.po_item_code, 'shipping_date_art')
 			print('shipping_date---po_item_shipping_date')
 			print(shipping_date,'--',po_item_shipping_date)
+
 			if po_item_shipping_date and shipping_date:
 				# po date expiring , hence put shipping date
 				if getdate(po_item_shipping_date) <= getdate(today()):
+					shipping_date_changed_in_po=True
+					if item.purchase_order not in po_impacted_list:
+						po_impacted_list.append(item.purchase_order)
 					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
 					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. Eariler date had expired.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)					
 				# get the earliest date
 				elif getdate(po_item_shipping_date)>getdate(shipping_date):
+					shipping_date_changed_in_po=True
+					if item.purchase_order not in po_impacted_list:
+						po_impacted_list.append(item.purchase_order)					
 					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
 					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. New date being more recent.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
 				else:
@@ -61,8 +71,16 @@ class SupplierPackingListArt(Document):
 					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date not changed. as new date {2} being more futuristic.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
 			#  no po date
 			elif shipping_date and not po_item_shipping_date:
+				shipping_date_changed_in_po=True
+				if item.purchase_order not in po_impacted_list:
+					po_impacted_list.append(item.purchase_order)				
 				frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
 				frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. No earlier date present.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
+		print('po_impacted_list',po_impacted_list)
+		if shipping_date_changed_in_po==True:
+			for po in po_impacted_list:
+				purchase_order=frappe.get_doc('Purchase Order',po)
+				update_availability_date_of_item_based_on_po_shipping_date_art(purchase_order,'custom')
 
 	def compute_calculated_fields(self):
 		if self.supplier_packing_list_detail:

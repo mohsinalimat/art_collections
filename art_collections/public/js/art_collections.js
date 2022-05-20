@@ -45,8 +45,8 @@ frappe.show_email_dialog = function (frm) {
 
 
 frappe.require('/assets/js/data_import_tools.min.js', () => {
-    frappe.provide('npro.utils')
-    npro.utils.DataExporter = class CustomDataExporter {
+    frappe.provide('art_collections.utils')
+    art_collections.utils.DataExporter = class CustomDataExporter {
         constructor(doctype, exporting_for) {
             this.doctype = doctype;
             this.exporting_for = exporting_for;

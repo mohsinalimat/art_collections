@@ -12,7 +12,7 @@ import os
 
 
 @frappe.whitelist()
-def download_template(docname=None):
+def download_template(data_import=None, **kwargs):
     template_path = frappe.get_app_path(
         "art_collections", "controllers", "item_import_template.xlsx"
     )
@@ -21,7 +21,7 @@ def download_template(docname=None):
     sheet = template["Sheet1"]
     sheet.delete_rows(6, sheet.max_row - 1)
 
-    data = get_records()
+    data = get_records(**kwargs)
 
     for row, d in enumerate(data):
         for col, value in enumerate(d):
@@ -52,31 +52,23 @@ def start_item_import(doc, method):
 
         docs_to_create, items = [], []
 
+        def check_and_create(doctype, value, field="name"):
+            if value and not frappe.db.exists(doctype, value):
+                frappe.get_doc({"doctype": doctype, field: value}).insert()
+
         for row in wb["Sheet1"].iter_rows(
             min_row=6, max_row=6, max_col=00, values_only=True
         ):
             items.append([get_values(col, row) for col in template_columns])
             # create docs (hscode, matiere) that do not exist
             value = get_values("HS CODE", row)
-            if value:
-                print(value, "\n" * 5)
-                if not frappe.get_all(
-                    "Customs Tariff Number", {"name": cstr(value[0])}
-                ):
-                    frappe.get_doc(
-                        {
-                            "doctype": "Customs Tariff Number",
-                            "tariff_number": value[0],
-                        }
-                    ).insert()
+            check_and_create("Customs Tariff Number", cstr(value[0]), "tariff_number")
+
+            value = get_values("Main Design Color", row)
+            check_and_create("Design Color", cstr(value[0]), "design_color")
 
             value = get_values("Matiere (Item Components)", row)
-            if value:
-                print(value, "\n" * 5)
-                if not frappe.get_all("Matiere", {"name": cstr(value[0])}):
-                    frappe.get_doc(
-                        {"doctype": "Matiere", "matiere": cstr(value[0])}
-                    ).insert()
+            check_and_create("Matiere", cstr(value[0]), "matiere")
 
         import_csv = [template_columns]
         for item in items:
@@ -107,84 +99,103 @@ def start_item_import(doc, method):
         doc.import_file = f.file_url
 
 
-def get_records():
+def get_records(**kwargs):
+    conditions, limit = "", " limit 0 "
+
+    if kwargs.get("export_records") == "5_records":
+        limit = " limit 5 "
+    elif kwargs.get("export_records") == "Blank Template":
+        limit = " limit 0 "
+    elif kwargs.get("export_records") == "Filtered Records":
+        export_filters = frappe.parse_json(kwargs.get("export_filters"))
+        parent_data = frappe.db.get_list(
+            kwargs.get("doctype"),
+            filters=export_filters,
+            fields=["name"],
+            as_list=1,
+        )
+        if parent_data:
+            conditions = " where ti.name in (%s)" % ",".join(
+                ["'%s'" % d[0] for d in parent_data]
+            )
+
     return frappe.db.sql(
         """
 with selling_pack as
 (
-	select 
-		ti.name, 
-		tucd.name id_uoms_selling_pack ,
-		tucd.uom uom_uoms_selling_pack ,
-		tucd.conversion_factor conversion_factor_uoms_selling_pack ,
-		tppd.name id_ppd_selling_pack , 
-		tppd.`length` length_ppd_selling_pack ,
-		tppd.thickness thickness_ppd_selling_pack ,
-		tppd.materials materials_ppd_selling_pack ,
-		tppd.uom uom_ppd_selling_pack ,
-		tppd.width width_ppd_selling_pack ,
-		tppd.weight weight_ppd_selling_pack ,
-		tppd.cbm cbm_ppd_selling_pack 
-	from tabItem ti
-	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Selling Pack'
-	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Selling Pack'
+    select 
+        ti.name, 
+        tucd.name id_uoms_selling_pack ,
+        tucd.uom uom_uoms_selling_pack ,
+        tucd.conversion_factor conversion_factor_uoms_selling_pack ,
+        tppd.name id_ppd_selling_pack , 
+        tppd.`length` length_ppd_selling_pack ,
+        tppd.thickness thickness_ppd_selling_pack ,
+        tppd.materials materials_ppd_selling_pack ,
+        tppd.uom uom_ppd_selling_pack ,
+        tppd.width width_ppd_selling_pack ,
+        tppd.weight weight_ppd_selling_pack ,
+        tppd.cbm cbm_ppd_selling_pack 
+    from tabItem ti
+    left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Selling Pack'
+    left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Selling Pack'
 ),
 inner_carton as
 (
-	select 
-		ti.name, 
-		tucd.name id_uoms_inner_carton ,
-		tucd.uom uom_uoms_inner_carton ,
-		tucd.conversion_factor conversion_factor_uoms_inner_carton ,
-		tppd.name id_ppd_inner_carton , 
-		tppd.`length` length_ppd_inner_carton ,
-		tppd.thickness thickness_ppd_inner_carton ,
-		tppd.materials materials_ppd_inner_carton ,
-		tppd.uom uom_ppd_inner_carton ,
-		tppd.width width_ppd_inner_carton ,
-		tppd.weight weight_ppd_inner_carton ,		
-		tppd.cbm cbm_ppd_inner_carton 
-	from tabItem ti
-	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Inner Carton'
-	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Inner Carton'
+    select 
+        ti.name, 
+        tucd.name id_uoms_inner_carton ,
+        tucd.uom uom_uoms_inner_carton ,
+        tucd.conversion_factor conversion_factor_uoms_inner_carton ,
+        tppd.name id_ppd_inner_carton , 
+        tppd.`length` length_ppd_inner_carton ,
+        tppd.thickness thickness_ppd_inner_carton ,
+        tppd.materials materials_ppd_inner_carton ,
+        tppd.uom uom_ppd_inner_carton ,
+        tppd.width width_ppd_inner_carton ,
+        tppd.weight weight_ppd_inner_carton ,		
+        tppd.cbm cbm_ppd_inner_carton 
+    from tabItem ti
+    left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Inner Carton'
+    left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Inner Carton'
 ),
 maxi_inner as
 (
-	select 
-		ti.name, 
-		tucd.name id_uoms_maxi_inner ,
-		tucd.uom uom_uoms_maxi_inner ,
-		tucd.conversion_factor conversion_factor_uoms_maxi_inner ,
-		tppd.name id_ppd_maxi_inner , 
-		tppd.`length` length_ppd_maxi_inner ,
-		tppd.thickness thickness_ppd_maxi_inner ,
-		tppd.materials materials_ppd_maxi_inner ,
-		tppd.uom uom_ppd_maxi_inner ,
-		tppd.width width_ppd_maxi_inner ,
-		tppd.weight weight_ppd_maxi_inner ,		
-		tppd.cbm cbm_ppd_maxi_inner 
-	from tabItem ti
-	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Maxi Inner'
-	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Maxi Inner'
+    select 
+        ti.name, 
+        tucd.name id_uoms_maxi_inner ,
+        tucd.uom uom_uoms_maxi_inner ,
+        tucd.conversion_factor conversion_factor_uoms_maxi_inner ,
+        tppd.name id_ppd_maxi_inner , 
+        tppd.`length` length_ppd_maxi_inner ,
+        tppd.thickness thickness_ppd_maxi_inner ,
+        tppd.materials materials_ppd_maxi_inner ,
+        tppd.uom uom_ppd_maxi_inner ,
+        tppd.width width_ppd_maxi_inner ,
+        tppd.weight weight_ppd_maxi_inner ,		
+        tppd.cbm cbm_ppd_maxi_inner 
+    from tabItem ti
+    left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Maxi Inner'
+    left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Maxi Inner'
 ),
 outer_carton as
 (
-	select 
-		ti.name, 
-		tucd.name id_uoms_outer_carton ,
-		tucd.uom uom_uoms_outer_carton ,
-		tucd.conversion_factor conversion_factor_uoms_outer_carton ,
-		tppd.name id_ppd_outer_carton , 
-		tppd.`length` length_ppd_outer_carton ,
-		tppd.thickness thickness_ppd_outer_carton ,
-		tppd.materials materials_ppd_outer_carton ,
-		tppd.uom uom_ppd_outer_carton ,
-		tppd.width width_ppd_outer_carton ,
-		tppd.weight weight_ppd_outer_carton ,		
-		tppd.cbm cbm_ppd_outer_carton 
-	from tabItem ti
-	left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Outer Carton'
-	left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Outer Carton'
+    select 
+        ti.name, 
+        tucd.name id_uoms_outer_carton ,
+        tucd.uom uom_uoms_outer_carton ,
+        tucd.conversion_factor conversion_factor_uoms_outer_carton ,
+        tppd.name id_ppd_outer_carton , 
+        tppd.`length` length_ppd_outer_carton ,
+        tppd.thickness thickness_ppd_outer_carton ,
+        tppd.materials materials_ppd_outer_carton ,
+        tppd.uom uom_ppd_outer_carton ,
+        tppd.width width_ppd_outer_carton ,
+        tppd.weight weight_ppd_outer_carton ,		
+        tppd.cbm cbm_ppd_outer_carton 
+    from tabItem ti
+    left join `tabProduct Packing Dimensions` tppd on tppd.parent = ti.name and tppd.uom = 'Outer Carton'
+    left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Outer Carton'
 )
 select ti.item_code, ti.item_name , ti.item_group ,
 tis.supplier , tis.supplier_part_no , ti.min_order_qty , 
@@ -244,6 +255,8 @@ left outer join selling_pack sel on sel.name = ti.name
 left outer join inner_carton ic on ic.name = ti.name
 left outer join maxi_inner mi on mi.name = ti.name
 left outer join outer_carton oc on oc.name = ti.name
--- where sel.id_ppd_selling_pack is not null limit 5
-    """
+{conditions} {limit}
+    """.format(
+            conditions=conditions, limit=limit
+        )
     )

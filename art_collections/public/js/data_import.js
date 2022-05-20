@@ -1,16 +1,15 @@
 frappe.ui.form.on('Data Import', {
 
     refresh: function (frm) {
-
     },
 
     download_item_template: function (frm) {
-        open_url_post(
-            '/api/method/art_collections.controllers.item_import.download_template',
-            {
-                data_import_name: frm.doc.name
-            }
+
+        frm.data_exporter = new npro.utils.DataExporter(
+            frm.doc.reference_doctype,
+            frm.doc.import_type
         );
     }
 
 });
+

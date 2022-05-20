@@ -41,3 +41,121 @@ frappe.show_email_dialog = function (frm) {
             }, 900);
         });
 }
+
+
+
+frappe.require('/assets/js/data_import_tools.min.js', () => {
+    frappe.provide('npro.utils')
+    npro.utils.DataExporter = class CustomDataExporter {
+        constructor(doctype, exporting_for) {
+            this.doctype = doctype;
+            this.exporting_for = exporting_for;
+            frappe.model.with_doctype(doctype, () => {
+                this.make_dialog();
+            });
+        }
+
+        make_dialog() {
+
+            this.dialog = new frappe.ui.Dialog({
+                title: __('Export Data'),
+                fields: [
+                    {
+                        fieldtype: 'Select',
+                        fieldname: 'export_records',
+                        label: __('Export Type'),
+                        options: [
+                            {
+                                label: __('All Records'),
+                                value: 'all'
+                            },
+                            {
+                                label: __('Filtered Records'),
+                                value: 'by_filter'
+                            },
+                            {
+                                label: __('5 Records'),
+                                value: '5_records'
+                            },
+                            {
+                                label: __('Blank Template'),
+                                value: 'blank_template'
+                            }
+                        ],
+                        default: this.exporting_for === 'Insert New Records' ? 'blank_template' : 'all',
+                        change: () => {
+                            this.update_record_count_message();
+                        }
+                    },
+                    {
+                        fieldtype: 'HTML',
+                        fieldname: 'filter_area',
+                        depends_on: doc => doc.export_records === 'by_filter'
+                    },],
+                primary_action_label: __('Export'),
+                primary_action: values => this.export_records(values),
+            });
+
+            this.make_filter_area();
+
+            this.dialog.show();
+
+            // end make dialog
+        }
+
+        make_filter_area() {
+            this.filter_group = new frappe.ui.FilterGroup({
+                parent: this.dialog.get_field('filter_area').$wrapper,
+                doctype: this.doctype,
+                on_change: () => {
+                    this.update_record_count_message();
+                }
+            });
+        }
+
+        update_record_count_message() {
+            // 
+        }
+
+        get_filters() {
+            return this.filter_group.get_filters().map(filter => {
+                return filter.slice(0, 4);
+            });
+        }
+
+        export_records() {
+            let method = '/api/method/art_collections.controllers.item_import.download_template';
+
+            let multicheck_fields = this.dialog.fields
+                .filter(df => df.fieldtype === 'MultiCheck')
+                .map(df => df.fieldname);
+
+            let values = this.dialog.get_values();
+
+            let doctype_field_map = Object.assign({}, values);
+            for (let key in doctype_field_map) {
+                if (!multicheck_fields.includes(key)) {
+                    delete doctype_field_map[key];
+                }
+            }
+
+            let filters = null;
+            if (values.export_records === 'by_filter') {
+                filters = this.get_filters();
+            }
+
+            open_url_post(method, {
+                data_import: cur_frm.doc.name,
+                doctype: this.doctype,
+                file_type: values.file_type,
+                export_records: values.export_records,
+                export_fields: doctype_field_map,
+                export_filters: filters
+            });
+        }
+    }
+
+
+});
+
+

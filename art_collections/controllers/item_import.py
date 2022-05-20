@@ -100,13 +100,13 @@ def start_item_import(doc, method):
 
 
 def get_records(**kwargs):
-    conditions, limit = "", " limit 0 "
+    conditions, limit = "", ""
 
     if kwargs.get("export_records") == "5_records":
         limit = " limit 5 "
-    elif kwargs.get("export_records") == "Blank Template":
+    elif kwargs.get("export_records") == "blank_template":
         limit = " limit 0 "
-    elif kwargs.get("export_records") == "Filtered Records":
+    elif kwargs.get("export_records") == "by_filter":
         export_filters = frappe.parse_json(kwargs.get("export_filters"))
         parent_data = frappe.db.get_list(
             kwargs.get("doctype"),
@@ -114,6 +114,7 @@ def get_records(**kwargs):
             fields=["name"],
             as_list=1,
         )
+
         if parent_data:
             conditions = " where ti.name in (%s)" % ",".join(
                 ["'%s'" % d[0] for d in parent_data]
@@ -258,5 +259,6 @@ left outer join outer_carton oc on oc.name = ti.name
 {conditions} {limit}
     """.format(
             conditions=conditions, limit=limit
-        )
+        ),
+        # debug=True,
     )

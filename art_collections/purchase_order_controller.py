@@ -70,7 +70,8 @@ def purchase_order_custom_on_submit(self, method):
 
 def set__availability_date_to_blank_for_item_based_on_po_shipping_date_art(self,method):
     for po_item in self.get("items"):
-        if flt(po_item.received_qty) == flt(po_item.stock_qty) and check_previous_submitted_po_item_with_blank_shipping_date_exist(po_item.item_code)==False:
+        # no more PO shipping_date to be received ( No submitted PO with Item exist having blank shipping_date )
+        if flt(po_item.received_qty) == flt(po_item.stock_qty) and check_previous_submitted_po_item_with_no_blank_shipping_date_exist(po_item.item_code)==True:
             frappe.db.set_value("Item",po_item.item_code,"availability_date_art",None)
             frappe.msgprint(_("Availability date for item {0} is set to blank.".format(
                         po_item.item_code)),indicator="orage",alert=True)                
@@ -239,17 +240,17 @@ def check_previous_po_item_is_not_received(item_code):
         return None
 
 # No submitted PO with Item exist having blank shipping_date 
-def check_previous_submitted_po_item_with_blank_shipping_date_exist(item_code):
+def check_previous_submitted_po_item_with_no_blank_shipping_date_exist(item_code):
     check_previous_with_blank_shipping_date_exist = frappe.db.sql(
         """SELECT  POI.shipping_date_art 
     FROM  `tabPurchase Order` PO inner join `tabPurchase Order Item` POI 
     on PO.name=POI.parent
     where PO.docstatus =1
-    and POI.received_qty =0	and POI.shipping_date_art  IS NOT NULL and POI.item_code = %s""",
+    and POI.shipping_date_art  IS NULL and POI.item_code = %s""",
         (item_code),
         as_dict=True,
     )
     if len(check_previous_with_blank_shipping_date_exist) > 0:
-        return True
-    else:
         return False
+    else:
+        return True

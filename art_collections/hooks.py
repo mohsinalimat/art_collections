@@ -122,7 +122,8 @@ doc_events = {
     },
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {
-        "validate": "art_collections.directive_controller.get_directive",
+        "validate": ["art_collections.directive_controller.get_directive",
+        "art_collections.purchase_receipt_controller.copy_set_apart_from_PO"],
         "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic",
         "before_cancel":"art_collections.purchase_receipt_controller.unlink_supplier_packing_list_from_purchase_receipt"
     },

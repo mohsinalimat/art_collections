@@ -47,3 +47,7 @@ def stock_availability_notification(self):
 							"now": True,
 							}
 						enqueue(method=frappe.sendmail, queue='short', timeout=300, is_async=True, **email_args)
+
+def unlink_supplier_packing_list_from_purchase_receipt(self,method):
+	for item in self.items:
+		item.ref_supplier_packing_list_art=None						

@@ -45,6 +45,7 @@ doctype_js = {
     "Sales Invoice": "public/js/sales_invoice.js",
     "Website Item": "public/js/website_item.js",
     "Data Import": "public/js/data_import.js",
+    "Purchase Receipt": "public/js/purchase_receipt.js",
     # "Request for Quotation": "public/js/request_for_quotation.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -123,6 +124,7 @@ doc_events = {
     "Purchase Receipt": {
         "validate": "art_collections.directive_controller.get_directive",
         "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic",
+        "before_cancel":"art_collections.purchase_receipt_controller.unlink_supplier_packing_list_from_purchase_receipt"
     },
     "Sales Order": {
         "validate": [

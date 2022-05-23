@@ -132,10 +132,21 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Item Arrival Forecast",
+   "link_to": "Item Arrival Forecast",
+   "link_type": "Report",
+   "onboard": 0,
+   "only_for": "",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Sales",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -153,6 +164,7 @@
    "label": "Item Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -197,6 +209,7 @@
    "label": "Settings",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -223,6 +236,7 @@
    "label": "Customer Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -240,6 +254,7 @@
    "label": "Address Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -275,6 +290,7 @@
    "label": "Sales Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -292,6 +308,7 @@
    "label": "Purchase Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -365,7 +382,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-04-26 14:57:27.252374",
+ "modified": "2022-05-23 08:55:52.514711",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

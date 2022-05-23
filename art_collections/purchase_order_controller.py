@@ -23,7 +23,16 @@ from frappe.utils import cint, get_site_url, get_url
 
 def purchase_order_custom_validation(self, method):
     fill_item_pack_details(self)
+    check_set_apart_qty(self)
 
+def check_set_apart_qty(self):
+    for set_apart_item in self.set_apart_po_item_for_customer_cf:
+        po_item_qty=0
+        for item in self.items:
+            if item.item_code == set_apart_item.item_code:
+                po_item_qty=item.qty+po_item_qty
+        if set_apart_item.qty > po_item_qty:
+            frappe.throw(_('Set Apart Item {0} cannot have qty > {1}'.format(frappe.bold(set_apart_item.item_code),frappe.bold(po_item_qty))))
 
 def fill_item_pack_details(self):
     total_cbm_art = 0

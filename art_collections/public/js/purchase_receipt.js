@@ -6,7 +6,8 @@ frappe.ui.form.on("Purchase Receipt", {
                 frappe.db.get_list('Purchase Receipt Item', {
                     fields: ['ref_supplier_packing_list_art'],
                     filters: {
-                        'ref_supplier_packing_list_art': ['!=', '']
+                        'ref_supplier_packing_list_art': ['!=', ''],
+                        'docstatus': ['!=', '2'],
                     },
                 }).then(records => {
                     console.log(records);

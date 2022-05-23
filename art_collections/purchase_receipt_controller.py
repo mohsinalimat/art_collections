@@ -54,16 +54,12 @@ def unlink_supplier_packing_list_from_purchase_receipt(self,method):
 
 
 def copy_set_apart_from_PO(self,method):
+	self.set_apart_po_item_for_customer_cf=[]
 	for pr_item in self.items:
 		if pr_item.purchase_order and pr_item.purchase_order_item:
-			set_apart_po_item=frappe.db.get_list('Set Apart PO Item for Customer', 
-			filters={'parent': ['=', pr_item.purchase_order],'item_code': ['=', pr_item.item_code]},
-			fields=['item_code', 'qty','customer'],as_dict=1)
-			if len(set_apart_po_item)>0:
-				found=False
-				for pr_set_apart_item in self.set_apart_po_item_for_customer_cf:
-					if pr_set_apart_item.item_code==set_apart_po_item[0].item_code:
-						found==True
-						break
-				if found==False:
-					self.append('set_apart_po_item_for_customer_cf',set_apart_po_item[0])							
+			set_apart_po_items=frappe.db.get_list('Set Apart PO Item for Customer', \
+			filters={'parent': ['=', pr_item.purchase_order],'item_code': ['=', pr_item.item_code]}, \
+			fields=['item_code', 'qty','customer'])
+			if len(set_apart_po_items)>0:
+					for set_apart_item in set_apart_po_items:
+						self.append('set_apart_po_item_for_customer_cf',set_apart_item)							

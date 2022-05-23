@@ -341,21 +341,39 @@ def update_po_item_qty_based_on_qty_as_per_spl(spl_packing_list):
 
 
 def set_missing_values(source, target):
+	# source = Parent SPL, target= PR main, row = PR new item, po_item= PO item, po_main = PO Parent
+	distinct_po_item=[]
+	for spl_item in source.supplier_packing_list_detail:
+		if spl_item.po_item_code not in distinct_po_item and spl_item.qty_as_per_spl>0:
+			po_item=frappe.get_doc("Purchase Order Item",spl_item.po_item_code)
+			po_main=frappe.get_doc("Purchase Order",po_item.parent)
+			if abs(po_item.received_qty) < abs(po_item.qty) and \
+				po_main.docstatus==1 and po_main.status not in ["Closed", "On Hold"] and po_main.per_received < flt(99.99) and po_main.company==target.company:
+				
+				row=target.append("items",{})
+				row.purchase_order_item= spl_item.po_item_code
+				row.purchase_order=spl_item.purchase_order
+				row.item_code=po_item.item_code
+				row.item_name=po_item.item_name
+				row.description=po_item.description
+				row.uom=po_item.uom
+				row.conversion_factor=flt(po_item.conversion_factor)
+				row.bom=po_item.bom
+				row.material_request=po_item.material_request
+				row.material_request_item=po_item.material_request_item					
+				row.qty = flt(po_item.qty) - flt(po_item.received_qty)
+				row.stock_qty = (flt(po_item.qty) - flt(po_item.received_qty)) * flt(po_item.conversion_factor)
+				row.amount = (flt(po_item.qty) - flt(po_item.received_qty)) * flt(po_item.rate)
+				row.base_amount = (
+					(flt(po_item.qty) - flt(po_item.received_qty)) * flt(po_item.rate) * flt(target.conversion_rate))	
+				row.ref_supplier_packing_list_art=source.name
+				distinct_po_item.append(spl_item.po_item_code)
 	target.run_method("set_missing_values")
 	target.run_method("calculate_taxes_and_totals")
 
 
 @frappe.whitelist()
 def make_purchase_receipt(source_name, target_doc=None):
-	def update_item(obj, target, source_parent):
-		target.ref_supplier_packing_list_art=source_parent.name
-		pass
-		# target.qty = flt(obj.qty) - flt(obj.received_qty)
-		# target.stock_qty = (flt(obj.qty) - flt(obj.received_qty)) * flt(obj.conversion_factor)
-		# target.amount = (flt(obj.qty) - flt(obj.received_qty)) * flt(obj.rate)
-		# target.base_amount = (
-		# 	(flt(obj.qty) - flt(obj.received_qty)) * flt(obj.rate) * flt(source_parent.conversion_rate)
-		# )
 
 	doc = get_mapped_doc(
 		"Supplier Packing List Art",
@@ -367,19 +385,6 @@ def make_purchase_receipt(source_name, target_doc=None):
 				"validation": {
 					"docstatus": ["=", 1],
 				},
-			},
-			"Supplier Packing List Detail Art": {
-				"doctype": "Purchase Receipt Item",
-				"field_map": {
-					"supplier_item_code": "supplier_part_no",
-					"purchase_order": "purchase_order",
-					# "po_item_code": "purchase_order_item",
-					"stock_uom": "stock_uom",
-					"qty_as_per_spl": "qty",
-				},
-				"postprocess": update_item,
-				"condition": lambda doc: abs(doc.qty_as_per_spl) >0
-				# and doc.delivered_by_supplier != 1,
 			},
 			"Purchase Taxes and Charges": {"doctype": "Purchase Taxes and Charges", "add_if_empty": True},
 		},

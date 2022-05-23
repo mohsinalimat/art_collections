@@ -46,7 +46,7 @@ class ArtShipment(Document):
 		# update forecast date
 		for container in self.art_shipment_container:
 			po_from_spl_list=frappe.db.get_list('Supplier Packing List Detail Art', filters={'docstatus': 1, 'shipment':self.name,'container':container.container_name}
-				,fields=['po_item_code','item_name'],as_dict=1)
+				,fields=['po_item_code','item_name'])
 			for po in po_from_spl_list:
 				frappe.db.set_value('Purchase Order Item', po.po_item_code, 
 				{'arrival_forecast_date_art': container.arrival_forecast_date,'arrival_forecast_hour_art': container.arrival_forecast_hour})			

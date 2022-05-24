@@ -18,7 +18,7 @@ class ArtShipment(Document):
 			item_availability_buffer_days = frappe.db.get_single_value("Art Collections Settings", "item_availability_buffer_days")
 			required_by_date_with_buffer = add_days(self.shipping_date, item_availability_buffer_days)
 
-			po_from_spl_list=frappe.db.get_list('Supplier Packing List Detail Art', filters={'docstatus': 1, 'shipment':self.name},fields=['purchase_order', 'po_item_code','item_name','item_code'],as_dict=1)
+			po_from_spl_list=frappe.db.get_list('Supplier Packing List Detail Art', filters={'docstatus': 1, 'shipment':self.name},fields=['purchase_order', 'po_item_code','item_name','item_code'])
 			for po in po_from_spl_list:
 				po_item = frappe.db.get_value('Purchase Order Item', po.po_item_code, ['shipping_date_art','received_qty'],as_dict=1)		
 				# no shippment yet, so update latest date

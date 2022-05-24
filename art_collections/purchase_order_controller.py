@@ -23,16 +23,37 @@ from frappe.utils import cint, get_site_url, get_url
 
 def purchase_order_custom_validation(self, method):
     fill_item_pack_details(self)
+    check_set_apart_item_matches_po_item(self)
     check_set_apart_qty(self)
 
-def check_set_apart_qty(self):
+def check_set_apart_item_matches_po_item(self):
     for set_apart_item in self.set_apart_po_item_for_customer_cf:
-        po_item_qty=0
+        found=False
         for item in self.items:
             if item.item_code == set_apart_item.item_code:
-                po_item_qty=item.qty+po_item_qty
-        if set_apart_item.qty > po_item_qty:
-            frappe.throw(_('Set Apart Item {0} cannot have qty > {1}'.format(frappe.bold(set_apart_item.item_code),frappe.bold(po_item_qty))))
+                found=True
+        if found==False:
+            frappe.throw(_('Set Apart has Item {0}. It is not part of PO Items. Please remove it to proceed..'.format(frappe.bold(set_apart_item.item_code))))
+
+def check_set_apart_qty(self):
+    # set_apart_result= [{'item': 1, 'qty': 1}, {'item': 2, 'qty': 2}]
+    set_apart_result=[]
+    for set_apart_item in self.set_apart_po_item_for_customer_cf:
+        found=False
+        for item in set_apart_result:
+            if item['item']==set_apart_item.item_code:
+                item['qty']=item['qty']+set_apart_item.qty
+                found=True
+        if found==False:
+            set_apart_result.append({'item':set_apart_item.item_code,'qty':set_apart_item.qty})
+
+    print(set_apart_result)
+    for item in self.items:
+        for set_result_item in set_apart_result:
+            if item.item_code == set_result_item['item']:
+                if item.qty < set_result_item['qty']:
+                    frappe.throw(_('Set Apart Item {0} has qty {1}. It cannot be greater than {2}'
+                    .format(frappe.bold(item.item_code),frappe.bold(set_result_item['qty']),frappe.bold(item.qty))))
 
 def fill_item_pack_details(self):
     total_cbm_art = 0

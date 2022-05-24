@@ -120,7 +120,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-05-21 07:41:16.233978",
+ "modified": "2022-05-24 07:29:33.060037",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Shipment",
@@ -175,6 +175,7 @@
    "write": 1
   }
  ],
+ "search_fields": "shipment_name,shipping_date,mode_of_shipment,port_of_delivery",
  "sort_field": "modified",
  "sort_order": "DESC"
 }

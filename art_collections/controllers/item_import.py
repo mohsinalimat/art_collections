@@ -10,6 +10,98 @@ from frappe.utils.xlsxutils import build_xlsx_response
 import io
 import os
 
+frappe_template_columns = [
+    "Item Code",
+    "Item Group",
+    "Default Unit of Measure",
+    "Thickness (cm)",
+    "Width (cm)",
+    "Length (cm)",
+    "Weight (kg)",
+    "HS CODE",
+    "Minimum Order Qty",
+    "Main Design Color",
+    "Packing Type",
+    "Supplier (Supplier Items)",
+    "Supplier Part Number (Supplier Items)",
+    "ID (Item Components)",
+    "Matiere (Item Components)",
+    "ID (Barcodes)",
+    "Barcode (Barcodes)",
+    "ID (UOMs)",
+    "UOM (UOMs)",
+    "Conversion Factor (UOMs)",
+    "ID (Product Packing Dimensions)",
+    "UOM (Product Packing Dimensions)",
+    "Materials (Product Packing Dimensions)",
+    "Length (cm) (Product Packing Dimensions)",
+    "Width (cm) (Product Packing Dimensions)",
+    "Thickness (cm) (Product Packing Dimensions)",
+    "Weight (kg) (Product Packing Dimensions)",
+    "CBM (m3) (Product Packing Dimensions)",
+]
+
+custom_template_columns = [
+    "Item Code",
+    "Item Name",
+    "Item Group",
+    "Supplier (Supplier Items)",
+    "Supplier Part Number (Supplier Items)",
+    "Minimum Order Qty",
+    "HS CODE",
+    "Packing Type",
+    "Default Unit of Measure",
+    "Length (cm)",
+    "Width (cm)",
+    "Thickness (cm)",
+    "Weight (kg)",
+    "Main Design Color",
+    "ID (Item Components)",
+    "Matiere (Item Components)",
+    "ID (Barcodes)",
+    "Barcode (Barcodes)",
+    "ID (UOMs)",
+    "UOM (UOMs)",
+    "Conversion Factor (UOMs)",
+    "ID (Product Packing Dimensions)",
+    "Length (cm) (Product Packing Dimensions)",
+    "Width (cm) (Product Packing Dimensions)",
+    "Thickness (cm) (Product Packing Dimensions)",
+    "Weight (kg) (Product Packing Dimensions)",
+    "CBM (m3) (Product Packing Dimensions)",
+    "Materials (Product Packing Dimensions)",
+    "ID (UOMs)",
+    "UOM (UOMs)",
+    "Conversion Factor (UOMs)",
+    "ID (Product Packing Dimensions)",
+    "Length (cm) (Product Packing Dimensions)",
+    "Width (cm) (Product Packing Dimensions)",
+    "Thickness (cm) (Product Packing Dimensions)",
+    "Weight (kg) (Product Packing Dimensions)",
+    "CBM (m3) (Product Packing Dimensions)",
+    "Materials (Product Packing Dimensions)",
+    "ID (UOMs)",
+    "UOM (UOMs)",
+    "Conversion Factor (UOMs)",
+    "ID (Product Packing Dimensions)",
+    "Length (cm) (Product Packing Dimensions)",
+    "Width (cm) (Product Packing Dimensions)",
+    "Thickness (cm) (Product Packing Dimensions)",
+    "Weight (kg) (Product Packing Dimensions)",
+    "CBM (m3) (Product Packing Dimensions)",
+    "Materials (Product Packing Dimensions)",
+    "ID (UOMs)",
+    "UOM (UOMs)",
+    "Conversion Factor (UOMs)",
+    "ID (Product Packing Dimensions)",
+    "Length (cm) (Product Packing Dimensions)",
+    "Width (cm) (Product Packing Dimensions)",
+    "Thickness (cm) (Product Packing Dimensions)",
+    "Weight (kg) (Product Packing Dimensions)",
+    "CBM (m3) (Product Packing Dimensions)",
+    "Materials (Product Packing Dimensions)",
+]
+
 
 @frappe.whitelist()
 def download_template(data_import=None, **kwargs):
@@ -19,13 +111,13 @@ def download_template(data_import=None, **kwargs):
 
     template = load_workbook(template_path)
     sheet = template["Sheet1"]
-    sheet.delete_rows(6, sheet.max_row - 1)
+    sheet.delete_rows(3, sheet.max_row - 1)
 
     data = get_records(**kwargs)
 
     for row, d in enumerate(data):
         for col, value in enumerate(d):
-            sheet.cell(row=row + 6, column=col + 1, value=value)
+            sheet.cell(row=row + 3, column=col + 1, value=value)
     out = io.BytesIO()
     template.save(out)
     frappe.response["filename"] = _("Item") + ".xlsx"
@@ -34,18 +126,25 @@ def download_template(data_import=None, **kwargs):
 
 
 def start_item_import(doc, method):
+    # return
     # transform raw import file to frappe format and attach to doc
-    if doc.reference_doctype == "Item" and doc.import_art_item_file:
 
+    if doc.reference_doctype == "Item" and doc.import_art_item_file:
         file_name = doc.import_art_item_file.split("/")[-1]
         file_path = frappe.get_site_path("private", "files", file_name)
+        # file_path = "/home/frappe/frappe-13/sites/debug/item_import.xlsx"
 
         wb = load_workbook(filename=file_path)
-        template_columns = next(wb["Sheet2"].values)
-        header = next(wb["Sheet1"].values)
 
         def get_values(col, row):
-            value = [row[idx] for idx, d in enumerate(header) if d == col]
+            # Copy UOM (UOMs) to UOM (Product Packing Dimensions)
+            # to save repeating UOM values for PPD child table in upload excel
+            if col == "UOM (Product Packing Dimensions)":
+                col = "UOM (UOMs)"
+
+            value = [
+                row[idx] for idx, d in enumerate(custom_template_columns) if d == col
+            ]
             if col in ["HS CODE"]:
                 return [cstr(x) for x in value]
             return value
@@ -57,9 +156,14 @@ def start_item_import(doc, method):
                 frappe.get_doc({"doctype": doctype, field: value}).insert()
 
         for row in wb["Sheet1"].iter_rows(
-            min_row=6, max_row=6, max_col=00, values_only=True
+            min_row=3, max_row=100, max_col=100, values_only=True
         ):
-            items.append([get_values(col, row) for col in template_columns])
+            if not row[0]:
+                break
+
+            tmp = [get_values(col, row) for col in frappe_template_columns]
+            items.append(tmp)
+
             # create docs (hscode, matiere) that do not exist
             value = get_values("HS CODE", row)
             check_and_create("Customs Tariff Number", cstr(value[0]), "tariff_number")
@@ -70,7 +174,7 @@ def start_item_import(doc, method):
             value = get_values("Matiere (Item Components)", row)
             check_and_create("Matiere", cstr(value[0]), "matiere")
 
-        import_csv = [template_columns]
+        import_csv = [frappe_template_columns]
         for item in items:
             max_child_count = max([len(col) for col in item])
             for i in range(len(item)):
@@ -85,8 +189,8 @@ def start_item_import(doc, method):
         xlsx_file = make_xlsx(import_csv, "Data Import Template")
         file_data = xlsx_file.getvalue()
 
-        # with open("sample_import.xlsx", "wb") as item_import_file:
-        #     item_import_file.write(file_data)
+        with open("sample_import_test.xlsx", "wb") as item_import_file:
+            item_import_file.write(file_data)
 
         f = frappe.get_doc(
             doctype="File",
@@ -199,8 +303,8 @@ outer_carton as
     left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name and tucd.uom = 'Outer Carton'
 )
 select ti.item_code, ti.item_name , ti.item_group ,
-tis.supplier , tis.supplier_part_no , ti.min_order_qty , 
-ti.customs_tariff_number , ti.packing_type_art , ti.stock_uom , 
+tis.supplier , tis.supplier_part_no , 
+ti.min_order_qty , ti.customs_tariff_number , ti.packing_type_art , ti.stock_uom , 
 ti.length_art , ti.width_art , ti.thickness_art , ti.weight_art , ti.main_design_color_art , 
 tica.name id_item_components , tica.matiere matiere_item_components ,
 tib.name id_barcodes, tib.barcode barcode_barcodes , 
@@ -208,50 +312,50 @@ sel.id_uoms_selling_pack ,
 sel.uom_uoms_selling_pack , 
 sel.conversion_factor_uoms_selling_pack ,
 sel.id_ppd_selling_pack , 
-sel.length_ppd_selling_pack ,
-sel.thickness_ppd_selling_pack ,
 sel.materials_ppd_selling_pack ,
-sel.uom_ppd_selling_pack ,
+sel.length_ppd_selling_pack ,
 sel.width_ppd_selling_pack ,
+sel.thickness_ppd_selling_pack ,
 sel.weight_ppd_selling_pack ,
 sel.cbm_ppd_selling_pack ,
+-- sel.uom_ppd_selling_pack ,
 ic.id_uoms_inner_carton , 
 ic.uom_uoms_inner_carton , 
 ic.conversion_factor_uoms_inner_carton ,
 ic.id_ppd_inner_carton , 
-ic.length_ppd_inner_carton ,
-ic.thickness_ppd_inner_carton ,
 ic.materials_ppd_inner_carton ,
-ic.uom_ppd_inner_carton ,
+ic.length_ppd_inner_carton ,
 ic.width_ppd_inner_carton ,
+ic.thickness_ppd_inner_carton ,
 ic.weight_ppd_inner_carton ,
 ic.cbm_ppd_inner_carton ,
+-- ic.uom_ppd_inner_carton ,
 mi.id_uoms_maxi_inner , 
 mi.uom_uoms_maxi_inner , 
 mi.conversion_factor_uoms_maxi_inner ,
 mi.id_ppd_maxi_inner , 
-mi.length_ppd_maxi_inner ,
-mi.thickness_ppd_maxi_inner ,
 mi.materials_ppd_maxi_inner ,
-mi.uom_ppd_maxi_inner ,
+mi.length_ppd_maxi_inner ,
 mi.width_ppd_maxi_inner ,
+mi.thickness_ppd_maxi_inner ,
 mi.weight_ppd_maxi_inner ,
 mi.cbm_ppd_maxi_inner ,
+-- mi.uom_ppd_maxi_inner ,
 oc.id_uoms_outer_carton , 
 oc.uom_uoms_outer_carton , 
 oc.conversion_factor_uoms_outer_carton ,
 oc.id_ppd_outer_carton , 
-oc.length_ppd_outer_carton ,
-oc.thickness_ppd_outer_carton ,
 oc.materials_ppd_outer_carton ,
-oc.uom_ppd_outer_carton ,
+oc.length_ppd_outer_carton ,
 oc.width_ppd_outer_carton ,
+oc.thickness_ppd_outer_carton ,
 oc.weight_ppd_outer_carton ,
 oc.cbm_ppd_outer_carton
+-- oc.uom_ppd_outer_carton ,
 from tabItem ti 
 left outer join `tabItem Supplier` tis on tis.parent = ti.name 
-left outer join `tabItem Components Art` tica on tica.parent = ti.name 
-left outer join `tabItem Barcode` tib on tib.parent = ti.name
+left outer join (select name, matiere , parent from `tabItem Components Art` group by parent) tica on tica.parent = ti.name
+left outer join (select name , barcode , parent from `tabItem Barcode` group by parent) tib on tib.parent = ti.name
 left outer join selling_pack sel on sel.name = ti.name
 left outer join inner_carton ic on ic.name = ti.name
 left outer join maxi_inner mi on mi.name = ti.name

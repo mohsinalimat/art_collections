@@ -7,10 +7,19 @@ from __future__ import unicode_literals
 import frappe
 
 
-def get_print_context(name):
+def get_print_context(name, supplier):
     doc = frappe.get_doc("Request for Quotation", name)
 
-    ctx = {"doc": doc}
+    ctx = {"doc": doc.as_dict()}
+
+    ctx["supplier_name"] = frappe.db.get_value(
+        "Supplier", {"name": supplier}, "supplier_name"
+    )
+
+    for d in doc.suppliers:
+        if d.supplier == supplier:
+            ctx["supplier_contact"] = d.contact
+            ctx["supplier_email_id"] = d.email_id
 
     ctx["items"] = list(
         frappe.db.sql(

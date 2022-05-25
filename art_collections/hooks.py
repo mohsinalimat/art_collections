@@ -35,6 +35,7 @@ doctype_js = {
     "Delivery Note": "public/js/delivery_note.js",
     "Sales Order": "public/js/sales_order.js",
     "Quotation": "public/js/quotation.js",
+    "Request for Quotation": "public/js/request_for_quotation.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Issue": "public/js/issue.js",
     "Pricing Rule": "public/js/pricing_rule.js",
@@ -46,7 +47,6 @@ doctype_js = {
     "Website Item": "public/js/website_item.js",
     "Data Import": "public/js/data_import.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
-    # "Request for Quotation": "public/js/request_for_quotation.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 
@@ -122,10 +122,12 @@ doc_events = {
     },
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {
-        "validate": ["art_collections.directive_controller.get_directive",
-        "art_collections.purchase_receipt_controller.copy_set_apart_from_PO"],
+        "validate": [
+            "art_collections.directive_controller.get_directive",
+            "art_collections.purchase_receipt_controller.copy_set_apart_from_PO",
+        ],
         "on_submit": "art_collections.purchase_receipt_controller.purchase_receipt_custom_submit_logic",
-        "before_cancel":"art_collections.purchase_receipt_controller.unlink_supplier_packing_list_from_purchase_receipt"
+        "before_cancel": "art_collections.purchase_receipt_controller.unlink_supplier_packing_list_from_purchase_receipt",
     },
     "Sales Order": {
         "validate": [
@@ -265,6 +267,7 @@ jenv = {
     "methods": [
         "get_print_context_for_art_collectons_sales_order:art_collections.art_collections.print_format.art_so.get_print_context",
         "get_print_context_for_art_collectons_purchase_order:art_collections.art_collections.print_format.po_art.get_print_context",
+        "get_print_context_for_art_collectons_rfq:art_collections.art_collections.print_format.rfq_art_pdf.get_print_context",
     ],
     "filters": [],
 }

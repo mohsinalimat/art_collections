@@ -28,3 +28,15 @@ def fill_item_pack_details(self):
 	forty_foot_filling_percentage=frappe.db.get_single_value('Art Collections Settings', 'filling_percentage_for_40_foot_container') or 63	
 	self.filling_percentage_of_20_foot_container_art=(total_cbm_art*100)/twenty_foot_filling_percentage
 	self.filling_percentage_of_40_foot_container_art=(total_cbm_art*100)/forty_foot_filling_percentage				
+
+
+
+
+@frappe.whitelist()
+def get_pdf(doctype, name, supplier):
+    from frappe.utils.print_format import download_pdf
+    from erpnext.buying.doctype.request_for_quotation.request_for_quotation import get_rfq_doc
+    doc = get_rfq_doc(doctype, name, supplier)
+    if doc:
+        download_pdf(doctype, name, format="RFQ Art Pdf", doc=doc)
+

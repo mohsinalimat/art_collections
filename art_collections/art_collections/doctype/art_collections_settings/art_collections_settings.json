@@ -24,7 +24,9 @@
   "product_uom",
   "section_break_17",
   "filling_percentage_for_20_foot_container",
-  "filling_percentage_for_40_foot_container"
+  "filling_percentage_for_40_foot_container",
+  "auto_email_sb_section",
+  "art_auto_email_template"
  ],
  "fields": [
   {
@@ -136,12 +138,23 @@
    "fieldtype": "Link",
    "label": "Maxi Inner Carton",
    "options": "UOM"
+  },
+  {
+   "fieldname": "auto_email_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Art Auto Email Template"
+  },
+  {
+   "fieldname": "art_auto_email_template",
+   "fieldtype": "Table",
+   "options": "Art Auto Email Template",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-04-28 15:05:35.110885",
+ "modified": "2022-05-30 11:03:14.488394",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

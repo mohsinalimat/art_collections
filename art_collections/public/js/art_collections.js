@@ -28,18 +28,22 @@ frappe.show_email_dialog = function (frm) {
         real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name
     });
 
-
-    frappe.db.get_single_value('Art Collections Settings', 'sales_order_email_template')
-        .then(email_template => {
+    frappe.model.with_doc("Art Collections Settings", "Art Collections Settings", function () {
+        let settings = frappe.model.get_doc("Art Collections Settings");
+        let template = (settings.art_auto_email_template || []).filter(t => { return t.doc_type == frm.doctype });
+        if (template.length) {
             setTimeout(() => {
                 composer.dialog.fields_dict['select_attachments'].$wrapper.find("input").attr("checked", "checked");
                 composer.dialog.fields_dict['content'].set_value("");
                 composer.dialog.set_values({
-                    "email_template": email_template,
+                    "email_template": template[0].email_template,
                     // "select_print_format": 'Art Collections Sales Order'
                 });
-            }, 900);
-        });
+            }, 500);
+
+        }
+
+    });
 }
 
 

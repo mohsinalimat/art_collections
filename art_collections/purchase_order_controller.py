@@ -284,3 +284,12 @@ def check_previous_submitted_po_item_with_no_blank_shipping_date_exist(item_code
         return False
     else:
         return True
+
+def get_po_dashboard_links(data):
+    data["non_standard_fieldnames"].update({"Supplier Packing List Art":"purchase_order"})
+
+    for d in data.get("transactions",[]):
+        if d.get("label") == _("Reference"):
+            d.update({"items":d.get("items")+["Supplier Packing List Art"]})
+
+    return data

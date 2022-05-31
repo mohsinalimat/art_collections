@@ -237,6 +237,11 @@ standard_portal_menu_items = [
 # Overriding Whitelisted Methods
 # ------------------------------
 #
+
+override_doctype_dashboards={
+    "Purchase Order" : "art_collections.purchase_order_controller.get_po_dashboard_links"
+}
+
 override_whitelisted_methods = {
     " erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
     "erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website": "art_collections.api.get_product_info_for_website",

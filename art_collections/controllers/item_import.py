@@ -174,6 +174,9 @@ def start_item_import(doc, method):
             value = get_values("Matiere (Item Components)", row)
             check_and_create("Matiere", cstr(value[0]), "matiere")
 
+            value = get_values("Packing Type", row)
+            check_and_create("Packing Type Art", cstr(value[0]), "packing_type")
+
         import_csv = [frappe_template_columns]
         for item in items:
             max_child_count = max([len(col) for col in item])

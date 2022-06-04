@@ -151,9 +151,24 @@ def start_item_import(doc, method):
 
         docs_to_create, items = [], []
 
-        def check_and_create(doctype, value, field="name"):
-            if value and not frappe.db.exists(doctype, value):
-                frappe.get_doc({"doctype": doctype, field: value}).insert()
+        def check_and_create(row, column, doctype, field="name"):
+            print(row, type(row))
+            values = get_values(column, row)
+            if values and values[0]:
+                name = frappe.db.sql(
+                    """select name from `tab{}` where name = %s limit 1""".format(
+                        doctype
+                    ),
+                    (values[0],),
+                )
+                if not name:
+                    frappe.get_doc({"doctype": doctype, field: values[0]}).insert()
+                    # handle case when values are in wrong case:
+                    # frappe does not allow creating doc with name in different case
+                elif not name[0][0] == values[0]:
+                    row[custom_template_columns.index(column)] = name[0][0]
+
+            return row
 
         for row in wb["Sheet1"].iter_rows(
             min_row=3, max_row=100, max_col=100, values_only=True
@@ -161,21 +176,27 @@ def start_item_import(doc, method):
             if not row[0]:
                 break
 
+            row = list(row)
+
+            # create docs (hscode, design color, matiere, packing type art) that do not exist
+            row = check_and_create(
+                row, "HS CODE", "Customs Tariff Number", "tariff_number"
+            )
+
+            row = check_and_create(
+                row, "Main Design Color", "Design Color", "design_color"
+            )
+
+            row = check_and_create(
+                row, "Matiere (Item Components)", "Matiere", "matiere"
+            )
+
+            row = check_and_create(
+                row, "Packing Type", "Packing Type Art", "packing_type"
+            )
+
             tmp = [get_values(col, row) for col in frappe_template_columns]
             items.append(tmp)
-
-            # create docs (hscode, matiere) that do not exist
-            value = get_values("HS CODE", row)
-            check_and_create("Customs Tariff Number", cstr(value[0]), "tariff_number")
-
-            value = get_values("Main Design Color", row)
-            check_and_create("Design Color", cstr(value[0]), "design_color")
-
-            value = get_values("Matiere (Item Components)", row)
-            check_and_create("Matiere", cstr(value[0]), "matiere")
-
-            value = get_values("Packing Type", row)
-            check_and_create("Packing Type Art", cstr(value[0]), "packing_type")
 
         import_csv = [frappe_template_columns]
         for item in items:

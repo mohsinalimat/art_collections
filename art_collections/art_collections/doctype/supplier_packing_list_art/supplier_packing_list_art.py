@@ -4,14 +4,13 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import cint, cstr, flt,getdate,today
+from frappe.utils import cint, cstr, flt,getdate,today,add_days,format_date
 import json
 from frappe import _
 from erpnext.controllers.accounts_controller import update_child_qty_rate
 from frappe.utils.csvutils import getlink
 from frappe.model.meta import get_field_precision
 from art_collections.item_controller import get_qty_of_inner_cartoon,get_qty_of_outer_cartoon
-from art_collections.purchase_order_controller import update_availability_date_of_item_based_on_po_shipping_date_art
 
 class SupplierPackingListArt(Document):
 	def validate(self):
@@ -40,47 +39,46 @@ class SupplierPackingListArt(Document):
 				frappe.msgprint(_('Arrival forcast hour updated to {0} for PO:{1}, PO Item:{2}'.format(arrival_forecast_hour,item.purchase_order,item.item_code)),alert=1)								
 			print('arrival_forecast_date,arrival_forecast_hour')
 			print(arrival_forecast_date,arrival_forecast_hour)
-				
+
+	def update_item_availability_date(self,item_code,required_by_date_with_buffer,item_availability_buffer_days):
+		frappe.db.set_value("Item",item_code,"availability_date_art",required_by_date_with_buffer,)
+		frappe.msgprint(_("Availability date for item {0} is changed to {1} based on latest shipping date with buffer of {2} days.".format(
+					item_code,frappe.bold(format_date(required_by_date_with_buffer)),item_availability_buffer_days)),indicator="orage",alert=True,)				
 
 	def set_shipping_date_in_po_item(self):
-		shipping_date_changed_in_po=False
-		po_impacted_list=[]
-		for item in self.supplier_packing_list_detail:
-			shipping_date = frappe.db.get_value('Art Shipment', item.shipment, 'shipping_date')
-			po_item_shipping_date = frappe.db.get_value('Purchase Order Item', item.po_item_code, 'shipping_date_art')
+		for po in self.supplier_packing_list_detail:
+			shipping_date = frappe.db.get_value('Art Shipment', po.shipment, 'shipping_date')
+			item_availability_buffer_days = frappe.db.get_single_value("Art Collections Settings", "item_availability_buffer_days")
+			required_by_date_with_buffer = add_days(shipping_date, item_availability_buffer_days)
+
+			po_item_shipping_date = frappe.db.get_value('Purchase Order Item', po.po_item_code, 'shipping_date_art')
+			po_item_received_qty = frappe.db.get_value('Purchase Order Item', po.po_item_code, 'received_qty')
 			print('shipping_date---po_item_shipping_date')
 			print(shipping_date,'--',po_item_shipping_date)
 
-			if po_item_shipping_date and shipping_date:
-				# po date expiring , hence put shipping date
-				if getdate(po_item_shipping_date) <= getdate(today()):
-					shipping_date_changed_in_po=True
-					if item.purchase_order not in po_impacted_list:
-						po_impacted_list.append(item.purchase_order)
-					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
-					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. Eariler date had expired.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)					
-				# get the earliest date
-				elif getdate(po_item_shipping_date)>getdate(shipping_date):
-					shipping_date_changed_in_po=True
-					if item.purchase_order not in po_impacted_list:
-						po_impacted_list.append(item.purchase_order)					
-					frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
-					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. New date being more recent.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
-				else:
-					#  no change, as new date is futuristic
-					frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date not changed. as new date {2} being more futuristic.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
-			#  no po date
-			elif shipping_date and not po_item_shipping_date:
-				shipping_date_changed_in_po=True
-				if item.purchase_order not in po_impacted_list:
-					po_impacted_list.append(item.purchase_order)				
-				frappe.db.set_value('Purchase Order Item', item.po_item_code,'shipping_date_art',shipping_date )
-				frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. No earlier date present.'.format(item.purchase_order,item.item_code,shipping_date)),alert=1)
-		print('po_impacted_list',po_impacted_list)
-		if shipping_date_changed_in_po==True:
-			for po in po_impacted_list:
-				purchase_order=frappe.get_doc('Purchase Order',po)
-				update_availability_date_of_item_based_on_po_shipping_date_art(purchase_order,'custom')
+			# no shippment yet, so update latest date
+			if not po_item_shipping_date:
+				self.update_item_availability_date(po.item_code,required_by_date_with_buffer,item_availability_buffer_days)
+				frappe.db.set_value('Purchase Order Item', po.po_item_code,'shipping_date_art',shipping_date )
+				frappe.msgprint(_('PO:{0}, PO Item:{1} : PO Shipping date updated to {2}. No earlier date present.'.format(po.purchase_order,po.item_code,format_date(shipping_date))),alert=1)
+
+			#  earlier shippment arrived as their is received qty, so now change date to latest
+			elif po_item_shipping_date and po_item_received_qty>0:
+				frappe.db.set_value('Purchase Order Item', po.po_item_code, 'shipping_date_art',shipping_date)
+				frappe.msgprint(_('Purchase Order {0}, Item {1}. Earlier shippment had arrived. \n So, now date is set to latest {2}'.format(
+					po.purchase_order,po.item_name,format_date(shipping_date))),alert=1)
+				self.update_item_availability_date(po.item_code,required_by_date_with_buffer,item_availability_buffer_days)					
+			# we have shippment date, but no goods arrived. So set date which ever is earliest
+			elif po_item_shipping_date and po_item_received_qty==0 and getdate(shipping_date) < getdate(po_item_shipping_date): 
+				frappe.db.set_value('Purchase Order Item', po.po_item_code, 'shipping_date_art',shipping_date)
+				frappe.msgprint(_('Purchase Order {0}, Item {1}. New shipping date being earliest. \n So, now date is set to latest {2}'.format(
+					po.purchase_order,po.item_name,format_date(shipping_date))),alert=1)	
+				self.update_item_availability_date(po.item_code,required_by_date_with_buffer,item_availability_buffer_days)			
+			# no changes done to PO shipping date
+			else:
+				frappe.msgprint(_('Purchase Order {0}, Item {1}. Existing shipping date is retained. \n So, no changes done due to {2}'.format(
+					po.purchase_order,po.item_name,format_date(shipping_date))),alert=1)	
+
 
 	def compute_calculated_fields(self):
 		if self.supplier_packing_list_detail:

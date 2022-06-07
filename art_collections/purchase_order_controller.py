@@ -185,73 +185,78 @@ def purchase_order_convert_preorder_item(self, method):
 #                 )
 
 
-def update_availability_date_of_item_based_on_po_shipping_date_art(self, method):
-    item_availability_buffer_days = frappe.db.get_single_value(
-        "Art Collections Settings", "item_availability_buffer_days"
-    )
-    for po_item in self.get("items"):
-        old_item_required_by_date = check_previous_po_item_is_not_received(
-            po_item.item_code
-        )
-        availability_date = frappe.db.get_value(
-            "Item", po_item.item_code, "availability_date_art"
-        )
-        required_by_date_with_buffer = add_days(
-            po_item.shipping_date_art, item_availability_buffer_days
-        )
-        print('po_item.shipping_date_art',po_item.shipping_date_art)
-        print("print(old_item_required_by_date,availability_date,required_by_date_with_buffer)")
-        print(old_item_required_by_date,availability_date,required_by_date_with_buffer)
-        if old_item_required_by_date:
-            # previous po is pending
-            old_item_required_by_date_with_buffer = add_days(
-                old_item_required_by_date, item_availability_buffer_days
-            )
-            if getdate(old_item_required_by_date_with_buffer) < getdate(today()):
-                #  previous po required by date with buffer has passed, so set new availability date
-                if getdate(required_by_date_with_buffer) > getdate(availability_date):
-                    # new calculated required by date is greater than availability date , hence change it
-                    frappe.db.set_value(
-                        "Item",
-                        po_item.item_code,
-                        "availability_date_art",
-                        required_by_date_with_buffer,
-                    )
-                    frappe.msgprint(
-                        _(
-                            "Availability date for item {0} is changed to {1} based on latest shipping date with buffer of {2} days.".format(
-                                po_item.item_name,
-                                frappe.bold(format_date(required_by_date_with_buffer)),
-                                item_availability_buffer_days,
-                            )
-                        ),
-                        indicator="orage",
-                        alert=True,
-                    )
-            else:
-                # previous po required by date is futuristic , so nothing
-                pass
-        else:
-            # no previous po pending
-            if getdate(required_by_date_with_buffer) > getdate(availability_date):
-                # new calculated required by date is greater than availability date , hence change it
-                frappe.db.set_value(
-                    "Item",
-                    po_item.item_code,
-                    "availability_date_art",
-                    required_by_date_with_buffer,
-                )
-                frappe.msgprint(
-                    _(
-                        "Availability date for item {0} is changed to {1} based on latest shipping date with buffer of {2} days.".format(
-                            po_item.item_name,
-                            frappe.bold(format_date(required_by_date_with_buffer)),
-                            item_availability_buffer_days,
-                        )
-                    ),
-                    indicator="orage",
-                    alert=True,
-                )
+# def update_availability_date_of_item_based_on_po_shipping_date_art(self, method):
+#     item_availability_buffer_days = frappe.db.get_single_value(
+#         "Art Collections Settings", "item_availability_buffer_days"
+#     )
+#     for po_item in self.get("items"):
+#         old_item_required_by_date = check_previous_po_item_is_not_received(
+#             po_item.item_code
+#         )
+#         availability_date = frappe.db.get_value(
+#             "Item", po_item.item_code, "availability_date_art"
+#         )
+#         required_by_date_with_buffer = add_days(
+#             po_item.shipping_date_art, item_availability_buffer_days
+#         )
+#         print('po_item.shipping_date_art',po_item.shipping_date_art)
+#         print("print(old_item_required_by_date,availability_date,required_by_date_with_buffer)")
+#         print(old_item_required_by_date,availability_date,required_by_date_with_buffer)
+#         #  2022-05-27 2022-05-31 2022-06-04
+#         if old_item_required_by_date:
+#             # previous po is pending
+#             old_item_required_by_date_with_buffer = add_days(
+#                 old_item_required_by_date, item_availability_buffer_days
+#             )
+#             if getdate(old_item_required_by_date_with_buffer) < getdate(today()):
+#                 print('previous po required by date with buffer has passed, so set new availability date')
+#                 #  previous po required by date with buffer has passed, so set new availability date
+#                 if getdate(required_by_date_with_buffer) > getdate(availability_date):
+#                     print('new calculated required by date is greater than availability date , hence change it')
+#                     # new calculated required by date is greater than availability date , hence change it
+#                     frappe.db.set_value(
+#                         "Item",
+#                         po_item.item_code,
+#                         "availability_date_art",
+#                         required_by_date_with_buffer,
+#                     )
+#                     frappe.msgprint(
+#                         _(
+#                             "Availability date for item {0} is changed to {1} based on latest shipping date with buffer of {2} days.".format(
+#                                 po_item.item_name,
+#                                 frappe.bold(format_date(required_by_date_with_buffer)),
+#                                 item_availability_buffer_days,
+#                             )
+#                         ),
+#                         indicator="orage",
+#                         alert=True,
+#                     )
+#             else:
+#                 print('previous po required by date is futuristic , so nothing')
+#                 # previous po required by date is futuristic , so nothing
+#                 pass
+#         else:
+#             # no previous po pending
+#             print('no previous po pending')
+#             if getdate(required_by_date_with_buffer) > getdate(availability_date):
+#                 # new calculated required by date is greater than availability date , hence change it
+#                 frappe.db.set_value(
+#                     "Item",
+#                     po_item.item_code,
+#                     "availability_date_art",
+#                     required_by_date_with_buffer,
+#                 )
+#                 frappe.msgprint(
+#                     _(
+#                         "Availability date for item {0} is changed to {1} based on latest shipping date with buffer of {2} days.".format(
+#                             po_item.item_name,
+#                             frappe.bold(format_date(required_by_date_with_buffer)),
+#                             item_availability_buffer_days,
+#                         )
+#                     ),
+#                     indicator="orage",
+#                     alert=True,
+#                 )
 
 
 def check_previous_po_item_is_not_received(item_code):

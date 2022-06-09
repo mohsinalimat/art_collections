@@ -12,8 +12,10 @@ import os
 
 frappe_template_columns = [
     "Item Code",
+    "Item Name",
     "Item Group",
     "Default Unit of Measure",
+    "Qty In Selling Pack",
     "Thickness (cm)",
     "Width (cm)",
     "Length (cm)",
@@ -141,7 +143,6 @@ def start_item_import(doc, method):
             # to save repeating UOM values for PPD child table in upload excel
             if col == "UOM (Product Packing Dimensions)":
                 col = "UOM (UOMs)"
-
             value = [
                 row[idx] for idx, d in enumerate(custom_template_columns) if d == col
             ]
@@ -196,6 +197,14 @@ def start_item_import(doc, method):
             )
 
             tmp = [get_values(col, row) for col in frappe_template_columns]
+
+            qty_in_selling_pack_art = row[
+                custom_template_columns.index("Conversion Factor (UOMs)")
+            ]
+
+            tmp[frappe_template_columns.index("Qty In Selling Pack")] = [
+                qty_in_selling_pack_art
+            ]
             items.append(tmp)
 
         import_csv = [frappe_template_columns]
@@ -336,45 +345,45 @@ sel.id_uoms_selling_pack ,
 sel.uom_uoms_selling_pack , 
 sel.conversion_factor_uoms_selling_pack ,
 sel.id_ppd_selling_pack , 
-sel.materials_ppd_selling_pack ,
 sel.length_ppd_selling_pack ,
 sel.width_ppd_selling_pack ,
 sel.thickness_ppd_selling_pack ,
 sel.weight_ppd_selling_pack ,
 sel.cbm_ppd_selling_pack ,
+sel.materials_ppd_selling_pack ,
 -- sel.uom_ppd_selling_pack ,
 ic.id_uoms_inner_carton , 
 ic.uom_uoms_inner_carton , 
 ic.conversion_factor_uoms_inner_carton ,
 ic.id_ppd_inner_carton , 
-ic.materials_ppd_inner_carton ,
 ic.length_ppd_inner_carton ,
 ic.width_ppd_inner_carton ,
 ic.thickness_ppd_inner_carton ,
 ic.weight_ppd_inner_carton ,
 ic.cbm_ppd_inner_carton ,
+ic.materials_ppd_inner_carton ,
 -- ic.uom_ppd_inner_carton ,
 mi.id_uoms_maxi_inner , 
 mi.uom_uoms_maxi_inner , 
 mi.conversion_factor_uoms_maxi_inner ,
 mi.id_ppd_maxi_inner , 
-mi.materials_ppd_maxi_inner ,
 mi.length_ppd_maxi_inner ,
 mi.width_ppd_maxi_inner ,
 mi.thickness_ppd_maxi_inner ,
 mi.weight_ppd_maxi_inner ,
 mi.cbm_ppd_maxi_inner ,
+mi.materials_ppd_maxi_inner ,
 -- mi.uom_ppd_maxi_inner ,
 oc.id_uoms_outer_carton , 
 oc.uom_uoms_outer_carton , 
 oc.conversion_factor_uoms_outer_carton ,
 oc.id_ppd_outer_carton , 
-oc.materials_ppd_outer_carton ,
 oc.length_ppd_outer_carton ,
 oc.width_ppd_outer_carton ,
 oc.thickness_ppd_outer_carton ,
 oc.weight_ppd_outer_carton ,
-oc.cbm_ppd_outer_carton
+oc.cbm_ppd_outer_carton ,
+oc.materials_ppd_outer_carton
 -- oc.uom_ppd_outer_carton ,
 from tabItem ti 
 left outer join `tabItem Supplier` tis on tis.parent = ti.name 

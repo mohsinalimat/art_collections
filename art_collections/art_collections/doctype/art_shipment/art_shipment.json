@@ -12,7 +12,6 @@
   "bill_of_lading_date",
   "shipping_date",
   "mode_of_shipment",
-  "tracking_status",
   "cb_1",
   "expedition_number",
   "telex_release_sent_date",
@@ -89,12 +88,6 @@
    "options": "\nGeodis\nGondrand"
   },
   {
-   "fieldname": "tracking_status",
-   "fieldtype": "Select",
-   "label": "Tracking Status",
-   "options": "\nIn Progress\nDelivered\nReturned\nLost"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -120,7 +113,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-05-24 07:29:33.060037",
+ "modified": "2022-06-09 13:16:01.548053",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Shipment",

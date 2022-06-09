@@ -51,6 +51,8 @@
   {
    "fieldname": "supplier",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Supplier",
    "options": "Supplier",
    "reqd": 1
@@ -90,7 +92,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-05-10 12:50:02.798375",
+ "modified": "2022-06-09 13:52:19.138548",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Supplier Packing List Art",

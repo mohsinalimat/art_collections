@@ -238,8 +238,8 @@ standard_portal_menu_items = [
 # ------------------------------
 #
 
-override_doctype_dashboards={
-    "Purchase Order" : "art_collections.purchase_order_controller.get_po_dashboard_links"
+override_doctype_dashboards = {
+    "Purchase Order": "art_collections.purchase_order_controller.get_po_dashboard_links"
 }
 
 override_whitelisted_methods = {
@@ -273,6 +273,7 @@ jenv = {
         "get_print_context_for_art_collectons_sales_order:art_collections.art_collections.print_format.art_so.get_print_context",
         "get_print_context_for_art_collectons_purchase_order:art_collections.art_collections.print_format.po_art.get_print_context",
         "get_print_context_for_art_collectons_rfq:art_collections.art_collections.print_format.rfq_art_pdf.get_print_context",
+        "get_shipping_and_taxes_cost:art_collections.art_collections.print_format.get_shipping_and_taxes_cost",
     ],
     "filters": [],
 }

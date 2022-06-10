@@ -21,6 +21,7 @@
    "label": "Tools",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -65,6 +66,7 @@
    "label": "Reports",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -135,6 +137,16 @@
    "is_query_report": 1,
    "label": "Item Arrival Forecast",
    "link_to": "Item Arrival Forecast",
+   "link_type": "Report",
+   "onboard": 0,
+   "only_for": "",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Container Followup",
+   "link_to": "Container Followup",
    "link_type": "Report",
    "onboard": 0,
    "only_for": "",
@@ -335,6 +347,7 @@
    "label": "Issue Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -352,6 +365,7 @@
    "label": "Shopping Cart Masters",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Card Break"
   },
   {
@@ -379,10 +393,11 @@
    "link_to": "Wish List Name",
    "link_type": "DocType",
    "onboard": 0,
+   "only_for": "",
    "type": "Link"
   }
  ],
- "modified": "2022-05-23 08:55:52.514711",
+ "modified": "2022-06-10 06:47:30.665584",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

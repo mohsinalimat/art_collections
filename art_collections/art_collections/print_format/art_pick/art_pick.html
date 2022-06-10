@@ -1,0 +1,112 @@
+{% set ctx = get_print_context_for_art_collectons_pick_list(doc.doctype, doc.name) %}
+<div class="row" style="padding-top:0.5rem;">
+    <div class="col-xs-2 logodiv">
+        <img src="/files/logo01.png" class="logofirst" />
+    </div>
+    <div class="col-xs-6 logodiv">
+        <img src="/files/logo02.png" class="logosec" />
+    </div>
+    <div class="col-xs-4" style="text-align:right">
+        <p>{{ _('PICK LIST') }}</p>
+        <p>{{ doc.name }} </p>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Purpose</div>
+    <div class="col-xs-4">Delivery</div>
+    <div class="col-xs-2">Double Check</div>
+    <div class="col-xs-4"></div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Customer Name</div>
+    <div class="col-xs-4">doc.customer_name_art</div>
+    <div class="col-xs-2">Address Title</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["shipping_address_name"] or "" }} </div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Address Line 1</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["address_line1"] or "" }}</div>
+    <div class="col-xs-2">Address Line 2</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["address_line2"] or "" }}</div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Zip Code</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["pincode"] or "" }}</div>
+    <div class="col-xs-2">City Town</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["city"] or "" }}</div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Delivery Prior Appointment</div>
+    <div class="col-xs-4">
+        {% if doc.delivery_by_appointment_art %} Yes {% else %} No {% endif %}
+    </div>
+    <div class="col-xs-2">Country</div>
+    <div class="col-xs-4">{{ ctx.get("doc",{})["country"] or "" }}</div>
+</div>
+{% if doc.delivery_by_appointment_art %}
+<div class="row">
+    <div class="col-xs-12">
+        <p>{{ _('Delivery Prior Appointment Detail') }}<br>{{ doc.delivery_appointment_contact_detail_art or "" }}</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-xs-12">
+        <p>{{ doc.directive_print_art or "&nbsp;" }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table" style="border:1px solid #000;">
+            <!-- <colgroup>
+                <col style="width: 4%">
+            </colgroup> -->
+            <thead>
+                <tr>
+                    <th>{{ _("No") }} </th>
+                    <th>{{ _("Item Name") }} </th>
+                    <th>{{ _("Warehouse") }} </th>
+                    <th>{{ _("Quantity") }} </th>
+                    <th>{{ _("UOM") }} </th>
+                    <th>{{ _("Conv. Factor") }} </th>
+                    <th>{{ _("Stock UOM") }} </th>
+                    <th>{{ _("Sales Order") }} </th>
+                    <th>{{ _("Delivery Date") }} </th>
+                    <th>{{ _("Facing Required") }} </th>
+                    <th>{{ _("Customer's PO") }} </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in ctx.get("items",[]) %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{ d.warehouse or "" }}</td>
+                    <td class="text-right">{{ d.qty }}</td>
+                    <td>{{ d.uom }}</td>
+                    <td class="text-right">{{ d.conversion_factor }}</td>
+                    <td class="text-right">{{ d.stock_uom }}</td>
+                    <td class="text-right">{{ d.sales_order or "" }}</td>
+                    <td class="text-right">{{ d.delivery_date or "" }}</td>
+                    <td class="text-right">{{ d.facing_required_art or "No" }}</td>
+                    <td class="text-right">{{ d.po_no or "" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div>
+    {% if not no_letterhead and footer %}
+    <div class="letter-head-footer">
+        {{ footer }}
+    </div>
+    {% endif %}
+    <p class="text-right small page-number visible-pdf">
+        {{ _("Page {0} of {1}").format('<span class="page"></span>', '<span class="topage"></span>') }}
+    </p>
+</div>

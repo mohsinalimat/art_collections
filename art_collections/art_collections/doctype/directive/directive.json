@@ -100,7 +100,7 @@
    "fieldname": "directive_type",
    "fieldtype": "Select",
    "label": "Directive Type",
-   "options": "\nTransport Directive\nLogistic Directive\nGlobal Directive"
+   "options": "\nTransport\nLogistic\nGlobal\nPurchase\nSales\nCustomer Service\nAccounting"
   },
   {
    "fieldname": "column_break_3",
@@ -129,7 +129,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-04-28 09:09:11.656338",
+ "modified": "2022-06-11 05:53:27.801245",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Directive",

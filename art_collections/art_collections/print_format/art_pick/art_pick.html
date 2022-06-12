@@ -20,7 +20,7 @@
 </div>
 <div class="row">
     <div class="col-xs-2">Customer Name</div>
-    <div class="col-xs-4">doc.customer_name_art</div>
+    <div class="col-xs-4">{{ doc.customer_name_art }}</div>
     <div class="col-xs-2">Address Title</div>
     <div class="col-xs-4">{{ ctx.get("doc",{})["shipping_address_name"] or "" }} </div>
 </div>

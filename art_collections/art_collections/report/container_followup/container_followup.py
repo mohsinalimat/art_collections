@@ -19,7 +19,9 @@ def get_data(filters=None):
                 tasc.total_outer_qty , 
                 case when nullif(pr.pr_name,'') is not null then 1 else 0 end is_container_recieved ,
                 spl.spl_name , spl.supplier , po.po_name , if(po.set_apart_art=1,'Yes','No') set_apart_art , 
-                spl.container_count , pr.pr_name , pr.pr_address_title
+                spl.container_count , pr.pr_name , pr.pr_address_title ,
+                case when tasc.type_of_reception = 'FCL' then tasc.container_size
+                	else tasc.qty_of_pallet end transport_size
             from 
                 `tabArt Shipment` tas 
                 left outer join `tabArt Shipment Container` tasc on tasc.parent = tas.name
@@ -68,7 +70,7 @@ def get_columns(filters):
         Outer Qty,total_outer_qty,Int,,130
         Total Qty,container_count,Int,,130
         Transport Type,type_of_reception,,,130
-        Transport Size,size,,,130
+        Transport Size,transport_size,,,130
         Shipping Date,shipping_date,Date,,130
         Arrival Forecast Date,arrival_forecast_date,Date,,130
         Arrival Forecast Hour,arrival_forecast_hour,,,130

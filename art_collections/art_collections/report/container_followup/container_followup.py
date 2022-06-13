@@ -18,7 +18,7 @@ select
                 tasc.arrival_forecast_date , tasc.arrival_forecast_hour , tas.telex_release_sent_date ,
                 tasc.total_outer_qty , 
                 case when nullif(spl.pr_name,'') is not null then 'Yes' else 'No' end is_container_recieved ,
-                spl.spl_name , spl.supplier , spl.po_name , if(spl.set_apart_art=1,1,0) set_apart_art , 
+                spl.spl_name , spl.supplier , spl.po_name , if(spl.set_apart_art=1,'Yes','No') set_apart_art , 
                 spl.container_count , spl.pr_name , spl.pr_shipping_address ,
                 case when tasc.type_of_reception = 'FCL' then tasc.container_size
                 	else tasc.qty_of_pallet end transport_size
@@ -67,7 +67,7 @@ def get_columns(filters):
         Transport Type,type_of_reception,,,130
         Transport Size,transport_size,,,130
         Shipping Date,shipping_date,Date,,130
-        Set Apart,set_apart_art,Int,,130
+        Set Apart,set_apart_art,,,130
         Arrival Forecast Date,arrival_forecast_date,Date,,130
         Arrival Forecast Hour,arrival_forecast_hour,,,130
         Purchase Receipt,pr_name,,,200

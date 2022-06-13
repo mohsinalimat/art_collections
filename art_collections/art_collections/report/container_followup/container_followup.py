@@ -17,7 +17,7 @@ def get_data(filters=None):
                 tasc.container_name , tasc.type_of_reception , tas.shipping_date ,
                 tasc.arrival_forecast_date , tasc.arrival_forecast_hour , tas.telex_release_sent_date ,
                 tasc.total_outer_qty , 
-                case when nullif(spl.pr_name,'') is not null then 1 else 0 end is_container_recieved ,
+                case when nullif(spl.pr_name,'') is not null then 'Yes' else 'No' end is_container_recieved ,
                 spl.spl_name , spl.supplier , spl.po_name , if(spl.set_apart_art=1,'Yes','No') set_apart_art , 
                 spl.container_count , spl.pr_name , spl.pr_address_title ,
                 case when tasc.type_of_reception = 'FCL' then tasc.container_size
@@ -56,7 +56,7 @@ def get_columns(filters):
         Shipment Name,name,Link,Art Shipment,140
         Created By,owner,Link,User,120
         Container #,container_name,,,145
-        Received is for Container,is_container_recieved,Check,130
+        Received is for Container,is_container_recieved,,130
         SPL #,spl_name,,,130
         PO,po_name,,,130
         Outer Qty,total_outer_qty,Int,,130

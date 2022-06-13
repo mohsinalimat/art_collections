@@ -74,7 +74,7 @@
    "fieldname": "container_size",
    "fieldtype": "Select",
    "label": "Container Size",
-   "options": "\n20GP FCL\n20GP\n40HC FCL\n40 HC\n40GP FCL\n40'\n40  DRY\n40GP\n20GP\n20 GP FCL\n40HC\n40HC FCL\n40 HC FCL\n40HC GRP\n40GP\n40HC LCL\n40 HC LCL\n40GP GRP"
+   "options": "\n20\"\"\n40\"\n40HC"
   },
   {
    "depends_on": "eval:doc.type_of_reception == 'LCL'",
@@ -86,7 +86,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-06-11 06:59:11.740457",
+ "modified": "2022-06-13 10:09:42.221138",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Shipment Container",

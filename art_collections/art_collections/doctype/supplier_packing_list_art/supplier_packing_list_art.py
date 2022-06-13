@@ -385,6 +385,9 @@ def make_purchase_receipt(source_name, target_doc=None):
 					"docstatus": ["=", 1],
 				},
 			},
+			"SPL Unknown Item": {
+				"doctype": "SPL Unknown Item"
+			},			
 			"Purchase Taxes and Charges": {"doctype": "Purchase Taxes and Charges", "add_if_empty": True},
 		},
 		target_doc,

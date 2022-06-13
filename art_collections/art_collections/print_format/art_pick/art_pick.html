@@ -1,4 +1,18 @@
 {% set ctx = get_print_context_for_art_collectons_pick_list(doc.doctype, doc.name) %}
+
+
+<style>
+    .bordered>.row {
+        border: 1px solid #eee !important;
+        padding-top: 3px;
+    }
+
+    .bordered>.row>.col {
+        border-right: 1px solid #eee !important;
+    }
+</style>
+
+{% set ctx = get_print_context_for_art_collectons_pick_list(doc.doctype, doc.name) %}
 <div class="row" style="padding-top:0.5rem;">
     <div class="col-xs-2 logodiv">
         <img src="/files/logo01.png" class="logofirst" />
@@ -7,56 +21,70 @@
         <img src="/files/logo02.png" class="logosec" />
     </div>
     <div class="col-xs-4" style="text-align:right">
-        <p>{{ _('PICK LIST') }}</p>
+        <p>{{ _("PICK LIST") }}</p>
         <p>{{ doc.name }} </p>
 
     </div>
 </div>
-<div class="row">
-    <div class="col-xs-2">Purpose</div>
-    <div class="col-xs-4">Delivery</div>
-    <div class="col-xs-2">Double Check</div>
-    <div class="col-xs-4">{{ctx.doc.double_check_order_flag_art}}</div>
-</div>
-<div class="row">
-    <div class="col-xs-2">Customer Name</div>
-    <div class="col-xs-4">{{ doc.customer_name_art }}</div>
-    <div class="col-xs-2">Address Title</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["shipping_address_name"] or "" }} </div>
-</div>
-<div class="row">
-    <div class="col-xs-2">Address Line 1</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["address_line1"] or "" }}</div>
-    <div class="col-xs-2">Address Line 2</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["address_line2"] or "" }}</div>
-</div>
-<div class="row">
-    <div class="col-xs-2">Zip Code</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["pincode"] or "" }}</div>
-    <div class="col-xs-2">City Town</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["city"] or "" }}</div>
-</div>
-<div class="row">
-    <div class="col-xs-2">Delivery Prior Appointment</div>
-    <div class="col-xs-4">
-        {% if doc.delivery_by_appointment_art %} Yes {% else %} No {% endif %}
-    </div>
-    <div class="col-xs-2">Country</div>
-    <div class="col-xs-4">{{ ctx.get("doc",{})["country"] or "" }}</div>
-</div>
-{% if doc.delivery_by_appointment_art %}
-<div class="row">
-    <div class="col-xs-12">
-        <p>{{ _('Delivery Prior Appointment Detail') }}<br>{{ doc.delivery_appointment_contact_detail_art or "" }}</p>
-    </div>
-</div>
-{% endif %}
 
-<div class="row">
-    <div class="col-xs-12">
-        <p>{{ doc.directive_print_art or "&nbsp;" }}</p>
-    </div>
+<div class="master">
+    <table class="table table-condensed table-hover table-bordered">
+        <colgroup>
+            <col style="width:20%">
+            <col style="width:30%">
+            <col style="width:20%">
+            <col style="width:30%">
+        </colgroup>
+        <tr>
+            <td>Purpose</td>
+            <td>Delivery</td>
+            <td>Double Check</td>
+            <td>{{ctx.doc.double_check_order_flag_art}}</td>
+        </tr>
+        <tr>
+            <td> Customer Name </td>
+            <td> {{ doc.customer_name_art or ""}} </td>
+            <td> Address Title </td>
+            <td> {{ ctx.get("doc",{})["shipping_address_name"] or "" }} </td>
+        </tr>
+        <tr>
+            <td> Address Line 1</td>
+            <td> {{ ctx.get("doc",{})["address_line1"] or "" }}</td>
+            <td> Address Line 2</td>
+            <td> {{ ctx.get("doc",{})["address_line2"] or "" }}</td>
+        </tr>
+        <tr>
+            <td> Zip Code</td>
+            <td> {{ ctx.get("doc",{})["pincode"] or "" }}</td>
+            <td> City Town</td>
+            <td> {{ ctx.get("doc",{})["city"] or "" }}</td>
+        </tr>
+        <tr>
+            <td>Delivery Prior Appointment</td>
+            <td>{% if doc.delivery_by_appointment_art %} Yes {% else %} No {% endif %}</td>
+            <td>Country</td>
+            <td>{{ ctx.get("doc",{})["country"] or "" }}</td>
+        </tr>
+        {% if doc.delivery_appointment_contact_detail_art %}
+        <tr>
+            <td colspan="4">
+                <p>{{ _("Delivery Prior Appointment Detail") }}<br>{{ doc.delivery_appointment_contact_detail_art or ""
+                    }}
+                </p>
+            </td>
+        </tr>
+        {% endif %}
+        {% if doc.directive_print_art %}
+        <tr>
+            <td colspan="4">
+                <p>{{ _("Print Directive") }}<br>{{ doc.directive_print_art or "" }}</p>
+            </td>
+        </tr>
+        {% endif %}
+
+    </table>
 </div>
+
 
 <div class="row">
     <div class="col-xs-12">
@@ -83,7 +111,7 @@
                 {% for d in ctx.get("items",[]) %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ d.item_name or "" }}</td>
+                    <td>{{d.item_code}}:{{ d.item_name}}</td>
                     <td>{{ d.warehouse or "" }}</td>
                     <td class="text-right">{{ d.qty }}</td>
                     <td>{{ d.uom }}</td>
@@ -101,12 +129,7 @@
 </div>
 
 <div>
-    {% if not no_letterhead and footer %}
-    <div class="letter-head-footer">
-        {{ footer }}
-    </div>
-    {% endif %}
     <p class="text-right small page-number visible-pdf">
-        {{ _("Page {0} of {1}").format('<span class="page"></span>', '<span class="topage"></span>') }}
+        {{ _("Page {0} of {1}").format("<span class=\"page\"></span>", "<span class=\"topage\"></span>") }}
     </p>
 </div>

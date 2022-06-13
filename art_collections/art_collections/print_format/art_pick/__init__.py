@@ -13,16 +13,18 @@ def get_print_context(doctype, name):
         frappe.db.sql(
             """
             select 
-                tpli.item_name , tpli.warehouse , tpli.qty ,
+                tpli.item_name , tpli.item_code , tpli.warehouse , sum(tpli.qty) qty ,
                 tpli.uom , tpli.stock_uom , tpli.conversion_factor ,
-                tpli.sales_order , tsoi.delivery_date , 
+                GROUP_CONCAT(DISTINCT tpli.sales_order) sales_order, 
+                GROUP_CONCAT(DISTINCT tsoi.delivery_date) delivery_date, 
                 case when tso.facing_required_art = 1 then 'Yes' else 'No' end facing_required_art ,
-                tso.po_no
+                GROUP_CONCAT(DISTINCT tso.po_no) po_no
             from `tabPick List` tpl 
             inner join `tabPick List Item` tpli on tpli.parent = tpl.name
             left outer join `tabSales Order Item` tsoi on tsoi.name = tpli.sales_order_item
             left outer join `tabSales Order` tso on tso.name = tsoi.parent
-        where tpl.name = %(name)s
+            where tpl.name = %(name)s   
+            group by tpli.item_name , tpli.item_code , tpli.warehouse , tso.facing_required_art
     """,
             dict(name=name),
             as_dict=True,

@@ -17,9 +17,9 @@ def get_data(filters=None):
                 tasc.container_name , tasc.type_of_reception , tas.shipping_date ,
                 tasc.arrival_forecast_date , tasc.arrival_forecast_hour , tas.telex_release_sent_date ,
                 tasc.total_outer_qty , 
-                case when nullif(pr.pr_name,'') is not null then 1 else 0 end is_container_recieved ,
-                spl.spl_name , spl.supplier , po.po_name , if(po.set_apart_art=1,'Yes','No') set_apart_art , 
-                spl.container_count , pr.pr_name , pr.pr_address_title ,
+                case when nullif(spl.pr_name,'') is not null then 1 else 0 end is_container_recieved ,
+                spl.spl_name , spl.supplier , spl.po_name , if(spl.set_apart_art=1,'Yes','No') set_apart_art , 
+                spl.container_count , spl.pr_name , spl.pr_address_title ,
                 case when tasc.type_of_reception = 'FCL' then tasc.container_size
                 	else tasc.qty_of_pallet end transport_size
             from 
@@ -27,26 +27,18 @@ def get_data(filters=None):
                 left outer join `tabArt Shipment Container` tasc on tasc.parent = tas.name
                 left outer join (
                     select det.container , count(det.container) container_count, CONCAT_WS(', ', p.supplier) supplier , 
-                    CONCAT_WS(', ', det.parent) spl_name
+                    CONCAT_WS(', ', det.parent) spl_name , CONCAT_WS(',', det.purchase_order) po_name ,
+                    max(set_apart_art) set_apart_art ,
+                    CONCAT_WS(', ', tpri.parent) pr_name , 
+                    CONCAT_WS(', ', ta.address_title) pr_address_title 
                     from `tabSupplier Packing List Detail Art` det
                     inner join `tabSupplier Packing List Art` p on p.name = det.parent 
+                    left outer join `tabPurchase Order` tpo2 on tpo2.name = det.purchase_order
+                    left outer join `tabPurchase Receipt Item` tpri on tpri.purchase_order = tpo2.name
+                    left outer join `tabPurchase Receipt` tpr on tpr.name = tpri.parent 
+                    left outer join tabAddress ta on ta.name = tpr.shipping_address                     
                     group by container
                 ) spl on spl.container = tasc.container_name 
-                left outer join (
-                    select container_number_art , CONCAT_WS(', ', name) po_name ,
-                    max(set_apart_art) set_apart_art
-                    from `tabPurchase Order` tpoi 
-                    group by container_number_art 
-                ) po on po.container_number_art =tasc.container_name
-                left outer join (
-                    select tpo.container_number_art , CONCAT_WS(', ', tpri.parent) pr_name ,
-                    CONCAT_WS(', ', ta.address_title) pr_address_title 
-                    from `tabPurchase Receipt Item` tpri 
-                    inner join `tabPurchase Receipt` tpr on tpr.name = tpri.parent 
-                    left outer join tabAddress ta on ta.name = tpr.shipping_address 
-                    inner join `tabPurchase Order` tpo on tpo.name = tpri.purchase_order 
-                    group by tpo.container_number_art
-                ) pr on pr.container_number_art = tasc.container_name 
                 """.format(
             conditions=get_conditions(filters)
         ),

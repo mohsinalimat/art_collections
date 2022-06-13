@@ -12,7 +12,7 @@ def get_data(filters=None):
 
     data = frappe.db.sql(
         """
-            select 
+select 
                 tas.name , tas.owner ,
                 tasc.container_name , tasc.type_of_reception , tas.shipping_date ,
                 tasc.arrival_forecast_date , tasc.arrival_forecast_hour , tas.telex_release_sent_date ,
@@ -26,11 +26,13 @@ def get_data(filters=None):
                 `tabArt Shipment` tas 
                 left outer join `tabArt Shipment Container` tasc on tasc.parent = tas.name
                 left outer join (
-                    select det.container , count(det.container) container_count, CONCAT_WS(', ', p.supplier) supplier , 
-                    CONCAT_WS(', ', det.parent) spl_name , CONCAT_WS(',', det.purchase_order) po_name ,
+                    select det.container , count(det.container) container_count, 
+                    GROUP_CONCAT(DISTINCT p.supplier ORDER BY p.supplier) supplier , 
+                    GROUP_CONCAT(DISTINCT det.parent ORDER BY det.creation) spl_name , 
+                    GROUP_CONCAT(DISTINCT det.purchase_order ORDER BY tpo2.transaction_date ) po_name ,
                     max(set_apart_art) set_apart_art ,
-                    CONCAT_WS(', ', tpri.parent) pr_name , 
-                    CONCAT_WS(', ', ta.address_title) pr_address_title 
+                    GROUP_CONCAT(DISTINCT tpri.parent ORDER BY tpr.posting_date) pr_name , 
+                    GROUP_CONCAT(DISTINCT ta.address_title) pr_address_title 
                     from `tabSupplier Packing List Detail Art` det
                     inner join `tabSupplier Packing List Art` p on p.name = det.parent 
                     left outer join `tabPurchase Order` tpo2 on tpo2.name = det.purchase_order
@@ -57,8 +59,8 @@ def get_columns(filters):
         Created By,owner,Link,User,120
         Container #,container_name,,,145
         Received is for Container,is_container_recieved,,130
-        SPL #,spl_name,,,130
-        PO,po_name,,,130
+        SPL #,spl_name,,,200
+        PO,po_name,,,200
         Outer Qty,total_outer_qty,Int,,130
         Total Qty,container_count,Int,,130
         Transport Type,type_of_reception,,,130
@@ -66,7 +68,7 @@ def get_columns(filters):
         Shipping Date,shipping_date,Date,,130
         Arrival Forecast Date,arrival_forecast_date,Date,,130
         Arrival Forecast Hour,arrival_forecast_hour,,,130
-        Purchase Receipt,pr_name,,,180
+        Purchase Receipt,pr_name,,,200
         Purchase Receipt Address,pr_address_title,,,300
         Telex Release Sent Date,telex_release_sent_date,Date,,130
         """

@@ -52,3 +52,32 @@ class ArtShipment(Document):
 				{'arrival_forecast_date_art': container.arrival_forecast_date,'arrival_forecast_hour_art': container.arrival_forecast_hour})			
 				frappe.msgprint(_('Purchase Order {0}, Item {1}. Arrival forcast data is updated.'.format(
 						po.purchase_order,po.item_name)),alert=1)	
+
+
+@frappe.whitelist()
+def get_connected_purchase_order(art_shipment):
+	po_list=[]
+	po_results=frappe.db.sql("""SELECT distinct purchase_order  FROM `tabSupplier Packing List Detail Art`
+							where docstatus!=2 and shipment =%s""",
+        (art_shipment),as_dict=True)
+	if len(po_results)>0:
+		for po in po_results:
+			po_list.append(po.purchase_order)
+		return po_list
+	else:
+		return None
+
+@frappe.whitelist()
+def get_connected_purchase_receipt(art_shipment):
+	pr_list=[]
+	pr_results=frappe.db.sql("""SELECT  distinct pr_item.parent as pr FROM  `tabPurchase Receipt Item` pr_item
+inner join `tabSupplier Packing List Detail Art` supplier_detail 
+on pr_item.ref_supplier_packing_list_art = supplier_detail.parent
+where supplier_detail.parenttype ='Supplier Packing List Art' and supplier_detail.docstatus!=2 and supplier_detail.shipment=%s""",
+        (art_shipment),as_dict=True)
+	if len(pr_results)>0:
+		for pr in pr_results:
+			pr_list.append(pr.pr)
+		return pr_list
+	else:
+		return None  			

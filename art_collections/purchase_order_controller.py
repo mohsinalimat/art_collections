@@ -298,3 +298,16 @@ def get_po_dashboard_links(data):
             d.update({"items":d.get("items")+["Supplier Packing List Art"]})
 
     return data
+
+@frappe.whitelist()
+def get_connected_shipment(purchase_order):
+	shipment_list=[]
+	shipment_results=frappe.db.sql("""SELECT distinct shipment   FROM `tabSupplier Packing List Detail Art`
+							where docstatus!=2 and purchase_order =%s""",
+        (purchase_order),as_dict=True)
+	if len(shipment_results)>0:
+		for shipment in shipment_results:
+			shipment_list.append(shipment.shipment)
+		return shipment_list
+	else:
+		return None    

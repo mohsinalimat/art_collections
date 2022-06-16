@@ -73,3 +73,18 @@ def get_pr_dashboard_links(data):
             d.update({"items":d.get("items")+["Supplier Packing List Art"]})
 
     return data						
+
+@frappe.whitelist()
+def get_connected_shipment(purchase_receipt):
+	shipment_list=[]
+	shipment_results=frappe.db.sql("""SELECT distinct supplier_detail.shipment  FROM  `tabPurchase Receipt Item` pr_item
+inner join `tabSupplier Packing List Detail Art` supplier_detail 
+on pr_item.ref_supplier_packing_list_art = supplier_detail.parent
+where supplier_detail.parenttype ='Supplier Packing List Art' and supplier_detail.docstatus!=2 and pr_item.parent =%s""",
+        (purchase_receipt),as_dict=True)
+	if len(shipment_results)>0:
+		for shipment in shipment_results:
+			shipment_list.append(shipment.shipment)
+		return shipment_list
+	else:
+		return None  	

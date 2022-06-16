@@ -40,7 +40,32 @@ frappe.ui.form.on('Purchase Order', {
 				__("Create")
 			);
 		}
+		$('div').find('.document-link[data-doctype="Art Shipment"]').remove();
+		if (frm.is_new() == undefined) {
+			frappe.call('art_collections.purchase_order_controller.get_connected_shipment', {
+				purchase_order: frm.doc.name
+			}).then(r => {
+				console.log(r,'r')
+				if (r.message && r.message != undefined) {
+					let count=r.message.length
+					let link = $(`
+			<div class="document-link" data-doctype="Art Shipment">
+				<div class="document-link-badge" data-doctype="Art Shipment"> <span class="count">${count}</span> <a
+					class="badge-link">Art Shipment</a> </div> <span class="open-notification hidden"
+				title="Open Art Shipment"> </span></div>
+			`);
 
+					link.on('click', function () {
+						frappe.route_options = {
+							'name': ['in', r.message]
+						};
+						frappe.set_route("List", "Art Shipment", "List");
+
+					})
+					$('div').find('.document-link[data-doctype="Supplier Packing List Art"]').after(link);
+				}
+			})
+		}
 	},
 
 

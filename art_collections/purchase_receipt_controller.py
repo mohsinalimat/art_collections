@@ -63,3 +63,13 @@ def copy_set_apart_from_PO(self,method):
 			if len(set_apart_po_items)>0:
 					for set_apart_item in set_apart_po_items:
 						self.append('set_apart_po_item_for_customer_cf',set_apart_item)							
+
+
+def get_pr_dashboard_links(data):
+    data["internal_links"].update({"Supplier Packing List Art": ["items", "ref_supplier_packing_list_art"]})
+
+    for d in data.get("transactions",[]):
+        if d.get("label") == _("Reference"):
+            d.update({"items":d.get("items")+["Supplier Packing List Art"]})
+
+    return data						

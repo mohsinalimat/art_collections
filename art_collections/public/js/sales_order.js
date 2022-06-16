@@ -331,8 +331,11 @@ function upload_art_bulk_items(frm) {
 					}
 				})
 				Promise.all(uom_promises).then(function (responses) {
-					frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
-					frm.refresh_field('items')
+					setTimeout(() => {
+						frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
+						frm.refresh_field('items')
+					}, 400);
+
 				}).catch(function (reason) {
 					console.log(reason);
 				});

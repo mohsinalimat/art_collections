@@ -239,7 +239,8 @@ standard_portal_menu_items = [
 #
 
 override_doctype_dashboards = {
-    "Purchase Order": "art_collections.purchase_order_controller.get_po_dashboard_links"
+    "Purchase Order": "art_collections.purchase_order_controller.get_po_dashboard_links",
+    "Purchase Receipt": "art_collections.purchase_receipt_controller.get_pr_dashboard_links"
 }
 
 override_whitelisted_methods = {

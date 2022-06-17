@@ -35,8 +35,10 @@ def get_print_context(doctype, name):
         d["warehouse"] = d["warehouse"][0:5]
         d["uom"] = "".join([x[0] for x in d["uom"].split(" ")])
         d["stock_uom"] = "".join([x[0] for x in d["stock_uom"].split(" ")])
-        d["sales_order"] = ", ".join([x[-3:] for x in d["sales_order"].split(",")])
-        d["delivery_date"] = ", ".join(
+        d["sales_order"] = d["sales_order"] and ", ".join(
+            [x[-3:] for x in d["sales_order"].split(",")]
+        )
+        d["delivery_date"] = d["delivery_date"] and ", ".join(
             [x[-5:].replace("-", "/") for x in d["delivery_date"].split(",")]
         )
 

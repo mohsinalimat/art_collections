@@ -54,7 +54,9 @@ def get_print_context(name):
             )       
         where 
             soi.parent = %(name)s
-    """,
+    """.format(
+                get_url()
+            ),
             dict(name=name),
             as_dict=True,
             # debug=1,

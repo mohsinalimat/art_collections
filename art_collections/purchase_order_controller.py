@@ -310,4 +310,4 @@ def get_connected_shipment(purchase_order):
 			shipment_list.append(shipment.shipment)
 		return shipment_list
 	else:
-		return None    
+		return []    

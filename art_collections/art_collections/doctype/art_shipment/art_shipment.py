@@ -65,7 +65,7 @@ def get_connected_purchase_order(art_shipment):
 			po_list.append(po.purchase_order)
 		return po_list
 	else:
-		return None
+		return []
 
 @frappe.whitelist()
 def get_connected_purchase_receipt(art_shipment):
@@ -80,4 +80,4 @@ where supplier_detail.parenttype ='Supplier Packing List Art' and supplier_detai
 			pr_list.append(pr.pr)
 		return pr_list
 	else:
-		return None  			
+		return []  			

@@ -87,4 +87,4 @@ where supplier_detail.parenttype ='Supplier Packing List Art' and supplier_detai
 			shipment_list.append(shipment.shipment)
 		return shipment_list
 	else:
-		return None  	
+		return []  	

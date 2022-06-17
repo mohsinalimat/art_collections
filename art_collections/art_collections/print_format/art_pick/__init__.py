@@ -31,6 +31,15 @@ def get_print_context(doctype, name):
         )
     )
 
+    for d in ctx["items"]:
+        d["warehouse"] = d["warehouse"][0:5]
+        d["uom"] = "".join([x[0] for x in d["uom"].split(" ")])
+        d["stock_uom"] = "".join([x[0] for x in d["stock_uom"].split(" ")])
+        d["sales_order"] = ", ".join([x[-3:] for x in d["sales_order"].split(",")])
+        d["delivery_date"] = ", ".join(
+            [x[-5:].replace("-", "/") for x in d["delivery_date"].split(",")]
+        )
+
     if ctx["items"] and ctx["items"][0].get("sales_order"):
         so = frappe.db.sql(
             """

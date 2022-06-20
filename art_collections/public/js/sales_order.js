@@ -295,11 +295,11 @@ function upload_art_bulk_items(frm) {
 				tasks.push(
 					() => frm.script_manager.trigger("item_code", child.doctype, child.name)
 				)
-				tasks.push(() => frappe.timeout(3.0))
+				tasks.push(() => frappe.timeout(2.2))
 				tasks.push(
 					() => frappe.model.set_value(child.doctype, child.name, 'uom', items[idx][2])
 				)
-				tasks.push(() => frappe.timeout(0.5))
+				tasks.push(() => frappe.timeout(0.6))
 			})
 
 

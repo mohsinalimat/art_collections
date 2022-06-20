@@ -267,80 +267,48 @@ function download_art_bulk_template(frm) {
 	return false;
 }
 
+
 function upload_art_bulk_items(frm) {
-	let excel_uom_data = {}
-	let me = this
-	const value_formatter_map = {
-		"Date": val => val ? frappe.datetime.user_to_str(val) : val,
-		"Int": val => cint(val),
-		"Check": val => cint(val),
-		"Float": val => flt(val),
-	};
+	frappe.dom.freeze()
 	new frappe.ui.FileUploader({
 		as_dataurl: true,
 		allow_multiple: false,
 		on_success(file) {
-			var data = frappe.utils.csv_to_array(frappe.utils.get_decoded_string(file.dataurl));
-			// row #2 contains fieldnames;
-			var fieldnames = data[2];
+
 			frm.clear_table('items');
 			frm.clear_table('discontinued_sales_item_ct');
-			$.each(data, (i, row) => {
-				if (i > 6) {
-					var blank_row = true;
-					$.each(row, function (ci, value) {
-						if (value) {
-							blank_row = false;
-							return false;
-						}
-					});
-					if (!blank_row) {
-						var d = frm.add_child('items');
-						$.each(row, (ci, value) => {
-							var fieldname = fieldnames[ci];
-							var df = frappe.meta.get_docfield('Sales Order Item', fieldname);
-							if (df) {
-								d[fieldnames[ci]] = value_formatter_map[df.fieldtype] ?
-									value_formatter_map[df.fieldtype](value) :
-									value;
-								if (fieldname == 'uom') {
-									excel_uom_data[d.name] = value
 
-								}
-							}
-						});
-					}
-				}
-			});
-			frm.refresh_field('items');
-			var me = this;
-			var item_code_promises = [];
-			var uom_promises = [];
-			// trigger item_code to get all item fields
-			frm.doc.items.forEach(child_row => {
-				item_code_promises.push(frm.script_manager.trigger("item_code", child_row.doctype, child_row.name));
-			})
-			Promise.all(item_code_promises).then(function (responses) {
-				if (frm.doc.delivery_date) {
-					frm.update_in_all_rows('items', 'delivery_date', frm.doc.delivery_date);
-				}
-				// put excel UOM value back
-				frm.doc.items.forEach(child_row => {
-					if (excel_uom_data[child_row.name] != '') {
-						uom_promises.push(frappe.model.set_value('Sales Order Item', child_row.name, 'uom', excel_uom_data[child_row.name]))
-					}
+			let data = frappe.utils.csv_to_array(frappe.utils.get_decoded_string(file.dataurl));
+			let items = data.slice(7).filter(t => t.length == 3)
+
+			for (const t of items) {
+				frm.add_child('items', {
+					delivery_date: frm.doc.delivery_date,
+					item_code: t[0],
+					qty: t[1],
+					uom: t[2],
 				})
-				Promise.all(uom_promises).then(function (responses) {
-						frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
+			}
 
-				}).catch(function (reason) {
-					console.log(reason);
-				});
+			let tasks = [];
+			frm.doc.items.forEach((child, idx) => {
+				tasks.push(
+					() => frm.script_manager.trigger("item_code", child.doctype, child.name)
+				)
+				tasks.push(() => frappe.timeout(3.0))
+				tasks.push(
+					() => frappe.model.set_value(child.doctype, child.name, 'uom', items[idx][2])
+				)
+				tasks.push(() => frappe.timeout(0.5))
+			})
 
-			}).catch(function (reason) {
-				console.log(reason);
+
+			return frappe.run_serially(tasks).then(() => {
+				frm.refresh_field("items");
+				frappe.dom.unfreeze()
+				frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
 			});
+
 		}
 	});
-	return false;
 }

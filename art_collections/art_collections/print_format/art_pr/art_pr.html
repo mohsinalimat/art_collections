@@ -1,0 +1,69 @@
+{% set ctx = get_print_context_for_art_collections_purchase_receipt(doc.doctype, doc.name) %}
+
+<style>
+    .bordered>.row {
+        border: 1px solid #eee !important;
+        padding-top: 3px;
+    }
+
+    .bordered>.row>.col {
+        border-right: 1px solid #eee !important;
+    }
+
+    table {
+        font-size: 9px !important;
+    }
+
+    th {
+        font-size: 9px !important;
+    }
+
+    table td {
+        padding: 8px 0;
+    }
+</style>
+
+<div class="row" style="padding-top:0.5rem;">
+    <div class="col-xs-2 logodiv">
+        <img src="/files/logo01.png" class="logofirst" />
+    </div>
+    <div class="col-xs-6 logodiv">
+        <img src="/files/logo02.png" class="logosec" />
+    </div>
+    <div class="col-xs-4" style="text-align:right">
+        <p>{{ _("Purchase Receipt") }}</p>
+        <p>{{ doc.name }} </p>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table table-condensed table-hover table-bordered" style="margin-top:10">
+            <colgroup>
+                <col style="width:2%">
+                <col style="width:73%">
+                <col style="width:15%">
+                <col style="width:10%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>{{ _("No") }} </th>
+                    <th>{{ _("Item Name") }} </th>
+                    <th>{{ _("Qty of Outer") }} </th>
+                    <th>{{ _("Pallet Qty") }} </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in ctx.get("items",[]) %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{d.item_code}}:{{ d.item_name}}</td>
+                    <td class="text-right">{{ frappe.utils.cint(d.qty_of_outer) }}</td>
+                    <td class="text-right">{{ frappe.utils.cint(d.pallet_qty) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

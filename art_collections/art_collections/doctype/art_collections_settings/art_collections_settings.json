@@ -22,6 +22,7 @@
   "outer_carton_uom",
   "maxi_inner_carton_uom",
   "product_uom",
+  "pallet_uom",
   "section_break_17",
   "filling_percentage_for_20_foot_container",
   "filling_percentage_for_40_foot_container",
@@ -94,13 +95,15 @@
    "fieldname": "inner_carton_uom",
    "fieldtype": "Link",
    "label": "Inner Carton UOM ",
-   "options": "UOM"
+   "options": "UOM",
+   "reqd": 1
   },
   {
    "fieldname": "outer_carton_uom",
    "fieldtype": "Link",
    "label": "Outer Carton UOM",
-   "options": "UOM"
+   "options": "UOM",
+   "reqd": 1
   },
   {
    "fieldname": "product_uom",
@@ -137,7 +140,8 @@
    "fieldname": "maxi_inner_carton_uom",
    "fieldtype": "Link",
    "label": "Maxi Inner Carton",
-   "options": "UOM"
+   "options": "UOM",
+   "reqd": 1
   },
   {
    "fieldname": "auto_email_sb_section",
@@ -149,12 +153,20 @@
    "fieldtype": "Table",
    "options": "Art Auto Email Template",
    "reqd": 1
+  },
+  {
+   "fieldname": "pallet_uom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pallet UOM",
+   "options": "UOM",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-05-30 11:03:14.488394",
+ "modified": "2022-06-17 12:45:54.917865",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

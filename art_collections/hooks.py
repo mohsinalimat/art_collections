@@ -246,6 +246,7 @@ override_doctype_dashboards = {
 override_whitelisted_methods = {
     " erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
     "erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website": "art_collections.api.get_product_info_for_website",
+    "frappe.utils.print_format.download_pdf": "art_collections.art_collections.print_format.art_pick.download_pdf",
 }
 
 fixtures = [

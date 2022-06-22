@@ -1,3 +1,12 @@
+<!-- { include "art_collections/art_collections/print_format/art_pick/art_pick.html" } -->
+
+
+
+<div id="header-html">
+</div>
+<div id="footer-html">
+</div>
+
 {% set ctx = get_print_context_for_art_collectons_pick_list(doc.doctype, doc.name) %}
 
 <style>
@@ -11,15 +20,16 @@
     }
 
     table {
-        font-size: 9px !important;
+        font-size: 10px !important;
     }
 
     th {
-        font-size: 6px !important;
+        font-size: 7px !important;
     }
 
     table td {
-        padding: 8px 0;
+        /* padding: 5px 30 !important; */
+        line-height: 6px !important;
     }
 </style>
 
@@ -94,21 +104,21 @@
     </table>
 </div>
 
-<div class="row">
+<div class="row" style="margin-top:-30px">
     <div class="col-xs-12">
-        <table class="table table-condensed table-hover table-bordered" style="margin-top:10">
+        <table class="table table-condensed table-hover table-bordered">
             <colgroup>
-                <col style="width:3">
-                <col style="width:36">
-                <col style="width:9">
-                <col style="width:6">
-                <col style="width:6">
-                <col style="width:6">
-                <col style="width:6">
-                <col style="width:6">
-                <col style="width:10">
-                <col style="width:6">
-                <col style="width:6">
+                <col style="width:3%">
+                <col style="width:42%">
+                <col style="width:6%">
+                <col style="width:4%">
+                <col style="width:4%">
+                <col style="width:4%">
+                <col style="width:6%">
+                <col style="width:5%">
+                <col style="width:5%">
+                <col style="width:4%">
+                <col style="width:17%">
 
             </colgroup>
             <thead>
@@ -132,9 +142,9 @@
                     <td>{{ loop.index }}</td>
                     <td>{{d.item_code}}:{{ d.item_name}}</td>
                     <td>{{ d.warehouse or "" }}</td>
-                    <td class="text-right">{{ d.qty }}</td>
+                    <td class="text-right">{{ frappe.utils.cint(d.qty) }}</td>
                     <td>{{ d.uom }}</td>
-                    <td class="text-right">{{ d.conversion_factor }}</td>
+                    <td class="text-right">{{ frappe.utils.cint(d.conversion_factor) }}</td>
                     <td>{{ d.stock_uom }}</td>
                     <td>{{ d.sales_order or "" }}</td>
                     <td>{{ d.delivery_date or "" }}</td>
@@ -146,9 +156,3 @@
         </table>
     </div>
 </div>
-
-<!-- <div>
-    <p class="text-right small page-number visible-pdf">
-        {{ _("Page {0} of {1}").format("<span class=\"page\"></span>", "<span class=\"topage\"></span>") }}
-    </p>
-</div> -->

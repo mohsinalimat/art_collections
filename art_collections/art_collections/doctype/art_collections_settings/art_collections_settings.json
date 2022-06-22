@@ -23,6 +23,7 @@
   "maxi_inner_carton_uom",
   "product_uom",
   "pallet_uom",
+  "dummy_item",
   "section_break_17",
   "filling_percentage_for_20_foot_container",
   "filling_percentage_for_40_foot_container",
@@ -161,12 +162,19 @@
    "label": "Pallet UOM",
    "options": "UOM",
    "reqd": 1
+  },
+  {
+   "fieldname": "dummy_item",
+   "fieldtype": "Link",
+   "label": "Dummy Item",
+   "options": "Item",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-06-17 12:45:54.917865",
+ "modified": "2022-06-22 16:36:07.453461",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

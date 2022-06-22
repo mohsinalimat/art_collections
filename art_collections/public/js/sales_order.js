@@ -35,14 +35,14 @@ frappe.ui.form.on('Sales Order', {
 					let delivery_appointment_contact_detail_art = values.delivery_appointment_contact_detail_art
 					let country = values.country
 					if (country) {
-                        frappe.call('art_collections.sales_order_controller.get_shipping_rule', {
-                            country: country
-                        }).then(r => {
-                            let records=r.message
-                            if (records.length > 0) {
-                                frm.set_value('shipping_rule', records[0].name)
-                            }                            
-                        })
+						frappe.call('art_collections.sales_order_controller.get_shipping_rule', {
+							country: country
+						}).then(r => {
+							let records = r.message
+							if (records.length > 0) {
+								frm.set_value('shipping_rule', records[0].name)
+							}
+						})
 					}
 					frm.set_value({
 						delivery_by_appointment_art: delivery_by_appointment_art,
@@ -120,15 +120,20 @@ frappe.ui.form.on('Sales Order', {
 	needs_confirmation_art: function (frm) {
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);
 	},
-	validate: function (frm) {
 
-		// ignore_warning is set to true in warning popup's success route
-		if (frm.ignore_warning) {
-			return;
-		}
-		frappe.validated = false;
-		create_warning_dialog_for_inner_qty_check(frm)
-		// frm.trigger('create_warning_dialog_for_inner_qty_check');
+	validate: function (frm) {
+		/**
+				// Items will be uploaded using Data Import on server side
+
+				// ignore_warning is set to true in warning popup's success route
+				if (frm.ignore_warning) {
+					return;
+				}
+				frappe.validated = false;
+				create_warning_dialog_for_inner_qty_check(frm)
+				// frm.trigger('create_warning_dialog_for_inner_qty_check');
+		 */
+
 
 		if (frm.doc.order_type && (frm.doc.order_type == 'Shopping Cart' || frm.doc.order_type == 'Shopping Cart Wish List')) {
 			$.each(frm.doc.items || [], function (i, d) {
@@ -267,51 +272,48 @@ function download_art_bulk_template(frm) {
 	return false;
 }
 
-
 function upload_art_bulk_items(frm) {
-	frappe.dom.freeze()
-	new frappe.ui.FileUploader({
-		as_dataurl: true,
-		allow_multiple: false,
-		on_success(file) {
-
-			frm.clear_table('items');
-			frm.clear_table('discontinued_sales_item_ct');
-
-			let data = frappe.utils.csv_to_array(frappe.utils.get_decoded_string(file.dataurl));
-			let items = data.slice(7).filter(t => t.length == 3)
-
-			for (const t of items) {
-				frm.add_child('items', {
-					delivery_date: frm.doc.delivery_date,
-					item_code: t[0],
-					qty: t[1],
-					uom: t[2],
-				})
-			}
-
-			let tasks = [];
-			frm.doc.items.forEach((child, idx) => {
-				tasks.push(
-					() => frm.script_manager.trigger("item_code", child.doctype, child.name)
-				)
-				tasks.push(() => frappe.timeout(2.2))
-				if (items[idx][2]!='' ) {
-					tasks.push(
-						() => frappe.model.set_value(child.doctype, child.name, 'uom', items[idx][2])
-					)
-					tasks.push(() => frappe.timeout(0.6))					
-				}
-
-			})
+	// Use Data Import to import items from upload file
+	// Add a dummy item and Save, so that Sales Order with Customer etc. is available for Data Import - update existing records. 
 
 
-			return frappe.run_serially(tasks).then(() => {
-				frm.refresh_field("items");
-				frappe.dom.unfreeze()
-				frappe.msgprint({ message: __('Table updated'), title: __('Success'), indicator: 'green' });
-			});
+	frappe.dom.freeze();
 
-		}
-	});
+	frm.doc.items = [];
+
+	frappe.db.get_value('Art Collections Settings', 'Art Collections Settings', 'dummy_item').then((r) => {
+		let child = frm.add_child('items', {
+			delivery_date: frm.doc.delivery_date,
+			item_code: r.message,
+			qty: 1,
+		});
+
+		frm.script_manager.trigger("item_code", child.doctype, child.name).then(() => {
+			frm.refresh_field('items');
+			frm.save()
+				.then(() => {
+					frm.reload_doc();
+					new frappe.ui.FileUploader({
+						doctype: frm.doctype,
+						docname: frm.docname,
+						frm: frm,
+						folder: 'Home/Attachments',
+						on_success: (file_doc) => {
+							frm.attachments.attachment_uploaded(file_doc);
+							frappe.dom.unfreeze();
+							frappe.call({
+								method: "art_collections.controllers.sales_order_items_import.import_items",
+								args: {
+									docname: frm.doc.name,
+									file_url: file_doc.file_url,
+									delivery_date: frm.doc.delivery_date
+								}
+							}).then(() => {
+								frm.reload_doc();
+							})
+						}
+					});
+				});
+		})
+	})
 }

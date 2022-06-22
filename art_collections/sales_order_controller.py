@@ -23,9 +23,9 @@ def sales_order_custom_validation(self, method):
     if self.is_offline_art == 0:
         validate_minimum_order_amount_as_per_customer_group(self)
         valiate_payment_terms_and_credit_limit_for_customer(self)
-        validate_inner_qty_and_send_notification(self)
+        # validate_inner_qty_and_send_notification(self)
         update_total_saleable_qty(self)
-        get_directive(self,method)
+        get_directive(self, method)
 
 
 def update_total_saleable_qty(self, method=None):
@@ -203,15 +203,20 @@ def validate_minimum_order_amount_as_per_customer_group(self):
                 and self.base_net_total < minimum_order_amount_art
             ):
 
-                msg=_(
-                        "For customer group {0} minimum order amount required is {1}.<br>The sales order amount is {2}. Please set higher order value and continue...".format(
-                            frappe.bold(customer_group),
-                            frappe.bold(minimum_order_amount_art),
-                            frappe.bold(self.base_net_total),
-                        )
+                msg = _(
+                    "For customer group {0} minimum order amount required is {1}.<br>The sales order amount is {2}. Please set higher order value and continue...".format(
+                        frappe.bold(customer_group),
+                        frappe.bold(minimum_order_amount_art),
+                        frappe.bold(self.base_net_total),
                     )
-                
-                frappe.msgprint(msg= msg,title= _('Minimum Order Amount Alert'),indicator= 'orange', alert=False)
+                )
+
+                frappe.msgprint(
+                    msg=msg,
+                    title=_("Minimum Order Amount Alert"),
+                    indicator="orange",
+                    alert=False,
+                )
 
 
 def valiate_payment_terms_and_credit_limit_for_customer(self):
@@ -293,7 +298,13 @@ def get_item_details(item_code, qty):
         "item_group": item and item[0]["item_group"] or "",
     }
 
+
 @frappe.whitelist()
 def get_shipping_rule(country):
-    return frappe.db.sql("""select sr.name from `tabShipping Rule` sr inner join `tabShipping Rule Country` sr_country 
-    on sr.name=sr_country.parent where sr.disabled=0 and sr_country.country=%s order by sr.creation DESC  limit 1""",country,as_dict=1,debug=1)
+    return frappe.db.sql(
+        """select sr.name from `tabShipping Rule` sr inner join `tabShipping Rule Country` sr_country 
+    on sr.name=sr_country.parent where sr.disabled=0 and sr_country.country=%s order by sr.creation DESC  limit 1""",
+        country,
+        as_dict=1,
+        debug=1,
+    )

@@ -270,15 +270,15 @@ function upload_art_bulk_items(frm) {
 				item_code: item_code,
 				qty: 10000,
 			});
-		})
-		frm.script_manager.trigger("item_code", child.doctype, child.name).then(() => {
-			frm.refresh_field('items');
-			frm.save()
-				.then(() => {
-					frappe.dom.unfreeze();
-					frm.reload_doc();
-					_show_uploader(frm)
-				});
+			frm.script_manager.trigger("item_code", child.doctype, child.name).then(() => {
+				frm.refresh_field('items');
+				frm.save()
+					.then(() => {
+						frappe.dom.unfreeze();
+						frm.reload_doc();
+						_show_uploader(frm)
+					});
+			})
 		})
 	} else {
 		_show_uploader(frm)

@@ -57,6 +57,7 @@ def get_import_template(docname, file_url, delivery_date):
                     "message": "Invalid data. Please specify Item Code, UOM and Quantity.",
                 }
             )
+
     if warnings:
         make_error_file(docname, warnings, upload_data)
         return "", upload_data
@@ -65,11 +66,15 @@ def get_import_template(docname, file_url, delivery_date):
 
     # modify file to add delivery date and SO#
     import_template.append(HEADER.split(","))
-    import_template.append(
-        (["%s" % docname, ""] + upload_data[1] + [delivery_date])[:6]
-    )
+
+    # first row has SO name
+    import_template.append(["%s" % docname, ""] + upload_data[1])
     for d in upload_data[2:]:
-        import_template.append((["", ""] + d + [delivery_date])[:6])
+        import_template.append(["", ""] + d)
+
+    for d in import_template[1:]:
+        if not d[-1]:
+            d[-1] = delivery_date
 
     # print(import_template)
 
@@ -95,7 +100,11 @@ def make_error_file(docname, warnings, upload_data):
         [m.get("message") for m in [d for d in warnings if d.get("col")]]
     )
 
-    errors = [(d.get("row") - 1, d.get("message")) for d in warnings if d.get("row")]
+    errors = [
+        (d.get("row") - 1, d.get("message", "").replace("<b>", "").replace("</b>", ""))
+        for d in warnings
+        if d.get("row")
+    ]
 
     ERROR_HEADER = _("Error. Please remove this column before re-uploading.")
 

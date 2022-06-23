@@ -245,7 +245,7 @@ function upload_art_bulk_items(frm) {
 			folder: 'Home/Attachments',
 			on_success: (file_doc) => {
 				frm.attachments.attachment_uploaded(file_doc);
-				frappe.dom.freeze();
+				frappe.dom.freeze(__("Importing items. Please wait."));
 
 				frappe.call({
 					method: "art_collections.controllers.sales_order_items_import.import_items",

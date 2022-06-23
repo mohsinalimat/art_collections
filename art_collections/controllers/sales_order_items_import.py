@@ -101,7 +101,7 @@ def make_error_file(docname, warnings, upload_data):
     )
 
     errors = [
-        (d.get("row") - 1, d.get("message", "").replace("<b>", "").replace("</b>", ""))
+        (d.get("row"), d.get("message", "").replace("<b>", "").replace("</b>", ""))
         for d in warnings
         if d.get("row")
     ]
@@ -110,12 +110,10 @@ def make_error_file(docname, warnings, upload_data):
 
     HEADER = "Item Code (Items),UOM (Items),Quantity (Items),Delivery Date (Items)"
 
-    upload_data[0] = HEADER.split(",") + [ERROR_HEADER]
+    upload_data = [HEADER.split(",") + [ERROR_HEADER]] + upload_data[1:]
 
     for idx, err in errors:
-        upload_data[idx] = upload_data[idx] + (
-            len(upload_data[idx]) == 3 and ["", err] or [err]
-        )
+        upload_data[idx - 1] = upload_data[idx - 1] + [err]
 
     f = frappe.get_doc(
         doctype="File",

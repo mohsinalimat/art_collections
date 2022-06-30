@@ -5,10 +5,12 @@
 from email import message
 import frappe
 from frappe import _
-from frappe.utils.csvutils import read_csv_content, to_csv
+from frappe.utils.csvutils import to_csv
 from frappe.utils import flt, get_date_str
 from frappe.core.doctype.data_import.importer import Importer, UPDATE
-import os
+import os, io
+from openpyxl import load_workbook
+from frappe.utils.xlsxutils import read_xlsx_file_from_attached_file
 
 
 @frappe.whitelist()
@@ -44,8 +46,10 @@ def get_import_template(docname, file_url, delivery_date):
     import_file = frappe.get_doc("File", {"file_url": file_url})
     file_path = os.path.abspath(import_file.get_full_path())
 
-    with open(file_path, "r") as csvfile:
-        upload_data = read_csv_content(csvfile.read())
+    # with open(file_path, "r") as csvfile:
+    #     upload_data = read_csv_content(csvfile.read())
+
+    upload_data = read_xlsx_file_from_attached_file(file_url=file_url)
 
     # validate upload data
     warnings = []
@@ -127,3 +131,18 @@ def make_error_file(docname, warnings, upload_data):
     f.save(ignore_permissions=True)
 
     frappe.msgprint(message)
+
+
+@frappe.whitelist()
+def download_sales_order_items_upload_template():
+    template_path = frappe.get_app_path(
+        "art_collections", "controllers", "sales_order_item_import_template.xlsx"
+    )
+
+    template = load_workbook(template_path)
+
+    out = io.BytesIO()
+    template.save(out)
+    frappe.response["filename"] = _("Sales Order Item Import Template") + ".xlsx"
+    frappe.response["filecontent"] = out.getvalue()
+    frappe.response["type"] = "binary"

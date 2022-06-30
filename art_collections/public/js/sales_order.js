@@ -229,9 +229,8 @@ function create_warning_dialog_for_inner_qty_check(frm) {
 }
 
 function download_art_bulk_template(frm) {
-	var template = "Item Code (Items),UOM (Items),Quantity (Items),Delivery Date (Items)";
-	frappe.tools.downloadify([template.split(",")], null, 'Import Items Template');
-	return false;
+	let method = '/api/method/art_collections.controllers.sales_order_items_import.download_sales_order_items_upload_template';
+	open_url_post(method, {})
 }
 
 function upload_art_bulk_items(frm) {

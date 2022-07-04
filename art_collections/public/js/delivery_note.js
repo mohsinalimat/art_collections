@@ -54,7 +54,7 @@ frappe.ui.form.on('Delivery Note', {
 		
 		// custom code
 		if(me.frm.doc.hide_rate_in_delivery_note_art==1){
-			return print_format_list = ["DN No Rate"]		
+			return print_format_list = ["DN NR"]		
 			
 		}else{
 			return print_format_list= ["Standard"];

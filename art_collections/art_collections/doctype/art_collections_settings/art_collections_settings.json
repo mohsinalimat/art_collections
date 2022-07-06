@@ -14,7 +14,6 @@
   "damage_warehouse_type",
   "reserved_warehouse_type",
   "default_email_template_sb_section",
-  "sales_order_email_template",
   "cb_et_1",
   "selling_pack_invalid_qty_so_notification",
   "item_defaults_section",
@@ -74,12 +73,6 @@
    "fieldname": "default_email_template_sb_section",
    "fieldtype": "Section Break",
    "label": "Default Email Template"
-  },
-  {
-   "fieldname": "sales_order_email_template",
-   "fieldtype": "Link",
-   "label": "Sales Order Email Template",
-   "options": "Email Template"
   },
   {
    "description": "To set item required by date in purchase order",
@@ -174,7 +167,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-06-22 16:36:07.453461",
+ "modified": "2022-07-06 15:13:21.304557",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

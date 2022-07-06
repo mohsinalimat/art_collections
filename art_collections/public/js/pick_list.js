@@ -77,18 +77,18 @@ frappe.ui.form.on('Pick List', {
 			});
 		});
 	},	
-	onload_post_render: function (frm) {
-		frappe.call('art_collections.item_controller.get_all_saleable_warehouse_list')
-			.then(saleable_warehouse_type => {
-				if (saleable_warehouse_type) {
-					frm.set_query('parent_warehouse', () => {
-						return {
-							filters: {
-								warehouse_type: ['in', saleable_warehouse_type.message]
-							}
-						}
-					})
-				}
-			})		
-	}
+	// onload_post_render: function (frm) {
+	// 	frappe.call('art_collections.item_controller.get_all_saleable_warehouse_list')
+	// 		.then(saleable_warehouse_type => {
+	// 			if (saleable_warehouse_type) {
+	// 				frm.set_query('parent_warehouse', () => {
+	// 					return {
+	// 						filters: {
+	// 							warehouse_type: ['in', saleable_warehouse_type.message]
+	// 						}
+	// 					}
+	// 				})
+	// 			}
+	// 		})		
+	// }
 });

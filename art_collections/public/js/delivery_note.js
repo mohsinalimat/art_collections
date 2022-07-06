@@ -1,26 +1,26 @@
 frappe.ui.form.on('Delivery Note', {
-	onload_post_render: function (frm) {
-		frappe.call('art_collections.item_controller.get_all_saleable_warehouse_list')
-			.then(saleable_warehouse_type => {
-				if (saleable_warehouse_type) {
-					frm.set_query('set_warehouse', () => {
-						return {
-							filters: {
-								warehouse_type: ['in', saleable_warehouse_type.message]
-							}
-						}
-					})
-					frm.set_query('warehouse', 'items', () => {
-						return {
-							filters: {
-								warehouse_type: ['in', saleable_warehouse_type.message]
-							}
-						}
-					})
-				}
-			})
+	// onload_post_render: function (frm) {
+	// 	frappe.call('art_collections.item_controller.get_all_saleable_warehouse_list')
+	// 		.then(saleable_warehouse_type => {
+	// 			if (saleable_warehouse_type) {
+	// 				frm.set_query('set_warehouse', () => {
+	// 					return {
+	// 						filters: {
+	// 							warehouse_type: ['in', saleable_warehouse_type.message]
+	// 						}
+	// 					}
+	// 				})
+	// 				frm.set_query('warehouse', 'items', () => {
+	// 					return {
+	// 						filters: {
+	// 							warehouse_type: ['in', saleable_warehouse_type.message]
+	// 						}
+	// 					}
+	// 				})
+	// 			}
+	// 		})
 
-	},    
+	// },    
     before_submit: function (frm) {
      if (frm.doc.double_check_order_flag_art==1 && frm.doc.did_you_double_check_the_order_art!=1) 
      {

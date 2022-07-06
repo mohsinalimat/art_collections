@@ -15,6 +15,33 @@ $(document).ready(function () {
 
 
 
+$(document).on('form-refresh', function (frm) {
+    if (cur_frm && cur_frm.dashboard) {
+        var original = cur_frm.dashboard.set_badge_count;
+        cur_frm.dashboard.set_badge_count = function () {
+            original.apply(this, arguments);
+            if (arguments.length >= 3) {
+                let doctype = arguments[0], open_count = arguments[1], count = arguments[2];
+
+                var $link = $(this.transactions_area)
+                    .find('.document-link[data-doctype="' + doctype + '"]');
+
+                if (open_count) {
+                    $link.find('.open-notification')
+                        .removeClass('hidden')
+                        .html(open_count);
+                }
+
+                if (count) {
+                    $link.find('.count')
+                        .removeClass('hidden')
+                        .text(count);
+                }
+            }
+        };
+    }
+});
+
 frappe.show_email_dialog = function (frm) {
     // show email dialog with pre-set values for default print format 
     // and email template and attach_print

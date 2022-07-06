@@ -11,6 +11,7 @@ from frappe.core.doctype.data_import.importer import Importer, UPDATE
 import os, io
 from openpyxl import load_workbook
 from frappe.utils.xlsxutils import read_xlsx_file_from_attached_file
+from frappe.utils.xlsxutils import make_xlsx
 
 
 @frappe.whitelist()
@@ -51,18 +52,35 @@ def get_import_template(docname, file_url, delivery_date):
 
     upload_data = read_xlsx_file_from_attached_file(file_url=file_url)
 
+    uoms = set([d[1] for d in upload_data[1:]])
+    valid_uoms = [
+        d[0]
+        for d in frappe.db.sql(
+            """select name from `tabUOM` where name in ({})""".format(
+                ",".join(["%s"] * len(uoms))
+            ),
+            tuple(uoms),
+        )
+    ]
+
     # validate upload data
     warnings = []
-    for idx, d in enumerate(upload_data):
+    for idx, d in enumerate(upload_data[1:]):
+        message = ""
         if not len([x for x in d if x]) in (3, 4):
+            message = "Invalid data. Please specify Item Code, UOM and Quantity."
+        if not d[1] in valid_uoms:
+            message += "Invalid UOM: %s" % d[1]
+        if message:
             warnings.append(
                 {
                     "row": idx + 1,
-                    "message": "Invalid data. Please specify Item Code, UOM and Quantity.",
+                    "message": message,
                 }
             )
 
     if warnings:
+        print(warnings)
         make_error_file(docname, warnings, upload_data)
         return "", upload_data
 
@@ -117,14 +135,16 @@ def make_error_file(docname, warnings, upload_data):
     upload_data = [HEADER.split(",") + [ERROR_HEADER]] + upload_data[1:]
 
     for idx, err in errors:
-        upload_data[idx - 1] = upload_data[idx - 1] + [err]
+        upload_data[idx] = upload_data[idx] + [err]
+
+    xlsx = make_xlsx(upload_data, "Errors")
 
     f = frappe.get_doc(
         doctype="File",
         attached_to_doctype="Sales Order",
         attached_to_name=docname,
-        content=to_csv(upload_data),
-        file_name="sales_order_items_import_errors.csv",
+        content=xlsx.getvalue(),
+        file_name="sales_order_items_import_errors.xlsx",
         is_private=1,
     )
 

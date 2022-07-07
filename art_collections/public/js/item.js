@@ -51,7 +51,7 @@ frappe.ui.form.on('Item', {
       }
 
 
-      frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
+      // frm.doc.cbm_per_outer_art=flt(frm.doc.outer_heigth_art*frm.doc.outer_width_art*frm.doc.outer_length_art)
 
       // if (frm.is_new() == 1) {
       //    let custom_item_name = []

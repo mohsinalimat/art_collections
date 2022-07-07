@@ -11,10 +11,7 @@ def set_address_title_based_on_customer(self,method):
 			trade_name=frappe.db.get_value('Customer', self.links[0].link_name, 'trade_name')
 			address_lists=[
 													trade_name,
-													self.city,
-													self.zip_code,
-													self.art_state,
-													self.art_county,	
+													self.city
 									]
 
 			address_lists_filtered = filter(lambda address: address !=None, address_lists)

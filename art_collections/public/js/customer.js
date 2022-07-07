@@ -1,5 +1,53 @@
 frappe.ui.form.on('Customer', {
+    territory: function (frm) {
+        if (frm.doc.territory) {
+            frappe.call('art_collections.customer_controller.get_payment_terms_based_on_territory', {
+                territory: frm.doc.territory
+            }).then(r => {
+                if (r.message) {
+                    const default_company = frappe.defaults.get_default('company');
+                    let territory_detail=r.message
+                    if (territory_detail.default_price_list_cf!=null && (frm.doc.default_price_list==undefined || frm.doc.default_price_list=='')) {
+                        frm.set_value('default_price_list', territory_detail.default_price_list_cf)
+						frappe.show_alert({
+							message: __("Price List : {0} is added from {1} .", [territory_detail.default_price_list_cf,territory_detail.name]),
+							indicator: "green"
+						});                        
+                    }
+                    if (territory_detail.default_payment_terms_template_cf!=null && (frm.doc.payment_terms==undefined || frm.doc.payment_terms=='')) {
+                        frm.set_value('payment_terms', territory_detail.default_payment_terms_template_cf)
+						frappe.show_alert({
+							message: __("Payment Terms Template : {0} is added from {1} .", [territory_detail.default_payment_terms_template_cf,territory_detail.name]),
+							indicator: "green"
+						});                         
+                    }      
+                    if (territory_detail.minimum_order_amount_cf!=null && (frm.doc.minimum_order_amount_cf==undefined || frm.doc.minimum_order_amount_cf=='')) {
+                        frm.set_value('minimum_order_amount_cf', territory_detail.minimum_order_amount_cf)
+						frappe.show_alert({
+							message: __("Min Order Amount : {0} is added from {1} .", [territory_detail.minimum_order_amount_cf,territory_detail.name]),
+							indicator: "green"
+						});                         
+                    }    
+                    if (territory_detail.credit_limit!=null) {
+                        let credit_limits=frm.doc.credit_limits || []
+                        let result = credit_limits.find(c => c.company==default_company) 
+                        if (result==undefined) {
+                            var childTable = cur_frm.add_child("credit_limits");
+                            childTable.company=territory_detail.company
+                            childTable.credit_limit=territory_detail.credit_limit
+                            cur_frm.refresh_fields("credit_limits");           
+                            frappe.show_alert({
+                                message: __("Credit Limit : {0} is added from {1} .", [territory_detail.credit_limit,territory_detail.name]),
+                                indicator: "green"
+                            });                                     
+                        }
 
+                    }                                                   
+                }
+                
+            })            
+        }
+    },
     fill_customer_sales_person: function (address) {
         var doc = cur_frm.doc;
         if (doc.customer_sales_person[0]) {

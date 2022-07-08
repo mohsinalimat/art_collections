@@ -89,6 +89,7 @@ def _make_excel_attachment(doctype, docname):
 
     fields = [
         "item_code",
+        "item_name",
         "barcode",
         "customs_tariff_number",
         "weight_per_unit",

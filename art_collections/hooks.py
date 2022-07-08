@@ -180,8 +180,11 @@ doc_events = {
         "on_submit": "art_collections.controllers.excel.quotation_excel.on_submit_quotation",
     },
     "Delivery Note": {
-        "validate": "art_collections.directive_controller.get_directive",
-        "on_submit": "art_collections.controllers.excel.delivery_note_excel.on_submit_delivery_note",
+        "validate": ["art_collections.delivery_note_controller.check_dn_has_unique_so_when_no_back_order_accepted",
+        "art_collections.directive_controller.get_directive"],
+        "on_submit": ["art_collections.controllers.excel.delivery_note_excel.on_submit_delivery_note",
+        "art_collections.delivery_note_controller.update_so_status_based_on_back_order_accepted"],
+        "on_cancel":"art_collections.delivery_note_controller.update_so_status_based_on_back_order_accepted"
     },
     "Sales Invoice": {
         "validate": "art_collections.directive_controller.get_directive",

@@ -153,7 +153,7 @@ left outer join col_catalogue_type on col_catalogue_type.item=fn.name
 			'year_start_date':year_start_date,
 			'month_start_date':month_start_date,
 			'month_end_date':month_end_date
-		},as_dict=1,debug=1)
+		},as_dict=1)
 	return data
 
 

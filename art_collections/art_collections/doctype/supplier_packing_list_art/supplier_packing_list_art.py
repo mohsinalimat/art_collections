@@ -158,7 +158,7 @@ class SupplierPackingListArt(Document):
 				supplier_packing_row=frappe.db.sql("""SELECT po_item.item_code,po_item.item_name,po_item.parent as purchase_order,po_item.name as po_item_code,po_item.stock_uom,
 									(po_item.qty-po_item.received_qty)  as qty_of_stock_uom FROM `tabPurchase Order` po inner join `tabPurchase Order Item` po_item
 									on po.name=po_item.parent where po.docstatus=1 and po_item.received_qty < po_item.qty and po_item.delivered_by_supplier !=1
-										and po_item.name =%s""",(excel_row.get('po_item_code')),as_dict=1,debug=1)
+										and po_item.name =%s""",(excel_row.get('po_item_code')),as_dict=1)
 				if len(supplier_packing_row)>0:
 					supplier_packing_row=supplier_packing_row[0]									
 					if excel_row.get('qty_as_per_spl') and flt(supplier_packing_row.qty_of_stock_uom,2)!=flt(excel_row.get('qty_as_per_spl'),2):
@@ -289,7 +289,7 @@ def update_po_item_qty_based_on_qty_as_per_spl(spl_packing_list):
 		# get sum qty_as_per_spl of all submitted Supplier Packing List Detail
 		supplier_packing_row=frappe.db.sql("""SELECT  sum(packing_list_detail.qty_as_per_spl) as qty_as_per_spl from `tabSupplier Packing List Detail Art` as packing_list_detail
 							where packing_list_detail.docstatus =1 and packing_list_detail.qty_as_per_spl > 0 and packing_list_detail.purchase_order=%s and packing_list_detail.po_item_code=%s
-							group by packing_list_detail.po_item_code""",(spl_packing_item.purchase_order,spl_packing_item.po_item_code),as_dict=1,debug=1)	
+							group by packing_list_detail.po_item_code""",(spl_packing_item.purchase_order,spl_packing_item.po_item_code),as_dict=1)	
 		if spl_packing_item.po_item_code not in unique_po_item_code	:				
 			if len(supplier_packing_row)>0:
 				qty_as_per_spl=supplier_packing_row[0].qty_as_per_spl

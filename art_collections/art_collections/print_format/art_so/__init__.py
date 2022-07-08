@@ -58,8 +58,7 @@ def get_print_context(name):
                 get_url()
             ),
             dict(name=name),
-            as_dict=True,
-            # debug=1,
+            as_dict=True
         )
     )
 

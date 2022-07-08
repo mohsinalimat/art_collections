@@ -45,8 +45,7 @@ select
             conditions=get_conditions(filters)
         ),
         filters,
-        as_dict=True,
-        # debug=True,
+        as_dict=True
     )
 
     return data

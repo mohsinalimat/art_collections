@@ -396,6 +396,5 @@ left outer join outer_carton oc on oc.name = ti.name
 {conditions} {limit}
     """.format(
             conditions=conditions, limit=limit
-        ),
-        # debug=True,
+        )
     )

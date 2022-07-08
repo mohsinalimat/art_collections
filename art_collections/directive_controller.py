@@ -161,7 +161,7 @@ def get_directive(self,method):
 # where doctypes.directive_doctype = %s
 # and directive.disabled =0
 # and directive.apply_for_items = %s
-# and directive.apply_for_item_value = %s""", (doctype,entity_type,entity_name),as_dict=True,debug=0)
+# and directive.apply_for_item_value = %s""", (doctype,entity_type,entity_name),as_dict=True)
 #     import json
 #     return directive if len(directive)>0 else None
 

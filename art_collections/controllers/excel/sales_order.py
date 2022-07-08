@@ -96,8 +96,7 @@ def _make_excel_attachment(doctype, docname):
             get_url()
         ),
         (docname,),
-        as_dict=True,
-        # debug=True,
+        as_dict=True
     )
 
     columns = [

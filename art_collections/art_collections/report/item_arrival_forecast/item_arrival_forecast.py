@@ -17,7 +17,7 @@ inner join `tabPurchase Order Item` as po_item
 on po.name=po_item.parent 
 left outer join `tabSupplier Packing List Detail Art` as spl_item 
 on spl_item.purchase_order =po.name where po_item.received_qty != po_item.stock_qty
-order by po.name DESC""",as_dict=1,debug=1)
+order by po.name DESC""",as_dict=1)
 	print(data)
 	return data	
 

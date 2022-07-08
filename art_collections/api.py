@@ -4,6 +4,8 @@ from frappe import _
 import functools
 from frappe.utils import nowdate,add_days
 from frappe.utils import getdate,format_date
+import json
+from frappe.desk.notifications import get_filters_for
 
 @frappe.whitelist()
 def get_sales_person_based_on_address(address=None):
@@ -355,3 +357,67 @@ group by po.name ) t""",supplier,as_dict=True)
         return actual_delivery_delay_days_art[0] if actual_delivery_delay_days_art else None
     else:
         return None			
+
+
+@frappe.whitelist()
+@frappe.read_only()
+def get_open_count(doctype, name, items=None):
+	"""Get open count for given transactions and filters
+
+	:param doctype: Reference DocType
+	:param name: Reference Name
+	:param transactions: List of transactions (json/dict)
+	:param filters: optional filters (json/list)"""
+
+	if frappe.flags.in_migrate or frappe.flags.in_install:
+		return {"count": []}
+
+	doc = frappe.get_doc(doctype, name)
+	doc.check_permission()
+	meta = doc.meta
+	links = meta.get_dashboard_data()
+
+	# compile all items in a list
+	if items is None:
+		items = []
+		for group in links.transactions:
+			items.extend(group.get("items"))
+
+	if not isinstance(items, list):
+		items = json.loads(items)
+
+	out = []
+	for d in items:
+		if d in links.get("internal_links", {}):
+			continue
+
+		filters = get_filters_for(d)
+		fieldname = links.get("non_standard_fieldnames", {}).get(d, links.get("fieldname"))
+		data = {"name": d}
+		if filters:
+			# get the fieldname for the current document
+			# we only need open documents related to the current document
+			filters[fieldname] = name
+			total = len(
+				frappe.get_all(d, fields="name", filters=filters, distinct=True, ignore_ifnull=True)
+			)
+			data["open_count"] = total
+
+		total = len(
+			frappe.get_all(
+				d, fields="name", filters={fieldname: name}, distinct=True, ignore_ifnull=True
+			)
+		)
+		data["count"] = total
+		out.append(data)
+
+	out = {
+		"count": out,
+	}
+
+	if not meta.custom:
+		module = frappe.get_meta_module(doctype)
+		if hasattr(module, "get_timeline_data"):
+			out["timeline_data"] = module.get_timeline_data(doctype, name)
+
+	return out		

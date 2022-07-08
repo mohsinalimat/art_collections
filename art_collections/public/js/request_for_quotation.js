@@ -1,6 +1,8 @@
 frappe.ui.form.on("Request for Quotation", {
 
     refresh: function (frm) {
+        // frappe.add_product_excel_button(frm, "art_collections.controllers.excel.request_for_quotation_excel._make_excel_attachment")
+
 
         frm.add_custom_button(__('Download RFQ Art PDF'), () => {
             var suppliers = [];

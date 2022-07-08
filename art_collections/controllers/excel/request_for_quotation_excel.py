@@ -4,7 +4,7 @@ from frappe import _
 import io
 import openpyxl
 from frappe.utils import cint, get_site_url, get_url
-from art_collections.controllers.excel import write_xlsx, attach_file
+from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 
 
 def on_submit_request_for_quotation(doc, method=None):
@@ -19,6 +19,7 @@ def _make_excel_attachment(doctype, docname):
         """
  select 
             i.item_code, 
+            i.item_name , 
             trfqi.supplier_part_no ,
             tib.barcode,
             i.customs_tariff_number ,
@@ -28,7 +29,8 @@ def _make_excel_attachment(doctype, docname):
 			0 base_net_amount ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
-                else concat('{}/',i.image) end image
+                else concat('{}/',i.image) end image ,
+            i.image image_url
             from `tabRequest for Quotation` trfq 
             inner join `tabRequest for Quotation Item` trfqi on trfqi.parent = trfq.name
             inner join tabItem i on i.name = trfqi.item_code
@@ -47,34 +49,35 @@ def _make_excel_attachment(doctype, docname):
 
     columns = [
         _("Item Code"),
+        _("Item Name"),
         _("Supplier items"),
         _("Barcode"),
         _("HSCode"),
         _("Quantity"),
         _("Stock UOM"),
-        _("Rate (EUR)"),
-        _("Amount (EUR)"),
         _("Photo"),
     ]
 
     fields = [
         "item_code",
+        "item_name",
         "supplier_part_no",
         "barcode",
         "customs_tariff_number",
         "qty",
         "stock_uom",
-        "base_net_rate",
-        "base_net_amount",
         "image",
     ]
 
     wb = openpyxl.Workbook()
 
-    excel_rows = [columns]
+    excel_rows, images = [columns], [""]
     for d in data:
         excel_rows.append([d.get(f) for f in fields])
+        images.append(d.get("image_url"))
+
     write_xlsx(excel_rows, "RFQ Items", wb, [20] * len(columns))
+    add_images(images, workbook=wb, worksheet="RFQ Items", image_col="I")
 
     # make attachment
     out = io.BytesIO()

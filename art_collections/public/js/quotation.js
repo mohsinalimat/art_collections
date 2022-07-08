@@ -10,14 +10,17 @@ frappe.ui.form.on('Quotation', {
                             country: country
                         }).then(r => {
                             console.log(r)
-                            let records=r.message
+                            let records = r.message
                             if (records.length > 0) {
                                 frm.set_value('shipping_rule', records[0].name)
-                            }                            
+                            }
                         })
 
-                   }
+                    }
                 }
             })
-    }
+    },
+    refresh: function (frm) {
+        // frappe.add_product_excel_button(frm, "art_collections.controllers.excel.quotation_excel._make_excel_attachment")
+    },
 })

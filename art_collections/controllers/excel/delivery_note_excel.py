@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
+from locale import currency
 import frappe
 from frappe import _
 import io
 import openpyxl
 from frappe.utils import cint, get_site_url, get_url
-from art_collections.controllers.excel import write_xlsx, attach_file
+from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 
 
 def on_submit_delivery_note(doc, method=None):
@@ -18,6 +19,7 @@ def _make_excel_attachment(doctype, docname):
         """
         select 
             i.item_code, 
+            i.item_name, 
             tib.barcode,
             i.customs_tariff_number ,
             tdni.weight_per_unit ,
@@ -31,7 +33,8 @@ def _make_excel_attachment(doctype, docname):
             tdni.stock_qty , 
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
-                else concat('{}/',i.image) end image
+                else concat('{}/',i.image) end image ,
+            i.image image_url
             from `tabDelivery Note` tdn 
        	inner join `tabDelivery Note Item` tdni on tdni.parent = tdn.name 
        	inner join tabItem i on i.name = tdni.item_code
@@ -41,17 +44,9 @@ def _make_excel_attachment(doctype, docname):
                 where parent = i.name
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
-	        and tppd.uom = (
-	                select value from tabSingles
-	                where doctype like 'Art Collections Settings' 
-	                and field = 'inner_carton_uom' 
-	            )        
+	        and tppd.uom = tdni.stock_uom
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )
+            and ucd.parenttype='Item' and ucd.uom = tdni.stock_uom
         where tdn.name = %s
     """.format(
             get_url()
@@ -62,12 +57,13 @@ def _make_excel_attachment(doctype, docname):
 
     columns = [
         _("Item Code"),
+        _("Item Name"),
         _("Barcode"),
         _("HSCode"),
-        _("Weight per unit"),
-        _("Length (of stock_uom)"),
-        _("Width (of stock_uom)"),
-        _("Thickness (of stock_uom)"),
+        _("Weight per unit (kg)"),
+        _("Length in cm (of stock_uom)"),
+        _("Width in cm (of stock_uom)"),
+        _("Thickness in cm (of stock_uom)"),
         _("Quantity"),
         _("UOM"),
         _("Stock UOM"),
@@ -78,6 +74,7 @@ def _make_excel_attachment(doctype, docname):
 
     fields = [
         "item_code",
+        "item_name",
         "barcode",
         "customs_tariff_number",
         "weight_per_unit",
@@ -94,10 +91,13 @@ def _make_excel_attachment(doctype, docname):
 
     wb = openpyxl.Workbook()
 
-    excel_rows = [columns]
+    excel_rows, images = [columns], [""]
     for d in data:
         excel_rows.append([d.get(f) for f in fields])
+        images.append(d.get("image_url"))
+
     write_xlsx(excel_rows, "Delivery Note Items", wb, [20] * len(columns))
+    add_images(images, workbook=wb, worksheet="Delivery Note Items", image_col="O")
 
     # make attachment
     out = io.BytesIO()

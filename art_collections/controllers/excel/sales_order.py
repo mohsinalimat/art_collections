@@ -4,7 +4,7 @@ from frappe import _
 import io
 import openpyxl
 from frappe.utils import cint, get_site_url, get_url, cstr
-from art_collections.controllers.excel import write_xlsx, attach_file
+from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 from openpyxl.drawing.image import Image
 from io import BytesIO
 from openpyxl.utils import get_column_letter
@@ -14,32 +14,6 @@ import requests
 
 def on_submit_sales_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
-
-
-def add_images(data, workbook, worksheet=""):
-    ws = workbook.get_sheet_by_name(worksheet)
-    image_col = "S"  # get_column_letter(len(data[0]) - 2)
-    for row, image_url in enumerate(data):
-        if image_url:
-            _filename, extension = os.path.splitext(image_url)
-            if extension in [".png", ".jpg", ".jpeg"]:
-                try:
-                    content = None
-
-                    if image_url.startswith("http"):
-                        content = requests.get(image_url).content
-                    else:
-                        item_file = frappe.get_doc("File", {"file_url": image_url})
-                        content = item_file.get_content()
-                    if content:
-                        image = openpyxl.drawing.image.Image(io.BytesIO(content))
-                        image.height = 100
-                        image.width = 100
-                        ws.add_image(image, f"{image_col}{cstr(row+1)}")
-                        ws.row_dimensions[row + 1].height = 90
-                except Exception as e:
-                    print(e)
-                    pass
 
 
 @frappe.whitelist()

@@ -13,9 +13,10 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image
-from frappe.utils import cint, get_site_url, get_url
+from frappe.utils import cint, get_site_url, get_url, cstr
 import frappe
-
+import requests
+import os
 
 ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
 
@@ -86,3 +87,28 @@ def attach_file(content, **args):
     _file.save()
     frappe.db.commit()
     frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
+
+
+def add_images(data, workbook, worksheet="", image_col="S"):
+    ws = workbook.get_sheet_by_name(worksheet)
+    for row, image_url in enumerate(data):
+        if image_url:
+            _filename, extension = os.path.splitext(image_url)
+            if extension in [".png", ".jpg", ".jpeg"]:
+                try:
+                    content = None
+
+                    if image_url.startswith("http"):
+                        content = requests.get(image_url).content
+                    else:
+                        item_file = frappe.get_doc("File", {"file_url": image_url})
+                        content = item_file.get_content()
+                    if content:
+                        image = openpyxl.drawing.image.Image(io.BytesIO(content))
+                        image.height = 100
+                        image.width = 100
+                        ws.add_image(image, f"{image_col}{cstr(row+1)}")
+                        ws.row_dimensions[row + 1].height = 90
+                except Exception as e:
+                    print(e)
+                    pass

@@ -19,6 +19,7 @@ def _make_excel_attachment(doctype, docname):
         """
         select 
             i.item_code, 
+            i.item_name, 
             tib.barcode,
             i.customs_tariff_number ,
             tqi.weight_per_unit ,
@@ -47,18 +48,10 @@ def _make_excel_attachment(doctype, docname):
                 where parent = i.name
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
-	        and tppd.uom = (
-	                select value from tabSingles
-	                where doctype like 'Art Collections Settings' 
-	                and field = 'inner_carton_uom' 
-	            )        
+	        and tppd.uom = tqi.stock_uom
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )
-        left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
+            and ucd.parenttype='Item' and ucd.uom = tqi.stock_uom
+        left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Quotation' 
        		and tprd.parent = tq.name and tprd.item_code = i.item_code
        	left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
        		and tpr.selling = 1 and exists (
@@ -75,12 +68,13 @@ def _make_excel_attachment(doctype, docname):
 
     columns = [
         _("Item Code"),
+        _("Item Name"),
         _("Barcode"),
         _("HSCode"),
-        _("Weight per unit"),
-        _("Length (of stock_uom)"),
-        _("Width (of stock_uom)"),
-        _("Thickness (of stock_uom)"),
+        _("Weight per unit (kg)"),
+        _("Length in cm (of stock_uom)"),
+        _("Width in cm (of stock_uom)"),
+        _("Thickness in cm (of stock_uom)"),
         _("Quantity"),
         _("UOM"),
         _("Rate (EUR)"),

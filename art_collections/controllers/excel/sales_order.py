@@ -9,6 +9,7 @@ from openpyxl.drawing.image import Image
 from io import BytesIO
 from openpyxl.utils import get_column_letter
 import os
+import requests
 
 
 def on_submit_sales_order(doc, method=None):
@@ -17,21 +18,25 @@ def on_submit_sales_order(doc, method=None):
 
 def add_images(data, workbook, worksheet=""):
     ws = workbook.get_sheet_by_name(worksheet)
-    image_col = "R"  # get_column_letter(len(data[0]) - 2)
+    image_col = "S"  # get_column_letter(len(data[0]) - 2)
     for row, image_url in enumerate(data):
         if image_url:
             _filename, extension = os.path.splitext(image_url)
             if extension in [".png", ".jpg", ".jpeg"]:
                 try:
-                    item_file = frappe.get_doc("File", {"file_url": image_url})
-                    content = item_file.get_content()
-                    image = openpyxl.drawing.image.Image(
-                        io.BytesIO(item_file.get_content())
-                    )
-                    image.height = 100
-                    image.width = 100
-                    ws.add_image(image, f"{image_col}{cstr(row+1)}")
-                    ws.row_dimensions[row + 1].height = 90
+                    content = None
+
+                    if image_url.startswith("http"):
+                        content = requests.get(image_url).content
+                    else:
+                        item_file = frappe.get_doc("File", {"file_url": image_url})
+                        content = item_file.get_content()
+                    if content:
+                        image = openpyxl.drawing.image.Image(io.BytesIO(content))
+                        image.height = 100
+                        image.width = 100
+                        ws.add_image(image, f"{image_col}{cstr(row+1)}")
+                        ws.row_dimensions[row + 1].height = 90
                 except Exception as e:
                     print(e)
                     pass
@@ -45,7 +50,8 @@ def _make_excel_attachment(doctype, docname):
     data = frappe.db.sql(
         """
         select 
-            i.item_code, 
+            i.item_code , 
+            i.item_name ,
             tib.barcode,
             i.customs_tariff_number ,
             tsoi.weight_per_unit ,
@@ -76,17 +82,9 @@ def _make_excel_attachment(doctype, docname):
                 where parent = i.name
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
-            and tppd.uom = (
-                    select value from tabSingles
-                    where doctype like 'Art Collections Settings' 
-                    and field = 'inner_carton_uom' 
-                )        
+            and tppd.uom = tsoi.stock_uom
         left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )
+            and ucd.parenttype='Item' and ucd.uom = tsoi.stock_uom
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
                and tprd.parent = tso.name and tprd.item_code = i.item_code 
            left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
@@ -104,12 +102,13 @@ def _make_excel_attachment(doctype, docname):
 
     columns = [
         _("Item Code"),
+        _("Item Name"),
         _("Barcode"),
         _("HSCode"),
-        _("Weight per unit (Kg)"),
-        _("Length (cm)"),
-        _("Width (cm)"),
-        _("Thickness (cm)"),
+        _("Weight per unit (kg)"),
+        _("Length in cm (of stock_uom)"),
+        _("Width in cm (of stock_uom)"),
+        _("Thickness in cm (of stock_uom)"),
         _("Quantity"),
         _("UOM"),
         _("Rate ") + f"({currency})",
@@ -125,6 +124,7 @@ def _make_excel_attachment(doctype, docname):
 
     fields = [
         "item_code",
+        "item_name",
         "barcode",
         "customs_tariff_number",
         "weight_per_unit",
@@ -146,7 +146,7 @@ def _make_excel_attachment(doctype, docname):
     wb = openpyxl.Workbook()
     excel_rows, images = [columns], [""]
     for d in data:
-        if d.total_saleable_qty_cf <= d.stock_qty:
+        if d.total_saleable_qty_cf >= d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
             images.append(d.get("image_url"))
     write_xlsx(excel_rows, "In Stock Items", wb, [20] * len(columns), index=0)
@@ -154,7 +154,7 @@ def _make_excel_attachment(doctype, docname):
 
     excel_rows, images = [columns], [""]
     for d in data:
-        if d.total_saleable_qty_cf > d.stock_qty:
+        if d.total_saleable_qty_cf < d.stock_qty:
             excel_rows.append([d.get(f) for f in fields])
             images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]), index=1)
@@ -163,7 +163,8 @@ def _make_excel_attachment(doctype, docname):
     discontinued_items = frappe.db.sql(
         """
         select 
-            i.item_code, 
+            i.item_code , 
+            i.item_name , 
             tib.barcode,
             i.customs_tariff_number ,
             tppd.`length` , 
@@ -198,6 +199,7 @@ def _make_excel_attachment(doctype, docname):
 
     columns = [
         _("Item Code"),
+        _("Item Name"),
         _("Barcode"),
         _("HSCode"),
         _("Length (cm)"),
@@ -207,10 +209,12 @@ def _make_excel_attachment(doctype, docname):
         _("UOM Conversion Factor"),
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
+        _("Photo Link"),
     ]
 
     fields = [
         "item_code",
+        "item_name",
         "barcode",
         "customs_tariff_number",
         "length",

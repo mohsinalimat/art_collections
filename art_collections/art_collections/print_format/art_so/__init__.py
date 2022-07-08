@@ -39,7 +39,7 @@ def get_print_context(name):
             soi.stock_uom_rate ,
             i.customs_tariff_number ,
             soi.conversion_factor ,
-            if(soi.total_saleable_qty_cf >= soi.stock_qty,1,0) in_stock ,
+            if(soi.total_saleable_qty_cf <= soi.stock_qty,1,0) in_stock ,
             case when soi.image is null then ''
                 when SUBSTR(soi.image,1,4) = 'http' then soi.image
                 else concat('{}/',soi.image) end image

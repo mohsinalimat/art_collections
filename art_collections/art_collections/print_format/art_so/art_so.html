@@ -9,6 +9,7 @@
                 <tr>
 
                     <th>{{ _("Item code") }} </th>
+                    <th>{{ _("Item Name") }} </th>
                     <th>{{ _("Barcode") }} </th>
                     <th>{{ _("Quantity") }} </th>
                     <th>{{ _("UOM") }} </th>
@@ -19,6 +20,7 @@
                     <th>{{ _("Rate of Stock UOM (EUR)") }} </th>
                     <th>{{ _("Amount (EUR)") }} </th>
                     <th>{{ _("Photo") }} </th>
+
                 </tr>
                 {% if message %}
                 <tr>
@@ -34,9 +36,10 @@
                 {% for d in items %}
                 <tr>
                     <td>{{ d.item_code or "" }}</td>
+                    <td>{{ d.item_name or "" }}</td>
                     <td>
                         {% if d.barcode %}
-                        <img alt="{{d.barcode}}"
+                        <img alt="{{d.barcode}}" height="30px" width="80px"
                             src="http://bwipjs-api.metafloor.com/?bcid=code128&text={{d.barcode}}&includetext">
                         {% endif %}
                     </td>
@@ -48,9 +51,11 @@
                     <td class="text-right">{{ d.stock_qty }}</td>
                     <td class="text-right">{{ d.stock_uom_rate }}</td>
                     <td class="text-right">{{ d.base_net_amount }}</td>
+
                     <td>
                         <img src="{{ d.image}}" height="45px" width="45px" alt="item image">
                     </td>
+
                 </tr>
                 {% endfor %}
             </tbody>
@@ -98,12 +103,11 @@
             <p class="lilly title">{{ _('Ship to') }}</p>
             <p>
                 {{ doc.shipping_address or "Shipping Address" }}</p>
-            <p>{{ _('To deliver on:')}} {{ doc.delivery_date or "" }}
+            <p>{{ _('To deliver on:')}} {{ frappe.utils.formatdate(doc.delivery_date, 'dd mm yyyy') }}
                 <br>{{ _('Payment method and Due date:')}}
-                <br>{{ _('Ordered from:')}} {{ doc.po_no or "" }}
             </p>
             <hr>
-            <p>{{ _('Comments:') }}{{ ctx.overall_directive_art or "" }}</p>
+            <p>{{ _('Comments:') }}{{ doc.directive_print_art or "" }}</p>
         </div>
     </div>
 </div>
@@ -159,10 +163,10 @@
 <div class="row">
     <div class="col-xs-8">
         <div>
-            {{doc.terms}}
+
         </div>
     </div>
-    <div class="col-xs-4">
+    <div class="col-xs-4" style="page-break-after:always;">
         <table class="table-total">
             <tr>
                 <th>{{ _('Total') }}</th>

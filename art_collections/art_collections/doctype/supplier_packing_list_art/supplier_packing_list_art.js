@@ -3,6 +3,60 @@
 
 frappe.ui.form.on('Supplier Packing List Art', {
 	onload_post_render: function (frm) {
+
+		// download code
+		frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').addClass('hide')
+		let download_art = frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download-art')
+		if (download_art.length == 0) {
+			let btn = document.createElement('a');
+			btn.innerText = 'Download ART';
+			btn.className = 'grid-download_art btn btn-xs btn-default';
+			frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').parent().append(btn);
+			btn.addEventListener("click", function () {
+				let title = cur_frm.grids[0].df.label || frappe.model.unscrub(cur_frm.grids[0].df.fieldname);
+				var data = [];
+				var docfields = [];
+				data.push([]);
+				data.push([]);
+				$.each(frappe.get_meta(cur_frm.grids[0].df.options).fields, (i, df) => {
+					// don't include the read-only field in the template
+					if (frappe.model.is_value_type(df.fieldtype)) {
+						data[0].push(df.label);
+						data[1].push(df.fieldname);
+						// let description = (df.description || "") + ' ';
+						// if (df.fieldtype === "Date") {
+						// 	description += frappe.boot.sysdefaults.date_format;
+						// }
+						// data[3].push(description);
+						docfields.push(df);
+					}
+				});
+	
+				// add data
+				$.each(cur_frm.grids[0].frm.doc[cur_frm.grids[0].df.fieldname] || [], (i, d) => {
+					var row = [];
+					$.each(data[1], (i, fieldname) => {
+						var value = d[fieldname];
+						// format date
+						if (docfields[i].fieldtype === "Date" && value) {
+							value = frappe.datetime.str_to_user(value);
+						}
+						row.push(value || "");
+					});
+					data.push(row);
+				});
+				function download_items() {
+					const worksheet = XLSX.utils.aoa_to_sheet(data);
+					const workbook = XLSX.utils.book_new();
+					XLSX.utils.book_append_sheet(workbook, worksheet, title);
+					XLSX.writeFile(workbook, title+".xlsx");
+				}
+				download_items()
+				return false;				
+			})}	
+
+
+		// upload code
 		frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload').addClass('hide')
 		let upload_art = frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload-art')
 		if (upload_art.length == 0) {
@@ -13,17 +67,20 @@ frappe.ui.form.on('Supplier Packing List Art', {
 			btn.addEventListener("click", function () {
 				let me = this;
 				frappe.flags.no_socketio = true;
-				// $(this.wrapper).find(".grid-upload").removeClass('hidden').on("click", () => {
 				new frappe.ui.FileUploader({
 					as_dataurl: true,
 					allow_multiple: false,
 					on_success(file) {
-						var data = frappe.utils.csv_to_array(frappe.utils.get_decoded_string(file.dataurl));
+						var reader = new FileReader();
+						reader.onload = function (e) {
+						var workbook = XLSX.read(e.target.result);
+						var csv = XLSX.utils.sheet_to_csv(workbook.Sheets['Supplier Packing List Detail']);
+						var data = frappe.utils.csv_to_array(csv);
 						let excel_uploaded_data = []
 						// row #2 contains fieldnames;
-						var fieldnames = data[2];
+						var fieldnames = data[1];
 						$.each(data, (i, row) => {
-							if (i > 6) {
+							if (i > 1) {
 								let result = {
 									"excel_id": i + 1,
 									"action": "",
@@ -59,10 +116,14 @@ frappe.ui.form.on('Supplier Packing List Art', {
 							});
 						}
 					}
+					reader.readAsArrayBuffer(file.file_obj)
+					}
 				});
 				return false;
 			});
 		}
+
+	
 	},
 	refresh: function (frm) {
 		//  show download/upload only after save

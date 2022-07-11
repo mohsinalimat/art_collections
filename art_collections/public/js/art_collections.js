@@ -190,21 +190,31 @@ frappe.require('/assets/js/data_import_tools.min.js', () => {
 });
 
 
-frappe.add_product_excel_button = function (frm, method) {
+frappe.add_product_excel_button = function (frm, method, btn, attach) {
     frm.page.add_inner_button(
-        __("Product Excel"),
+        btn || __("Product Excel"),
         function () {
-            frappe.call({
-                method: method,
-                args: {
+            if (!attach) {
+                frappe.call({
+                    method: method,
+                    args: {
+                        docname: frm.doc.name,
+                        doctype: frm.doc.doctype,
+                        attach: false
+                    },
+                    callback: function () {
+                        frm.reload_doc();
+                    },
+                });
+            }
+            else {
+                open_url_post(`/api/method/${method}`, {
                     docname: frm.doc.name,
                     doctype: frm.doc.doctype,
-                },
-                callback: function () {
-                    frm.reload_doc();
-                },
-            });
+                    attach: true
+                })
+            }
         },
-        __("Create")
+        __("Tools")
     );
 }

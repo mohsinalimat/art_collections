@@ -12,7 +12,7 @@ def on_submit_request_for_quotation(doc, method=None):
 
 
 @frappe.whitelist()
-def _make_excel_attachment(doctype, docname):
+def _make_excel_attachment(doctype, docname, attach=False):
     from art_collections.controllers.excel import write_xlsx
 
     data = frappe.db.sql(
@@ -44,7 +44,7 @@ def _make_excel_attachment(doctype, docname):
             get_url()
         ),
         (docname,),
-        as_dict=True
+        as_dict=True,
     )
 
     columns = [
@@ -82,8 +82,14 @@ def _make_excel_attachment(doctype, docname):
     # make attachment
     out = io.BytesIO()
     wb.save(out)
-    attach_file(
-        out.getvalue(),
-        doctype=doctype,
-        docname=docname,
-    )
+
+    if cint(attach):
+        attach_file(
+            out.getvalue(),
+            doctype=doctype,
+            docname=docname,
+        )
+    else:
+        frappe.response["filename"] = _("Product Excel") + ".xlsx"
+        frappe.response["filecontent"] = out.getvalue()
+        frappe.response["type"] = "binary"

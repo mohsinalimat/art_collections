@@ -204,11 +204,11 @@ def get_only_entity_group_directive(doctype,group_type,group_name):
     directives = frappe.db.sql("""
 SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive,directive.apply_for_value
 FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
-where doctypes.directive_doctype ='%s'
+where doctypes.directive_doctype =%s
 and directive.disabled =0
-and directive.apply_on = '%s'
+and directive.apply_on = %s
 and (directive.apply_for_items is NULL  or directive.apply_for_items ='')
-""" %(doctype,group_type),as_dict=True)
+""",(doctype,group_type),as_dict=True)
     if len(directives)>0:
         for directive in directives:
             child_groups_list=get_child_groups(group_type,directive.apply_for_value)
@@ -222,62 +222,62 @@ def get_combined_entity_item_directive(doctype,entity_type,entity_name,entity_gr
     item_entity_directives=frappe.db.sql("""
             SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
-            where doctypes.directive_doctype = '%s'
+            where doctypes.directive_doctype = %s
             and directive.disabled =0
-            and directive.apply_on = '%s'
-            and directive.apply_for_value = '%s'
+            and directive.apply_on = %s
+            and directive.apply_for_value = %s
             and directive.apply_for_items = 'Item'
-            and directive.apply_for_item_value = '%s'
-""" %(doctype,entity_type,entity_name,item_name),as_dict=True)
+            and directive.apply_for_item_value = %s
+""" ,(doctype,entity_type,entity_name,item_name),as_dict=True)
 
     item_entity_group_directives=frappe.db.sql("""
             SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
-            where doctypes.directive_doctype = '%s'
+            where doctypes.directive_doctype = %s
             and directive.disabled =0
-            and directive.apply_on = '%s'
-            and directive.apply_for_value in (select name from `tab%s` cg 
-            where cg.lft <=(select lft from `tab%s` where name='%s')
-            and cg.rgt >=(select rgt from `tab%s` where name='%s')
+            and directive.apply_on = %s
+            and directive.apply_for_value in (select name from `tab{0}` cg 
+            where cg.lft <=(select lft from `tab{1}` where name=%s)
+            and cg.rgt >=(select rgt from `tab{2}` where name=%s)
             ) 
             and directive.apply_for_items = 'Item'
-            and directive.apply_for_item_value = '%s'
-""" %(doctype,entity_group_type,entity_group_type,entity_group_type,entity_group_type_name,entity_group_type,entity_group_type_name,item_name),as_dict=True)
+            and directive.apply_for_item_value = %s
+""".format(entity_group_type,entity_group_type,entity_group_type) ,(doctype,entity_group_type,entity_group_type_name,entity_group_type_name,item_name),as_dict=True)
 
     item_group_entity_directive=frappe.db.sql("""
             SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
-            where doctypes.directive_doctype = '%s'
+            where doctypes.directive_doctype = %s
             and directive.disabled =0
-            and directive.apply_on = '%s'
-            and directive.apply_for_value = '%s'
+            and directive.apply_on = %s
+            and directive.apply_for_value = %s
             and directive.apply_for_items = 'Item Group'
             and directive.apply_for_item_value in 
             (
             select name from `tabItem Group` ig 
-            where ig.lft <=(select lft from `tabItem Group` where name='%s')
-            and ig.rgt >=(select rgt from `tabItem Group` where name='%s')
+            where ig.lft <=(select lft from `tabItem Group` where name=%s)
+            and ig.rgt >=(select rgt from `tabItem Group` where name=%s)
             ) 
-""" %(doctype,entity_type,entity_name,item_group_name,item_group_name),as_dict=True)
+""",(doctype,entity_type,entity_name,item_group_name,item_group_name),as_dict=True)
 
     item_group_entity_group_directive=frappe.db.sql("""
             SELECT  directive.directive_name,directive.show_as_alert,directive.show_on_print,directive.directive_type,directive.directive
             FROM `tabDirective` directive inner join `tabShow Directive on Doctypes Art` doctypes on directive.name = doctypes.parent 
-            where doctypes.directive_doctype = '%s'
+            where doctypes.directive_doctype = %s
             and directive.disabled =0
-            and directive.apply_on = '%s'
+            and directive.apply_on = %s
             and directive.apply_for_items = 'Item Group'
             and directive.apply_for_value in 
-            (select name from `tab%s` cg 
-            where cg.lft <=(select lft from `tab%s` where name='%s')
-            and cg.rgt >=(select rgt from `tab%s` where name='%s')
+            (select name from `tab{0}` cg 
+            where cg.lft <=(select lft from `tab{1}` where name=%s)
+            and cg.rgt >=(select rgt from `tab{2}` where name=%s)
             )
             and directive.apply_for_item_value in 
             (select name from `tabItem Group` ig 
-            where ig.lft <=(select lft from `tabItem Group` where name='%s')
-            and ig.rgt >=(select rgt from `tabItem Group` where name='%s')
+            where ig.lft <=(select lft from `tabItem Group` where name=%s)
+            and ig.rgt >=(select rgt from `tabItem Group` where name=%s)
             ) 
-""" %(doctype,entity_group_type,entity_group_type,entity_group_type,entity_group_type_name,entity_group_type,entity_group_type_name,item_group_name,item_group_name),as_dict=True)
+""".format(entity_group_type,entity_group_type,entity_group_type),(doctype,entity_group_type,entity_group_type_name,entity_group_type_name,item_group_name,item_group_name),as_dict=True)
 
     for entity in item_entity_directives:
         if entity not in result_directive:

@@ -53,7 +53,7 @@ frappe.ui.form.on('Sales Order', {
 			})
 	},
 	customer: function (frm) {
-		if (frm.doc.customer && frm.doc.is_offline_art == 0) {
+		if (frm.doc.customer) {
 			const default_company = frappe.defaults.get_default('company');
 			let found_credit_limit = false
 			let found_payment_terms = false

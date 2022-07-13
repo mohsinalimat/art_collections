@@ -36,9 +36,9 @@ def _make_excel_attachment(doctype, docname):
             tsoi.uom ,
             tsoi.base_net_rate ,     
             tsoi.stock_uom , 
-            ucd.conversion_factor , 
+            tsoi.conversion_factor , 
             tsoi.stock_qty , 
-            tsoi.stock_uom_rate , 
+            tip.price_list_rate , 
             tpr.min_qty  pricing_rule_min_qty , 
             tpr.rate pricing_rule_rate ,
             i.is_existing_product_cf ,
@@ -57,20 +57,26 @@ def _make_excel_attachment(doctype, docname):
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
             and tppd.uom = tsoi.stock_uom
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = tsoi.stock_uom
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
                and tprd.parent = tso.name and tprd.item_code = i.item_code 
-           left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
-               and tpr.selling = 1 and exists (
-                   select 1 from `tabPricing Rule Item Code` x 
-                   where x.parent = tpr.name and x.uom = tsoi.stock_uom)            
+        left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
+            and tpr.selling = 1 and exists (
+                select 1 from `tabPricing Rule Item Code` x 
+                where x.parent = tpr.name and x.uom = tsoi.stock_uom)   
+        left outer join `tabItem Price` tip 
+        on tip.item_code = tsoi.item_code and tip.uom = tsoi.stock_uom 
+        and tip.price_list = (
+            select value from tabSingles ts
+            where doctype = 'Selling Settings' 
+            and field = 'selling_price_list'
+        )
         where tso.name = %s
     """.format(
             get_url()
         ),
         (docname,),
-        as_dict=True
+        as_dict=True,
+        # debug=True,
     )
 
     columns = [
@@ -88,7 +94,7 @@ def _make_excel_attachment(doctype, docname):
         _("Stock UOM"),
         _("UOM Conversion Factor"),
         _("Qty as per stock UOM"),
-        _("Rate of Stock UOM") + f"({currency})",
+        _("Normal Price Stock UOM") + f"({currency})",
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo Link"),
@@ -110,7 +116,7 @@ def _make_excel_attachment(doctype, docname):
         "stock_uom",
         "conversion_factor",
         "stock_qty",
-        "stock_uom_rate",
+        "price_list_rate",
         "pricing_rule_min_qty",
         "pricing_rule_rate",
         "image",
@@ -144,26 +150,21 @@ def _make_excel_attachment(doctype, docname):
             tppd.width , 
             tppd.thickness , 
             tsoi.qty, 
-            ucd.conversion_factor , 
-            0  pricing_rule_min_qty , 
+            tucd.conversion_factor , 
+            0 pricing_rule_min_qty , 
             0 pricing_rule_rate ,
             i.is_existing_product_cf ,
             i.image image_url
         from `tabSales Order` tso 
         inner join `tabSales Order Discountinued Items CT` tsoi on tsoi.parent = tso.name
         inner join tabItem i on i.name = tsoi.item_code
+        left outer join `tabUOM Conversion Detail` tucd on tucd.parent = i.name and tucd.uom = i.stock_uom
         left outer join `tabItem Barcode` tib on tib.parent = i.name 
             and tib.idx  = (
                 select min(idx) from `tabItem Barcode` tib2
                 where parent = i.name
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = (
-                select value from tabSingles
-                where doctype like 'Art Collections Settings' 
-                and field = 'inner_carton_uom' 
-            )
         where tso.name = %s
     """,
         (docname,),

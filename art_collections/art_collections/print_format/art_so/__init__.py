@@ -36,7 +36,7 @@ def get_print_context(name):
             soi.stock_qty , 
             soi.base_net_rate , 
             soi.base_net_amount , 
-            soi.stock_uom_rate ,
+            tip.price_list_rate , 
             i.customs_tariff_number ,
             soi.conversion_factor ,
             if(soi.total_saleable_qty_cf <= soi.stock_qty,1,0) in_stock ,
@@ -52,13 +52,20 @@ def get_print_context(name):
                 select min(idx) from `tabItem Barcode` tib2
                 where parent = i.name
             )       
+        left outer join `tabItem Price` tip 
+        on tip.item_code = soi.item_code and tip.uom = soi.stock_uom 
+        and tip.price_list = (
+            select value from tabSingles ts
+            where doctype = 'Selling Settings' 
+            and field = 'selling_price_list'
+        )
         where 
             soi.parent = %(name)s
     """.format(
                 get_url()
             ),
             dict(name=name),
-            as_dict=True
+            as_dict=True,
         )
     )
 

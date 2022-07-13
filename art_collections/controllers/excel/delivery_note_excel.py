@@ -29,7 +29,7 @@ def _make_excel_attachment(doctype, docname):
             tdni.qty, 
             tdni.uom ,
             tdni.stock_uom , 
-            ucd.conversion_factor , 
+            tdni.conversion_factor , 
             tdni.stock_qty , 
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
@@ -45,14 +45,12 @@ def _make_excel_attachment(doctype, docname):
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
 	        and tppd.uom = tdni.stock_uom
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = tdni.stock_uom
         where tdn.name = %s
     """.format(
             get_url()
         ),
         (docname,),
-        as_dict=True
+        as_dict=True,
     )
 
     columns = [

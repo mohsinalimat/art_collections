@@ -32,9 +32,9 @@ def _make_excel_attachment(doctype, docname):
             tqi.uom ,
             tqi.base_net_rate ,     
             tqi.stock_uom , 
-            ucd.conversion_factor , 
+            tqi.conversion_factor , 
             tqi.stock_qty , 
-            tqi.stock_uom_rate , 
+            tip.price_list_rate , 
             tpr.min_qty  pricing_rule_min_qty , 
             tpr.rate pricing_rule_rate ,
             i.is_existing_product_cf ,
@@ -52,20 +52,25 @@ def _make_excel_attachment(doctype, docname):
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
             and tppd.uom = tqi.stock_uom
-        left outer join `tabUOM Conversion Detail` ucd on ucd.parent = i.name 
-            and ucd.parenttype='Item' and ucd.uom = tqi.stock_uom
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Quotation' 
                and tprd.parent = tq.name and tprd.item_code = i.item_code
-           left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
+        left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
                and tpr.selling = 1 and exists (
                    select 1 from `tabPricing Rule Item Code` x 
                    where x.parent = tpr.name and x.uom = tqi.stock_uom)    
+        left outer join `tabItem Price` tip 
+        on tip.item_code = tqi.item_code and tip.uom = tqi.stock_uom 
+        and tip.price_list = (
+            select value from tabSingles ts
+            where doctype = 'Selling Settings' 
+            and field = 'selling_price_list'
+        )
         where tq.name = %s
     """.format(
             get_url()
         ),
         (docname,),
-        as_dict=True
+        as_dict=True,
     )
 
     columns = [
@@ -83,7 +88,7 @@ def _make_excel_attachment(doctype, docname):
         _("Stock UOM"),
         _("UOM Conversion Factor"),
         _("Qty as per stock UOM"),
-        _("Rate of Stock UOM ({0})").format(currency),
+        _("Normal Price Stock UOM") + f"({currency})",
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo"),
@@ -104,7 +109,7 @@ def _make_excel_attachment(doctype, docname):
         "stock_uom",
         "conversion_factor",
         "stock_qty",
-        "stock_uom_rate",
+        "price_list_rate",
         "pricing_rule_min_qty",
         "pricing_rule_rate",
         "image",

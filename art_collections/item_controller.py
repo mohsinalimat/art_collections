@@ -213,3 +213,24 @@ def get_cbm_per_outer_carton(item_code):
 				cbm_per_outer_carton=uom.cbm
 				break
 	return cbm_per_outer_carton		
+
+@frappe.whitelist()
+def set_default_warehouse_based_on_stock_entry(self,method)	:
+	if self.stock_entry_type=='Material Transfer':
+		for item in self.get('items'):
+			if item.t_warehouse:
+				warehouse_type = frappe.db.get_value('Warehouse', item.t_warehouse, 'warehouse_type')
+				company = frappe.db.get_value('Warehouse', item.t_warehouse, 'company')
+				if warehouse_type=='Picking' and company==self.company:
+					item_details=frappe.get_doc('Item',item.item_code)
+					for item_default in item_details.get('item_defaults'):
+						old_warehouse=item_default.default_warehouse or None
+						if item_default.company==self.company and (old_warehouse!=item.t_warehouse or old_warehouse==None):
+							# update default warehouse
+							frappe.db.set_value('Item Default', item_default.name, 'default_warehouse', item.t_warehouse)
+							frappe.msgprint(_("Item {0}: Default warehouse changed from {1} to {2}.".format(item_details.item_name,old_warehouse,frappe.bold(item.t_warehouse))), alert=True)
+					if len(item_details.item_defaults)<1:
+						# add row
+						frappe.msgprint(_("Item {0}: has no item default entry. Hence  warehouse not set to {1}. Please do it manually".format(item_details.item_name,frappe.bold(item.t_warehouse))), alert=True)
+
+

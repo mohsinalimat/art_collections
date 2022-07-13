@@ -197,6 +197,9 @@ doc_events = {
     "Data Import": {
         "validate": "art_collections.controllers.item_import.start_item_import"
     },
+    "Stock Entry": {
+        "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry"
+    }    
 }
 
 # Scheduled Tasks

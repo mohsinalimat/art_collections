@@ -10,19 +10,17 @@ frappe.ui.form.on('Supplier Packing List Art', {
 		if (download_art.length == 0) {
 			let btn = document.createElement('a');
 			btn.innerText = 'Download ART';
-			btn.className = 'grid-download_art btn btn-xs btn-default';
+			btn.className = 'grid-download-art btn btn-xs btn-secondary';
 			frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').parent().append(btn);
 			btn.addEventListener("click", function () {
 				let title = cur_frm.grids[0].df.label || frappe.model.unscrub(cur_frm.grids[0].df.fieldname);
 				var data = [];
 				var docfields = [];
 				data.push([]);
-				data.push([]);
 				$.each(frappe.get_meta(cur_frm.grids[0].df.options).fields, (i, df) => {
 					// don't include the read-only field in the template
 					if (frappe.model.is_value_type(df.fieldtype)) {
-						data[0].push(df.label);
-						data[1].push(df.fieldname);
+						data[0].push(df.fieldname);
 						// let description = (df.description || "") + ' ';
 						// if (df.fieldtype === "Date") {
 						// 	description += frappe.boot.sysdefaults.date_format;
@@ -35,7 +33,7 @@ frappe.ui.form.on('Supplier Packing List Art', {
 				// add data
 				$.each(cur_frm.grids[0].frm.doc[cur_frm.grids[0].df.fieldname] || [], (i, d) => {
 					var row = [];
-					$.each(data[1], (i, fieldname) => {
+					$.each(data[0], (i, fieldname) => {
 						var value = d[fieldname];
 						// format date
 						if (docfields[i].fieldtype === "Date" && value) {
@@ -77,10 +75,10 @@ frappe.ui.form.on('Supplier Packing List Art', {
 						var csv = XLSX.utils.sheet_to_csv(workbook.Sheets['Supplier Packing List Detail']);
 						var data = frappe.utils.csv_to_array(csv);
 						let excel_uploaded_data = []
-						// row #2 contains fieldnames;
-						var fieldnames = data[1];
+						// row #0 contains fieldnames;
+						var fieldnames = data[0];
 						$.each(data, (i, row) => {
-							if (i > 1) {
+							if (i > 0) {
 								let result = {
 									"excel_id": i + 1,
 									"action": "",
@@ -128,12 +126,14 @@ frappe.ui.form.on('Supplier Packing List Art', {
 	refresh: function (frm) {
 		//  show download/upload only after save
 		if (!frm.doc.__islocal) {
-			frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').removeClass('hide')
+			// frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').removeClass('hide')
 			frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload-art').removeClass('hide')
+			frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download-art').removeClass('hide')
 		} else {
 			setTimeout(() => {
-				frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').addClass('hide')
+				// frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download').addClass('hide')
 				frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-upload-art').addClass('hide')		
+				frm.fields_dict.supplier_packing_list_detail.grid.wrapper.find('.grid-download-art').addClass('hide')	
 			}, 500);
 
 		}

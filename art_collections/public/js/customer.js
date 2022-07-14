@@ -35,7 +35,8 @@ frappe.ui.form.on('Customer', {
                             var childTable = cur_frm.add_child("credit_limits");
                             childTable.company=territory_detail.company
                             childTable.credit_limit=territory_detail.credit_limit
-                            cur_frm.refresh_fields("credit_limits");           
+                            childTable.bypass_credit_limit_check=territory_detail.bypass_credit_limit_check
+                            cur_frm.refresh_fields("credit_limits");    
                             frappe.show_alert({
                                 message: __("Credit Limit : {0} is added from {1} .", [territory_detail.credit_limit,territory_detail.name]),
                                 indicator: "green"

@@ -88,8 +88,8 @@ after_migrate = "art_collections.migrations.after_migrations"
 
 # notification_config = "art_collections.notifications.get_notification_config"
 
-on_session_creation = "art_collections.art_cart.set_wishlist_cart_count"
-on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
+# on_session_creation = "art_collections.art_cart.set_wishlist_cart_count"
+# on_logout = "art_collections.art_cart.clear_wishlist_cart_count"
 
 # Permissions
 # -----------
@@ -136,7 +136,7 @@ doc_events = {
             # "art_collections.directive_controller.get_directive",
         ],
         "on_submit": [
-            "art_collections.api.sales_order_from_shopping_cart",
+            # "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.controllers.excel.sales_order.on_submit_sales_order",
         ],
         # "on_update": [

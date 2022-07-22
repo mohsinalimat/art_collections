@@ -20,8 +20,8 @@ app_include_css = ["/assets/css/pos_list.min.css"]
 app_include_js = ["/assets/art_collections/js/art_collections.js","/assets/art_collections/js/xlsx.full.min.js"]
 
 # include js, css files in header of web template
-web_include_css = "/assets/art_collections/css/art_collections.css"
-web_include_js = ["/assets/art_collections/js/shopping_cart.js"]
+# web_include_css = "/assets/art_collections/css/art_collections.css"
+# web_include_js = ["/assets/art_collections/js/shopping_cart.js"]
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
@@ -251,8 +251,8 @@ override_doctype_dashboards = {
 }
 
 override_whitelisted_methods = {
-    " erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
-    "erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website": "art_collections.api.get_product_info_for_website",
+    # " erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
+    # "erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website": "art_collections.api.get_product_info_for_website",
     "frappe.utils.print_format.download_pdf": "art_collections.art_collections.print_format.art_pick.download_pdf",
     "frappe.desk.notifications.get_open_count":"art_collections.api.get_open_count"
 }

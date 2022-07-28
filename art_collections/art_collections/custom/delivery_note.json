@@ -909,14 +909,14 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2022-06-09 15:31:46.828009",
+   "creation": "2022-07-28 09:27:02.127328",
    "default_value": null,
    "doc_type": "Delivery Note",
    "docstatus": 0,
    "doctype_or_field": "DocType",
    "field_name": null,
    "idx": 0,
-   "modified": "2022-06-09 15:31:46.828009",
+   "modified": "2022-07-28 09:27:02.127328",
    "modified_by": "Administrator",
    "name": "Delivery Note-main-default_print_format",
    "owner": "Administrator",
@@ -926,7 +926,7 @@
    "property": "default_print_format",
    "property_type": "Data",
    "row_name": null,
-   "value": "DN NR"
+   "value": "Art DN"
   },
   {
    "_assign": null,

@@ -84,9 +84,6 @@ frappe.ui.form.on('Sales Order', {
 
 	},
 	refresh: function (frm) {
-		if (frm.doc.status=='Closed') {
-			cur_frm.page.set_indicator(frm.doc.status,"green")
-		}
 		frm.page.add_menu_item(__('Send Email'), function () { frappe.show_email_dialog(frm); });
 
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);

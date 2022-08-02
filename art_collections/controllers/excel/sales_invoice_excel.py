@@ -3,16 +3,19 @@ import frappe
 from frappe import _
 import io
 import openpyxl
-from frappe.utils import cint, get_site_url, get_url
+from frappe.utils import cint, get_site_url, get_url, today
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
+from frappe.utils.file_manager import MaxFileSizeReachedError
 
 
 def on_submit_sales_invoice(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
+    # attach_print_pdf(doc.doctype, doc.name)
 
 
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
+    attach_print_pdf(doctype, docname)
 
     data = frappe.db.sql(
         """
@@ -103,3 +106,44 @@ def _make_excel_attachment(doctype, docname):
         doctype=doctype,
         docname=docname,
     )
+
+
+def attach_print_pdf(doctype, name):
+    doc = frappe.get_doc(doctype, name)
+    print_formats = ["Art Sales invoice"]
+    if frappe.db.get_value("Sales Invoice", name, ["mode_of_payment_art"]) in (
+        "Traite",
+        "LCR",
+    ):
+        print_formats.append("Art SI")
+
+    try:
+        for fmt in print_formats:
+            out = frappe.attach_print(
+                doctype,
+                name,
+                file_name="Invoice-{}_{}_{}".format(name, today(), fmt),
+                print_format=fmt,
+            )
+            _file = frappe.get_doc(
+                {
+                    "doctype": "File",
+                    "file_name": out["fname"],
+                    "attached_to_doctype": doc.doctype,
+                    "attached_to_name": doc.name,
+                    "is_private": 0,
+                    "content": out["fcontent"],
+                }
+            )
+            _file.save(ignore_permissions=True)
+        frappe.db.commit()
+    except MaxFileSizeReachedError:
+        # WARNING: bypass max file size exception
+        pass
+    except frappe.FileAlreadyAttachedException:
+        pass
+    except frappe.DuplicateEntryError:
+        # same file attached twice??
+        pass
+    # except Exception:
+    #     frappe.throw(frappe.get_traceback())

@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2022-08-03 11:59:35.936748",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "supplier",
+  "bulk_photo_import",
+  "cb_1",
+  "pq_date",
+  "required_by_date",
+  "status",
+  "lead_items_sb_section",
+  "items_html"
+ ],
+ "fields": [
+  {
+   "default": "PQ.#",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PQ.#",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bulk_photo_import",
+   "fieldtype": "Button",
+   "label": "Bulk Photo Import"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pq_date",
+   "fieldtype": "Date",
+   "label": "PQ Date"
+  },
+  {
+   "fieldname": "required_by_date",
+   "fieldtype": "Date",
+   "label": "Required By Date"
+  },
+  {
+   "default": "To be Treated",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "To be Treated\nReplied\nSample Validated\nItem Created\nPO Created\nClosed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lead_items_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Lead Items SB"
+  },
+  {
+   "fieldname": "items_html",
+   "fieldtype": "HTML",
+   "label": "Items HTML"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-08-03 13:55:41.554290",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Photo Quotation",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

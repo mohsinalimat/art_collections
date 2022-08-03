@@ -1,0 +1,377 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2022-08-03 07:42:08.796658",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "item_photo",
+  "item_image",
+  "cb_1",
+  "disabled",
+  "is_quoted",
+  "sample_validated",
+  "amended_from",
+  "section_break_9",
+  "supplier_part_no",
+  "supplier_item_description",
+  "product_material1",
+  "percentage1",
+  "product_material2",
+  "percentage2",
+  "product_material3",
+  "percentage3",
+  "customs_tariff_number",
+  "item_length",
+  "item_width",
+  "item_thickness",
+  "packing_type",
+  "racking_bag",
+  "moq",
+  "unit_price",
+  "item_price",
+  "valid_from",
+  "volume_qty",
+  "volume_price",
+  "inner_qty",
+  "is_display_box",
+  "is_special_mentions",
+  "is_certificates_reqd",
+  "port_of_loading",
+  "lead_item_name",
+  "item_group",
+  "description",
+  "uom",
+  "selling_pack_qty",
+  "designation",
+  "description1",
+  "description2",
+  "description3",
+  "is_other_language",
+  "is_need_photo_for_packaging",
+  "packaging_description_excel"
+ ],
+ "fields": [
+  {
+   "default": "LI.#",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "LI.#",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_photo",
+   "fieldtype": "Attach Image",
+   "label": "Item photo"
+  },
+  {
+   "fieldname": "item_image",
+   "fieldtype": "Image",
+   "options": "item_photo"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Disabled",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_quoted",
+   "fieldtype": "Check",
+   "label": "Quoted ?"
+  },
+  {
+   "default": "0",
+   "fieldname": "sample_validated",
+   "fieldtype": "Check",
+   "label": "Sample Validated"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Lead Item",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supplier_part_no",
+   "fieldtype": "Data",
+   "label": "Your Item Code"
+  },
+  {
+   "fieldname": "supplier_item_description",
+   "fieldtype": "Text",
+   "label": "Your Description"
+  },
+  {
+   "fieldname": "product_material1",
+   "fieldtype": "Data",
+   "label": "Product Material1"
+  },
+  {
+   "fieldname": "percentage1",
+   "fieldtype": "Percent",
+   "label": "Percentage1"
+  },
+  {
+   "fieldname": "product_material2",
+   "fieldtype": "Data",
+   "label": "Product Material2"
+  },
+  {
+   "fieldname": "percentage2",
+   "fieldtype": "Data",
+   "label": "Percentage2"
+  },
+  {
+   "fieldname": "product_material3",
+   "fieldtype": "Data",
+   "label": "Product Material3"
+  },
+  {
+   "fieldname": "percentage3",
+   "fieldtype": "Data",
+   "label": "Percentage3"
+  },
+  {
+   "fieldname": "customs_tariff_number",
+   "fieldtype": "Data",
+   "label": "HS CODE"
+  },
+  {
+   "fieldname": "item_length",
+   "fieldtype": "Data",
+   "label": "Item Length (cm)"
+  },
+  {
+   "fieldname": "item_width",
+   "fieldtype": "Data",
+   "label": "Item Width (cm)"
+  },
+  {
+   "fieldname": "item_thickness",
+   "fieldtype": "Data",
+   "label": "Item Thickness (cm)"
+  },
+  {
+   "fieldname": "packing_type",
+   "fieldtype": "Link",
+   "label": "Packing Type",
+   "options": "Packing Type Art"
+  },
+  {
+   "fieldname": "racking_bag",
+   "fieldtype": "Data",
+   "label": "Racking Bag"
+  },
+  {
+   "fieldname": "moq",
+   "fieldtype": "Data",
+   "label": "MOQ"
+  },
+  {
+   "fieldname": "unit_price",
+   "fieldtype": "Currency",
+   "label": "Unit Price (in $)"
+  },
+  {
+   "fieldname": "item_price",
+   "fieldtype": "Currency",
+   "label": "Selling Item Price"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From "
+  },
+  {
+   "fieldname": "volume_qty",
+   "fieldtype": "Int",
+   "label": "Volume Qty"
+  },
+  {
+   "fieldname": "volume_price",
+   "fieldtype": "Currency",
+   "label": "Volume Price"
+  },
+  {
+   "fieldname": "inner_qty",
+   "fieldtype": "Int",
+   "label": "Inner Qty"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_display_box",
+   "fieldtype": "Check",
+   "label": "Display Box? "
+  },
+  {
+   "default": "0",
+   "fieldname": "is_special_mentions",
+   "fieldtype": "Check",
+   "label": "Special Mentions"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_certificates_reqd",
+   "fieldtype": "Check",
+   "label": "Certificates Required"
+  },
+  {
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port Art"
+  },
+  {
+   "fieldname": "lead_item_name",
+   "fieldtype": "Data",
+   "label": "Lead Item Name"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "default": "Selling Pack",
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "selling_pack_qty",
+   "fieldtype": "Int",
+   "label": "Qty in Selling Pack"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation"
+  },
+  {
+   "fieldname": "description1",
+   "fieldtype": "Data",
+   "label": "Description1"
+  },
+  {
+   "fieldname": "description2",
+   "fieldtype": "Data",
+   "label": "Description2"
+  },
+  {
+   "fieldname": "description3",
+   "fieldtype": "Data",
+   "label": "Description3"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_other_language",
+   "fieldtype": "Check",
+   "label": "Other Language"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_need_photo_for_packaging",
+   "fieldtype": "Check",
+   "label": "Need Photo for Packing"
+  },
+  {
+   "fieldname": "packaging_description_excel",
+   "fieldtype": "Data",
+   "label": "Packaging Description Excel"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2022-08-03 15:31:58.825934",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Lead Item",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock User",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

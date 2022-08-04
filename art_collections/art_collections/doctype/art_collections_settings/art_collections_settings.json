@@ -27,7 +27,9 @@
   "filling_percentage_for_20_foot_container",
   "filling_percentage_for_40_foot_container",
   "auto_email_sb_section",
-  "art_auto_email_template"
+  "art_auto_email_template",
+  "photo_upload_utility_section",
+  "table_25"
  ],
  "fields": [
   {
@@ -162,12 +164,23 @@
    "label": "Dummy Item",
    "options": "Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "photo_upload_utility_section",
+   "fieldtype": "Section Break",
+   "label": "Photo Upload Utility"
+  },
+  {
+   "fieldname": "table_25",
+   "fieldtype": "Table",
+   "options": "Art Photo Type Detail",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-07-06 15:13:21.304557",
+ "modified": "2022-08-04 12:49:12.229277",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

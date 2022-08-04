@@ -52,7 +52,8 @@
   "description3",
   "is_other_language",
   "is_need_photo_for_packaging",
-  "packaging_description_excel"
+  "packaging_description_excel",
+  "photo_quotation"
  ],
  "fields": [
   {
@@ -306,12 +307,18 @@
    "fieldname": "packaging_description_excel",
    "fieldtype": "Data",
    "label": "Packaging Description Excel"
+  },
+  {
+   "fieldname": "photo_quotation",
+   "fieldtype": "Data",
+   "label": "Photo Quotation",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-03 15:31:58.825934",
+ "modified": "2022-08-04 04:47:49.702725",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

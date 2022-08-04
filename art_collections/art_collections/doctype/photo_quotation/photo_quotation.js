@@ -7,7 +7,7 @@ frappe.ui.form.on('Photo Quotation', {
 
 		frm.add_custom_button(__("Bulk Photo Import"), function () {
 			new frappe.ui.FileUploader({
-				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.upload_lead_items",
+				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.import_lead_item_photos",
 				doctype: frm.doctype,
 				docname: frm.docname,
 				frm: frm,
@@ -24,8 +24,6 @@ frappe.ui.form.on('Photo Quotation', {
 	},
 	before_save: function (frm) {
 		let data = window.items_table.getData();
-		console.log(data);
-
 		return frm.call({
 			method: 'update_lead_items',
 			doc: frm.doc,
@@ -90,7 +88,7 @@ function make_items_grid(frm) {
 		let items_table = jspreadsheet(document.getElementById('items-table'), {
 			filters: true,
 			columns: columns,
-			// minDimensions: [30, 10],
+			minDimensions: [columns.length, 3],
 			defaultColWidth: 100,
 			tableOverflow: true,
 			tableWidth: `${width - 30}px`,

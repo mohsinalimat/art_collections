@@ -9,11 +9,10 @@
  "field_order": [
   "naming_series",
   "supplier",
-  "bulk_photo_import",
+  "status",
   "cb_1",
   "pq_date",
   "required_by_date",
-  "status",
   "lead_items_sb_section",
   "items_html"
  ],
@@ -34,11 +33,6 @@
    "label": "Supplier",
    "options": "Supplier",
    "reqd": 1
-  },
-  {
-   "fieldname": "bulk_photo_import",
-   "fieldtype": "Button",
-   "label": "Bulk Photo Import"
   },
   {
    "fieldname": "cb_1",
@@ -67,7 +61,7 @@
   {
    "fieldname": "lead_items_sb_section",
    "fieldtype": "Section Break",
-   "label": "Lead Items SB"
+   "label": "Lead Items"
   },
   {
    "fieldname": "items_html",
@@ -77,7 +71,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-08-03 13:55:41.554290",
+ "modified": "2022-08-04 04:52:56.642526",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

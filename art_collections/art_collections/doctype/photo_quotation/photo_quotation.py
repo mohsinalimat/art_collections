@@ -15,9 +15,11 @@ class PhotoQuotation(Document):
             """
 			select {}
 			from `tabLead Item`
+            where photo_quotation = %s
 		""".format(
                 ", ".join([d.fieldname for d in columns])
             ),
+            (self.name,),
         )
 
         return {"columns": columns, "data": data}
@@ -61,16 +63,12 @@ def get_lead_item_fields():
 
 
 @frappe.whitelist()
-def upload_lead_items():
-    doctype = frappe.form_dict.doctype
+def import_lead_item_photos():
     docname = frappe.form_dict.docname
     folder = frappe.form_dict.folder or "Home"
 
     doc = frappe.get_doc(
-        {
-            "doctype": "Lead Item",
-            "uom": "Selling Pack",
-        }
+        {"doctype": "Lead Item", "uom": "Selling Pack", "photo_quotation": docname}
     )
 
     doc.insert(ignore_permissions=True)

@@ -16,8 +16,17 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = ["/assets/css/pos_list.min.css"]
-app_include_js = ["/assets/art_collections/js/art_collections.js","/assets/art_collections/js/xlsx.full.min.js"]
+app_include_css = [
+    "/assets/css/pos_list.min.css",
+    "/assets/art_collections/css/lib/jexcel.css",
+    "/assets/art_collections/css/lib/jsuites.css",
+]
+app_include_js = [
+    "/assets/art_collections/js/art_collections.js",
+    "/assets/art_collections/js/xlsx.full.min.js",
+    "/assets/art_collections/js/lib/jexcel.js",
+    "/assets/art_collections/js/lib/jsuites.js",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/art_collections/css/art_collections.css"
@@ -181,15 +190,18 @@ doc_events = {
     },
     "Delivery Note": {
         "validate": [
-                        "art_collections.delivery_note_controller.check_dn_has_unique_so_when_no_back_order_accepted",
-                        "art_collections.directive_controller.get_directive"],
-        "on_submit":  "art_collections.controllers.excel.delivery_note_excel.on_submit_delivery_note"
+            "art_collections.delivery_note_controller.check_dn_has_unique_so_when_no_back_order_accepted",
+            "art_collections.directive_controller.get_directive",
+        ],
+        "on_submit": "art_collections.controllers.excel.delivery_note_excel.on_submit_delivery_note",
     },
     "Sales Invoice": {
         "validate": "art_collections.directive_controller.get_directive",
-        "on_submit": ["art_collections.controllers.excel.sales_invoice_excel.on_submit_sales_invoice",
-        "art_collections.sales_invoice_controller.update_so_status_based_on_back_order_accepted"],
-        "before_cancel":"art_collections.sales_invoice_controller.update_so_status_based_on_back_order_accepted"
+        "on_submit": [
+            "art_collections.controllers.excel.sales_invoice_excel.on_submit_sales_invoice",
+            "art_collections.sales_invoice_controller.update_so_status_based_on_back_order_accepted",
+        ],
+        "before_cancel": "art_collections.sales_invoice_controller.update_so_status_based_on_back_order_accepted",
     },
     "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
@@ -200,7 +212,7 @@ doc_events = {
     },
     "Stock Entry": {
         "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry"
-    }    
+    },
 }
 
 # Scheduled Tasks
@@ -254,7 +266,7 @@ override_whitelisted_methods = {
     # " erpnext.e_commerce.shopping_cart.cart.update_cart": "art_collections.api.update_cart",
     # "erpnext.e_commerce.shopping_cart.product_info.get_product_info_for_website": "art_collections.api.get_product_info_for_website",
     "frappe.utils.print_format.download_pdf": "art_collections.art_collections.print_format.art_pick.download_pdf",
-    "frappe.desk.notifications.get_open_count":"art_collections.api.get_open_count"
+    "frappe.desk.notifications.get_open_count": "art_collections.api.get_open_count",
 }
 
 fixtures = [

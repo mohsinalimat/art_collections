@@ -60,7 +60,6 @@
    "default": "LI.#",
    "fieldname": "naming_series",
    "fieldtype": "Select",
-   "in_list_view": 1,
    "label": "Series",
    "options": "LI.#",
    "reqd": 1
@@ -311,6 +310,8 @@
   {
    "fieldname": "photo_quotation",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Photo Quotation",
    "read_only": 1
   }
@@ -318,7 +319,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-04 04:47:49.702725",
+ "modified": "2022-08-04 06:31:27.980133",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

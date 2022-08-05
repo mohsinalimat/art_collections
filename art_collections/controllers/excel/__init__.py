@@ -21,20 +21,31 @@ import os
 ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
 
 
-def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None, index=0):
+def write_xlsx(
+    data, sheet_name, wb=None, column_widths=None, file_path=None, skip_rows=0, index=0
+):
     # from xlsx utils with changes
     column_widths = column_widths or []
-    if wb is None:
-        wb = openpyxl.Workbook(write_only=True)
 
-    ws = wb.create_sheet(sheet_name, index)
+    if file_path:
+        wb = load_workbook(filename=file_path)
+    elif wb is None:
+        wb = openpyxl.Workbook()
 
-    for i, column_width in enumerate(column_widths):
-        if column_width:
-            ws.column_dimensions[get_column_letter(i + 1)].width = column_width
+    if not sheet_name in wb.sheetnames:
+        wb.create_sheet(sheet_name, index)
 
-    row1 = ws.row_dimensions[1]
-    row1.font = Font(name="Calibri", bold=True)
+    ws = wb.get_sheet_by_name(sheet_name)
+
+    print("\n" * 5, ws)
+
+    if not file_path:
+        for i, column_width in enumerate(column_widths):
+            if column_width:
+                ws.column_dimensions[get_column_letter(i + 1)].width = column_width
+
+        row1 = ws.row_dimensions[1]
+        row1.font = Font(name="Calibri", bold=True)
 
     for idx, row in enumerate(data):
         clean_row = []
@@ -49,35 +60,21 @@ def write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None, in
             if value:
                 if isinstance(value, str) and value.startswith("http"):
                     _ = ws.cell(
-                        column=col + 1, row=idx + 1, value=value.rsplit("/")[-1]
+                        column=col + 1,
+                        row=idx + skip_rows + 1,
+                        value=value.rsplit("/")[-1],
                     )
                     _.hyperlink = value
                 else:
-                    _ = ws.cell(column=col + 1, row=idx + 1, value=value)
-
-
-def sample_write_xlsx(data, sheet_name, wb=None, column_widths=None, file_path=None):
-    wb = openpyxl.Workbook()
-    ws1 = wb.active
-    ws1.title = "range names"
-    for row in range(1, 40):
-        ws1.append(range(600))
-    ws2 = wb.create_sheet(title="Pi")
-    ws2["F5"] = 3.14
-    ws3 = wb.create_sheet(title="Data")
-    for row in range(10, 20):
-        for col in range(27, 54):
-            _ = ws3.cell(
-                column=col, row=row, value="{0}".format(get_column_letter(col))
-            )
-    wb.save(filename="dest_filename")
+                    _ = ws.cell(column=col + 1, row=idx + skip_rows + 1, value=value)
+    return wb
 
 
 def attach_file(content, **args):
     _file = frappe.get_doc(
         {
             "doctype": "File",
-            "file_name": "{}.xlsx".format(args.get("docname")),
+            "file_name": args.get("file_name") or "{}.xlsx".format(args.get("docname")),
             "attached_to_doctype": args.get("doctype"),
             "attached_to_name": args.get("docname"),
             "is_private": 1,
@@ -89,7 +86,7 @@ def attach_file(content, **args):
     frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
 
 
-def add_images(data, workbook, worksheet="", image_col="S"):
+def add_images(data, workbook, worksheet="", image_col="S", skip_rows=0):
     ws = workbook.get_sheet_by_name(worksheet)
     for row, image_url in enumerate(data):
         if image_url:
@@ -107,8 +104,28 @@ def add_images(data, workbook, worksheet="", image_col="S"):
                         image = openpyxl.drawing.image.Image(io.BytesIO(content))
                         image.height = 100
                         image.width = 100
-                        ws.add_image(image, f"{image_col}{cstr(row+1)}")
-                        ws.row_dimensions[row + 1].height = 90
+                        ws.add_image(image, f"{image_col}{cstr(row+1 + skip_rows)}")
+                        ws.row_dimensions[row + 1 + skip_rows].height = 90
                 except Exception as e:
                     print(e)
                     pass
+
+
+def sample_write_xlsx():
+    """
+    wb = openpyxl.Workbook()
+    ws1 = wb.active
+    ws1.title = "range names"
+    for row in range(1, 40):
+        ws1.append(range(600))
+    ws2 = wb.create_sheet(title="Pi")
+    ws2["F5"] = 3.14
+    ws3 = wb.create_sheet(title="Data")
+    for row in range(10, 20):
+        for col in range(27, 54):
+            _ = ws3.cell(
+                column=col, row=row, value="{0}".format(get_column_letter(col))
+            )
+    wb.save(filename="dest_filename")
+    """
+    pass

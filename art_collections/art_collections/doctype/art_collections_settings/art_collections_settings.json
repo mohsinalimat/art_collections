@@ -29,7 +29,7 @@
   "auto_email_sb_section",
   "art_auto_email_template",
   "photo_upload_utility_section",
-  "table_25"
+  "art_photo_types"
  ],
  "fields": [
   {
@@ -171,7 +171,7 @@
    "label": "Photo Upload Utility"
   },
   {
-   "fieldname": "table_25",
+   "fieldname": "art_photo_types",
    "fieldtype": "Table",
    "options": "Art Photo Type Detail",
    "reqd": 1
@@ -180,7 +180,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-08-04 12:49:12.229277",
+ "modified": "2022-08-05 07:30:58.006180",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

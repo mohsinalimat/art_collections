@@ -1,0 +1,219 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2022-08-05 05:59:42.759703",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "supplier_part_no",
+  "image",
+  "image_view",
+  "column_break_4",
+  "barcode",
+  "supplier_item_description_ar",
+  "item_name",
+  "packing_type_art",
+  "quantity_and_rate",
+  "qty_in_selling_pack_art",
+  "qty_per_inner",
+  "qty_per_outer",
+  "col_break2",
+  "qty",
+  "rate",
+  "amount",
+  "sb_cbm",
+  "total_outer_cartons_art",
+  "cbm_per_outer_art",
+  "total_cbm",
+  "cb_2",
+  "customs_tariff_number"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "oldfieldname": "item_code",
+   "oldfieldtype": "Link",
+   "options": "Item",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "supplier_part_no",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Supplier Part Number",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach",
+   "hidden": 1,
+   "label": "Photo Lead Item Image"
+  },
+  {
+   "fieldname": "image_view",
+   "fieldtype": "Image",
+   "label": "Photo Lead Item View",
+   "options": "image",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Barcode"
+  },
+  {
+   "fieldname": "supplier_item_description_ar",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": " Supplier Item Description (English)",
+   "oldfieldname": "description",
+   "oldfieldtype": "Small Text",
+   "print_width": "300px",
+   "width": "300px"
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Item Name (French)",
+   "oldfieldname": "item_name",
+   "oldfieldtype": "Data",
+   "print_hide": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "packing_type_art",
+   "fieldtype": "Link",
+   "label": "Packing Type",
+   "options": "Packing Type Art"
+  },
+  {
+   "fieldname": "quantity_and_rate",
+   "fieldtype": "Section Break",
+   "label": "Quantity and Rate"
+  },
+  {
+   "fieldname": "qty_in_selling_pack_art",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty In Selling Pack"
+  },
+  {
+   "fieldname": "qty_per_inner",
+   "fieldtype": "Int",
+   "label": "Qty per inner",
+   "oldfieldname": "conversion_factor",
+   "oldfieldtype": "Currency",
+   "print_hide": 1,
+   "print_width": "100px",
+   "reqd": 1,
+   "width": "100px"
+  },
+  {
+   "fieldname": "qty_per_outer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Qty per outer"
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "oldfieldname": "qty",
+   "oldfieldtype": "Currency",
+   "print_width": "60px",
+   "reqd": 1,
+   "width": "60px"
+  },
+  {
+   "fieldname": "col_break2",
+   "fieldtype": "Column Break",
+   "print_hide": 1
+  },
+  {
+   "bold": 1,
+   "columns": 2,
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate ($)",
+   "oldfieldname": "import_rate",
+   "oldfieldtype": "Currency",
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount ($)",
+   "oldfieldname": "import_amount",
+   "oldfieldtype": "Currency",
+   "options": "currency",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_cbm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_outer_cartons_art",
+   "fieldtype": "Float",
+   "label": "Total Outer Cartons"
+  },
+  {
+   "fieldname": "cbm_per_outer_art",
+   "fieldtype": "Float",
+   "label": "CBM Per outer (m3)"
+  },
+  {
+   "fieldname": "total_cbm",
+   "fieldtype": "Float",
+   "label": "Total CBM (m3)"
+  },
+  {
+   "fieldname": "customs_tariff_number",
+   "fieldtype": "Data",
+   "label": "HS Code"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-08-05 06:02:56.595329",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Sales Confirmation Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "search_fields": "item_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

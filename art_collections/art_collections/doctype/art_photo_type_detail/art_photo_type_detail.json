@@ -6,7 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "code",
-  "heading"
+  "heading",
+  "multi"
  ],
  "fields": [
   {
@@ -18,18 +19,26 @@
    "label": "Code"
   },
   {
-   "columns": 7,
+   "columns": 6,
    "description": "Image Heading",
    "fieldname": "heading",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Heading"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "multi",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Multi"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-08-04 12:49:35.321576",
+ "modified": "2022-08-04 14:22:20.779087",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Photo Type Detail",

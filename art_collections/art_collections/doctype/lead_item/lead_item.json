@@ -11,9 +11,10 @@
   "item_photo",
   "item_image",
   "cb_1",
-  "disabled",
+  "status",
   "is_quoted",
-  "sample_validated",
+  "is_disabled",
+  "is_sample_validated",
   "amended_from",
   "section_break_9",
   "supplier_part_no",
@@ -53,7 +54,10 @@
   "is_other_language",
   "is_need_photo_for_packaging",
   "packaging_description_excel",
-  "photo_quotation"
+  "photo_quotation",
+  "is_abandoned",
+  "is_po_created",
+  "test_report"
  ],
  "fields": [
   {
@@ -80,23 +84,9 @@
   },
   {
    "default": "0",
-   "fieldname": "disabled",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Disabled",
-   "reqd": 1
-  },
-  {
-   "default": "0",
    "fieldname": "is_quoted",
    "fieldtype": "Check",
    "label": "Quoted ?"
-  },
-  {
-   "default": "0",
-   "fieldname": "sample_validated",
-   "fieldtype": "Check",
-   "label": "Sample Validated"
   },
   {
    "fieldname": "amended_from",
@@ -314,12 +304,48 @@
    "in_standard_filter": 1,
    "label": "Photo Quotation",
    "read_only": 1
+  },
+  {
+   "default": "Selection in Progress",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Selection in Progress"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_disabled",
+   "fieldtype": "Check",
+   "label": "Disabled?"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_sample_validated",
+   "fieldtype": "Check",
+   "label": "Sample Validated?"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_abandoned",
+   "fieldtype": "Check",
+   "label": "Abandoned?"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_po_created",
+   "fieldtype": "Check",
+   "label": "PO Created?"
+  },
+  {
+   "fieldname": "test_report",
+   "fieldtype": "Data",
+   "label": "Test Report"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-04 06:31:27.980133",
+ "modified": "2022-08-05 05:10:30.594079",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

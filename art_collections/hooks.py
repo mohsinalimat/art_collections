@@ -147,6 +147,7 @@ doc_events = {
         "on_submit": [
             # "art_collections.api.sales_order_from_shopping_cart",
             "art_collections.controllers.excel.sales_order.on_submit_sales_order",
+            "art_collections.sales_order_controller.update_status_based_on_needs_confirmation_art",
         ],
         # "on_update": [
         #     "art_collections.sales_order_controller.sales_order_custom_validation",
@@ -225,6 +226,7 @@ scheduler_events = {
     "cron": {
         "15 00 * * *": [
             "art_collections.item_controller.allow_order_still_stock_last",
+            "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art"
         ]
     },
     "daily": ["art_collections.scheduler_task_controller.daily"]

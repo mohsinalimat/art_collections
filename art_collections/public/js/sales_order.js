@@ -84,6 +84,26 @@ frappe.ui.form.on('Sales Order', {
 
 	},
 	refresh: function (frm) {
+
+		if (frm.doc.docstatus == 1) {
+			if (frm.has_perm("submit")) {
+				if (frm.doc.status === 'On Hold') {
+					// un-hold
+					frm.add_custom_button(__('Resume'), function () {
+						frm.set_value({
+							needs_confirmation_art: 0,
+							order_expiry_date_ar: null
+						})
+						.then(() => {
+							frm.refresh_field('needs_confirmation_art');
+							frm.refresh_field('order_expiry_date_ar');
+							frm.cscript.update_status('Resume', 'Draft')
+						})
+					}, __("Status"));
+				}
+			}
+		}
+
 		frm.page.add_menu_item(__('Send Email'), function () { frappe.show_email_dialog(frm); });
 
 		frm.toggle_reqd('order_expiry_date_ar', frm.doc.needs_confirmation_art === 1);

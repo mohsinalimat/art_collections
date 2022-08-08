@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import frappe
 import datetime
 from frappe import _
-from frappe.utils import get_link_to_form, flt
+from frappe.utils import get_link_to_form, flt,get_date_str, nowdate
 from art_collections.item_controller import get_stock_qty_for_saleable_warehouse
 from art_collections.item_controller import get_qty_of_inner_cartoon
 
@@ -17,6 +17,9 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from frappe.utils import cint, get_site_url, get_url
 from art_collections.directive_controller import get_directive
+from erpnext.selling.doctype.sales_order.sales_order import update_status
+from frappe.desk.form.utils import add_comment
+from frappe.utils.user import get_user_fullname
 
 
 def sales_order_custom_validation(self, method):
@@ -25,6 +28,25 @@ def sales_order_custom_validation(self, method):
     # validate_inner_qty_and_send_notification(self)
     update_total_saleable_qty(self)
     get_directive(self, method)
+
+def update_status_based_on_needs_confirmation_art(self, method=None):
+    if self.needs_confirmation_art==1:
+        reason=_('Reason for hold: ')+_('Order Needs Confirmation')+_(' and Order Expiry Date is ')+get_date_str(self.order_expiry_date_ar)
+        add_comment(reference_doctype=self.doctype,
+        reference_name=self.name,content=reason,comment_email=frappe.session.user,comment_by=get_user_fullname(frappe.session["user"]))
+        update_status('On Hold',self.name)
+
+@frappe.whitelist()
+def update_so_status_to_closed_based_on_order_expiry_date_art():
+    so_list=frappe.db.get_list('Sales Order', fields=['name'], filters={
+        'order_expiry_date_ar':[ '<=',nowdate()],
+        'status':'On Hold',
+        'docstatus':1
+    })
+    if len(so_list)>0:
+        for so in so_list: 
+            update_status('Closed',so.name)
+
 
 
 def update_total_saleable_qty(self, method=None):

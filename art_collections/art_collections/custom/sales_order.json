@@ -335,7 +335,7 @@
    "insert_after": "facing_required_art",
    "label": "Order Expiry Date AR",
    "length": 0,
-   "mandatory_depends_on": null,
+   "mandatory_depends_on": "eval:doc.needs_confirmation_art == 1",
    "modified": "2019-12-17 09:24:59.839003",
    "modified_by": "Administrator",
    "name": "Sales Order-order_expiry_date_ar",

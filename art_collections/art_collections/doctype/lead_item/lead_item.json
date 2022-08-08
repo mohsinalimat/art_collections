@@ -31,7 +31,7 @@
   "item_thickness",
   "packing_type",
   "racking_bag",
-  "moq",
+  "minimum_order_qty",
   "unit_price",
   "item_price",
   "valid_from",
@@ -51,7 +51,7 @@
   "description1",
   "description2",
   "description3",
-  "is_other_language",
+  "other_language",
   "is_need_photo_for_packaging",
   "packaging_description_excel",
   "photo_quotation",
@@ -173,11 +173,6 @@
    "label": "Racking Bag"
   },
   {
-   "fieldname": "moq",
-   "fieldtype": "Data",
-   "label": "MOQ"
-  },
-  {
    "fieldname": "unit_price",
    "fieldtype": "Currency",
    "label": "Unit Price (in $)"
@@ -282,12 +277,6 @@
   },
   {
    "default": "0",
-   "fieldname": "is_other_language",
-   "fieldtype": "Check",
-   "label": "Other Language"
-  },
-  {
-   "default": "0",
    "fieldname": "is_need_photo_for_packaging",
    "fieldtype": "Check",
    "label": "Need Photo for Packing"
@@ -340,12 +329,23 @@
    "fieldname": "test_report",
    "fieldtype": "Data",
    "label": "Test Report"
+  },
+  {
+   "default": "0",
+   "fieldname": "other_language",
+   "fieldtype": "Data",
+   "label": "Other Language"
+  },
+  {
+   "fieldname": "minimum_order_qty",
+   "fieldtype": "Float",
+   "label": "MOQ"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-05 05:10:30.594079",
+ "modified": "2022-08-08 09:00:48.914028",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

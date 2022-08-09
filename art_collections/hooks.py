@@ -272,7 +272,6 @@ override_whitelisted_methods = {
 }
 
 fixtures = [
-    {"dt": "Workflow", "filters": [["name", "in", ["BDC"]]]},
     {
         "dt": "Notification",
         "filters": [

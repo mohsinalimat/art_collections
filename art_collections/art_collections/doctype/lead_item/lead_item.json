@@ -34,9 +34,10 @@
   "minimum_order_qty",
   "unit_price",
   "item_price",
-  "valid_from",
-  "volume_qty",
-  "volume_price",
+  "item_price_valid_from",
+  "pricing_rule_qty",
+  "pricing_rule_price",
+  "pricing_rule_valid_from",
   "inner_qty",
   "is_display_box",
   "is_special_mentions",
@@ -183,21 +184,6 @@
    "label": "Selling Item Price"
   },
   {
-   "fieldname": "valid_from",
-   "fieldtype": "Date",
-   "label": "Valid From "
-  },
-  {
-   "fieldname": "volume_qty",
-   "fieldtype": "Int",
-   "label": "Volume Qty"
-  },
-  {
-   "fieldname": "volume_price",
-   "fieldtype": "Currency",
-   "label": "Volume Price"
-  },
-  {
    "fieldname": "inner_qty",
    "fieldtype": "Int",
    "label": "Inner Qty"
@@ -340,12 +326,32 @@
    "fieldname": "minimum_order_qty",
    "fieldtype": "Float",
    "label": "MOQ"
+  },
+  {
+   "fieldname": "item_price_valid_from",
+   "fieldtype": "Date",
+   "label": "Item Price Valid From "
+  },
+  {
+   "fieldname": "pricing_rule_qty",
+   "fieldtype": "Int",
+   "label": "Volume Qty (Pricing Rule)"
+  },
+  {
+   "fieldname": "pricing_rule_price",
+   "fieldtype": "Currency",
+   "label": "Volume Price (Pricing Rule)"
+  },
+  {
+   "fieldname": "pricing_rule_valid_from",
+   "fieldtype": "Date",
+   "label": "Pricing Rule Valid From"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-08 09:00:48.914028",
+ "modified": "2022-08-09 06:39:22.068676",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

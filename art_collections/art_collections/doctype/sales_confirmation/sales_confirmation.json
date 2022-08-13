@@ -12,7 +12,7 @@
   "supplier",
   "cb_1",
   "transaction_date",
-  "confirmatio_date",
+  "confirmation_date",
   "status",
   "sb_1",
   "sales_confirmation_detail",
@@ -79,11 +79,6 @@
    "label": "PO date"
   },
   {
-   "fieldname": "confirmatio_date",
-   "fieldtype": "Data",
-   "label": "Confirmation Date"
-  },
-  {
    "fieldname": "section_break_10",
    "fieldtype": "Section Break"
   },
@@ -118,11 +113,16 @@
    "fieldtype": "Currency",
    "label": "Total (USD)",
    "read_only": 1
+  },
+  {
+   "fieldname": "confirmation_date",
+   "fieldtype": "Data",
+   "label": "Confirmation Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-08-05 06:14:00.402331",
+ "modified": "2022-08-13 05:07:51.862040",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Sales Confirmation",

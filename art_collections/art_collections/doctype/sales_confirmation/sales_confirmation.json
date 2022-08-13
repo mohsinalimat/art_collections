@@ -116,13 +116,13 @@
   },
   {
    "fieldname": "confirmation_date",
-   "fieldtype": "Data",
+   "fieldtype": "Date",
    "label": "Confirmation Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-08-13 05:07:51.862040",
+ "modified": "2022-08-13 05:15:12.486862",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Sales Confirmation",

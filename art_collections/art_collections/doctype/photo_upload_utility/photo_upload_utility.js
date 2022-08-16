@@ -137,9 +137,27 @@ frappe.ui.form.on('Photo Upload Utility', {
 						<i class="fa fa-hand-right"></i>
 						${__('Notes')}
 					</h4>
-<ul><li>valid Photo file formats gif, jpg, jpeg,tiff,png,svg</li><li>valid File name convention&nbsp; : a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; b)&nbsp;For website slideshow&nbsp; : Itemcode_suffix.extn</li><li>e.g. itemcode = 7878</li><li>valid suffix = fr, ba, sit, det</li><li>fr and ba will be only one per item , while situation (sit) , details (det) could be multiple with number suffix . e.g. 7878_sit01.jpg , 7878_sit02.png</li><li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while website slideshow is created with the other item images and the website slideshow gets linked with the item , Upon publishing the Item for website , the relevant images , slideshow becomes visible.</li>
-<li>"Photo Status Report" shows the list of items and their count for various images available in the files folder.</li>
-</ul>
+					<ul>
+					<li>valid Photo file formats(i.e. file extensions) gif, jpg, jpeg,tiff,png,svg</li>
+					<li>valid File name convention&nbsp; 
+						: a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; 
+						b)&nbsp;For website
+						slideshow&nbsp; : Itemcode-{suffix} ({count}).extn</li>
+					<li>e.g. 34345.jpeg, 34345 (1).jpeg, 34345 (2).jpeg <br>
+					34345-a.jpeg, 34345-a (1).jpeg, 34345-a (2).jpeg<br>
+					34345-ba.jpeg<br>
+					34345-fr.jpeg</li>
+					<li>valid suffix = {item_code}, fr, ba, a. It needs to be set in 'Art Collections Settings' under 'Photo Upload Utility' section</li>
+					<li>fr and ba will be only one per item , while Ambiance (a) , Détouré ({item_code}) could be multiple with number suffix
+						. e.g. 34345.jpeg, 34345 (1).jpeg, 34345-a.jpeg, 34345-a (1).jpeg</li>
+					<li> count in filename has to be serial. i.e. if system has 34345-a (1).jpeg next file name has to be 34345-a (2).jpeg. If 34345-a (4).jpeg is given it would give error</li>
+					<li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while
+						website slideshow (with name as item_code) is created with the other item images <br>
+						Upon action --> "Publish in Website" , website item gets created. 
+						Select slidshow (34345) and save it. The relevant images , slideshow becomes visible on web.</li>
+					<li>"Photo Status Report" shows the list of items and their count for various images available in the files folder.
+					</li>
+				</ul>
 				<tr><td>
 					<h4><i class="fa fa-question-sign"></i>
 						${__('Process flow for Photo upload utility')}

@@ -4,11 +4,45 @@
 frappe.ui.form.on('Photo Quotation', {
 	refresh: function (frm) {
 		make_items_grid(frm);
-
 		frm.trigger("add_custom_buttons");
 	},
 
+	validate_is_clean: function (frm) {
+		if (frm.is_dirty()) {
+			frappe.throw(__('Unsaved changes. Please save the changes.'));
+		}
+	},
+
 	add_custom_buttons: function (frm) {
+
+		frm.add_custom_button(__("Create Items"), function () {
+			frm.trigger('validate_is_clean');
+			// let items = frm.items_table.getData().map(i=>{i.is_sample_validated and i.});
+			frappe.confirm(__(`All Items that are validated will be created. Do you wish to proceed?`), () => {
+				return frm.call({
+					method: 'create_items',
+					doc: frm.doc,
+					args: {}
+				}).then((r) => {
+					frappe.msgprint(__('{0} items created.', [r.message]))
+				});
+			});
+		}, __("Create"));
+
+		frm.add_custom_button(__("Create or Modify Purchase Order"), function () {
+			frm.trigger('validate_is_clean');
+			return frm.call({
+				method: 'create_purchase_order',
+				doc: frm.doc,
+				args: {}
+			}).then((r) => {
+				console.log(r.message);
+				frappe.set_route("Form", "Purchase Order", r.message);
+			});
+		}, __("Create"));
+
+
+
 		frm.add_custom_button(__("Bulk Photo Import"), function () {
 			new frappe.ui.FileUploader({
 				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.import_lead_item_photos",
@@ -22,9 +56,6 @@ frappe.ui.form.on('Photo Quotation', {
 			})
 		}, __("Tools"));
 
-		frm.add_custom_button(__("Create Items"), function () {
-			frappe.confirm("10 Items will be created. Do you wish to proceed?", () => { });
-		}, __("Tools"));
 
 		frm.add_custom_button(__("Email Supplier for Quotation"), function () {
 			return frm.call({
@@ -50,7 +81,7 @@ frappe.ui.form.on('Photo Quotation', {
 	},
 
 	before_save: function (frm) {
-		let data = window.items_table.getData();
+		let data = frm.items_table.getData();
 		return frm.call({
 			method: 'update_lead_items',
 			doc: frm.doc,
@@ -65,12 +96,13 @@ frappe.ui.form.on('Photo Quotation', {
 			as_dataurl: true,
 			allow_multiple: false,
 			on_success(file) {
+				debugger;
 				var reader = new FileReader();
 				reader.onload = function (e) {
 					var workbook = XLSX.read(e.target.result);
 					var csv = XLSX.utils.sheet_to_csv(workbook.Sheets['Lead Items']);
 					var data = frappe.utils.csv_to_array(csv);
-					window.items_table.setData(data.slice(1));
+					frm.items_table.setData(data.slice(1));
 					frm.dirty();
 				}
 				reader.readAsArrayBuffer(file.file_obj)
@@ -83,7 +115,7 @@ frappe.ui.form.on('Photo Quotation', {
 	},
 
 	download_items: function (template) {
-		// let data = [window.items_table.getHeaders().split(",")].concat(window.items_table.getData());
+		// let data = [cur_frm.items_table.getHeaders().split(",")].concat(cur_frm.items_table.getData());
 		// const worksheet = XLSX.utils.aoa_to_sheet(data);
 		// const workbook = XLSX.utils.book_new();
 		// XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Items');
@@ -100,7 +132,7 @@ frappe.ui.form.on('Photo Quotation', {
 
 
 function make_items_grid(frm) {
-	if (window.items_table)
+	if (frm.items_table)
 		jspreadsheet.destroy(document.getElementById('items-table'), false);
 	// 
 	const tmpl = `<div id="items-table"></div>`;
@@ -144,7 +176,7 @@ function make_items_grid(frm) {
 		});
 		items_table.setData(r.message.data)
 		setup_toolbar();
-		window.items_table = items_table;
+		window.items_table = frm.items_table = items_table;
 
 	});
 

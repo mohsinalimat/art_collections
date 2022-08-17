@@ -5,11 +5,13 @@ from attr import field, fields
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import now
+from frappe.utils import now, cstr, cint, add_days, today, add_to_date
 import json
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 import openpyxl
 import io
+from erpnext import get_default_company
+from frappe.model.mapper import get_mapped_doc
 
 
 class PhotoQuotation(Document):
@@ -38,6 +40,257 @@ class PhotoQuotation(Document):
             doc.save()
 
     @frappe.whitelist()
+    def create_items(self):
+        items = frappe.db.sql(
+            """
+			select name , {}
+			from `tabLead Item`
+			where is_sample_validated = 1 and status <> 'Item Created' 
+		""".format(
+                ",".join(LEAD_ITEM_MANDATORY_FIELDS)
+            ),
+            as_dict=True,
+        )
+
+        invalid_items = [
+            d for d in items if [x for x in LEAD_ITEM_MANDATORY_FIELDS if not d.get(x)]
+        ]
+        if invalid_items:
+            frappe.throw(
+                _(
+                    "Please complete {} for these items: {}".format(
+                        ", ".join(LEAD_ITEM_MANDATORY_FIELDS),
+                        ", ".join([d.name for d in invalid_items]),
+                    )
+                )
+            )
+
+        if not items:
+            frappe.throw(_("No items to create."))
+
+        for d in items:
+            source = frappe.get_doc("Lead Item", d.name)
+            self.make_item(source, self.supplier)
+            source.db_set("status", "Item Created")
+
+        if len(items):
+            self.db_set("status", "Item Created")
+
+        return len(items)
+
+    def make_item(self, source, supplier):
+        def postprocess(source, target, source_parent):
+            # target.nb_inner_in_outer_art = 120
+            pass
+
+        # TODO: remove in release
+        frappe.delete_doc("Item", source.get("name"))
+
+        uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
+        target_doc = {}
+        item = get_mapped_doc(
+            "Lead Item",
+            source.get("name"),
+            {
+                "Lead Item": {
+                    "doctype": "Item",
+                    "postprocess": postprocess,
+                    "field_map": {
+                        "name": "item_code",
+                        "lead_item_name": "item_name",
+                        "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
+                        "packaging_description_excel": "packaging_description_cf",
+                        "other_language": "other_language_cf",
+                        "description1": "description_1_cf",
+                        "description2": "description_2_cf",
+                        "description3": "description_3_cf",
+                        "designation": "excel_designation_cf",
+                        "selling_pack_qty": "qty_in_selling_pack_art",
+                        "uom": "stock_uom",
+                        "item_length": "length_art",
+                        "item_width": "width_art",
+                        "item_thickness": "thickness_art",
+                        "packing_type": "packing_type_art",
+                        "is_racking_bag": "racking_bag_art",
+                        "min_order_qty": "min_order_qty",
+                    },
+                },
+            },
+            target_doc,
+        )
+
+        item.insert()
+
+        uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
+        item.append(
+            "uoms",
+            {
+                "uom": uom,
+                "conversion_factor": source.get("inner_qty"),
+            },
+        )
+
+        item.append(
+            "supplier_items",
+            {
+                "supplier": supplier,
+                "supplier_part_no": source.get("supplier_part_no"),
+                # "supplier_item_description":"supplier_item_description"
+            },
+        )
+
+        barcode = "aaabbb"
+        item.append("barcodes", {"barcode_type": "EAN", "barcode": barcode})
+
+        for d in range(1, 4):
+            if source.get("product_material" + cstr(d)):
+                item.append(
+                    "item_components_art",
+                    {
+                        "matiere": source.get("product_material" + cstr(d)),
+                        "percentage": source.get("percentage" + cstr(d)),
+                    },
+                )
+        item.save()
+
+        if cint(source.get("unit_price")):
+            frappe.get_doc(
+                {
+                    "doctype": "Item Price",
+                    "item_code": item.item_code,
+                    "valid_from": source.get("valid_from"),
+                    "price_list_rate": source.get("unit_price"),
+                    "price_list": frappe.db.get_single_value(
+                        "Buying Settings", "buying_price_list"
+                    ),
+                }
+            ).insert()
+
+        if cint(source.get("item_price")):
+            frappe.get_doc(
+                {
+                    "doctype": "Item Price",
+                    "item_code": item.item_code,
+                    "price_list_rate": source.get("item_price"),
+                    "valid_from": source.get("item_price_valid_from"),
+                    "price_list": frappe.db.get_single_value(
+                        "Selling Settings", "selling_price_list"
+                    ),
+                }
+            ).insert()
+
+        # insert pricing rules
+        if cint(source.get("pricing_rule_price")):
+            rule = frappe.get_doc(
+                {
+                    "doctype": "Pricing Rule",
+                    "title": "{} Pricing Rule".format(item.item_code),
+                    "apply_on": "Item Code",
+                    "price_or_product_discount": "Price",
+                    "selling": 1,
+                    "min_qty": source.get("pricing_rule_qty"),
+                    "rate_or_discount": "Rate",
+                    "rate": source.get("pricing_rule_price"),
+                    "valid_from": source.get("pricing_rule_valid_from"),
+                }
+            )
+            rule.append("items", {"item_code": item.item_code, "uom": "Selling Pack"})
+            rule.insert()
+
+    @frappe.whitelist()
+    def create_purchase_order(self):
+
+        items = frappe.db.sql(
+            """
+			select name , uom , selling_pack_qty 
+			from `tabLead Item`
+			where is_po_created = 0 and status = 'Item Created' 
+		""",
+            as_dict=True,
+        )
+
+        if not items:
+            frappe.throw(_("No items in Photo Quotation to create Purchase Order"))
+
+        po_name = frappe.db.exists("Purchase Order", {"photo_quotation_cf": self.name})
+
+        if po_name:
+            po = frappe.get_doc("Purchase Order", po_name)
+        else:
+            po = frappe.get_doc(
+                {
+                    "doctype": "Purchase Order",
+                    "supplier": self.supplier,
+                    "transaction_date": today(),
+                }
+            )
+
+        default_warehouse = frappe.db.get_single_value(
+            "Stock Settings", "default_warehouse"
+        )
+
+        for d in items:
+            po.append(
+                "items",
+                {
+                    "item_code": d.name,
+                    "schedule_date": add_to_date(today(), days=7),
+                    "warehouse": default_warehouse,
+                    "stock_uom": d.uom,
+                    "uom": d.uom,
+                    "qty": 1,
+                },
+            )
+        po.save()
+        self.db_set("status", "PO Created")
+        return po.name
+
+    @frappe.whitelist()
+    def create_sales_confirmation(self):
+        for d in frappe.db.sql(
+            """
+			select 
+				tpo.name purchase_order , tsc.name sales_confirmation
+			from `tabPurchase Order` tpo 
+			inner join `tabPhoto Quotation` tpq on tpq.name = tpo.photo_quotation_cf and tpq.name = %s
+			left outer join `tabSales Confirmation` tsc on tsc.purchase_order = tpo.name;
+		""",
+            (self.name,),
+            as_dict=True,
+        ):
+            if d.sales_confirmation:
+                doc = frappe.get_doc("Sales Confirmation", d.sales_confirmation)
+            else:
+                doc = frappe.get_doc(
+                    {
+                        "doctype": "Sales Confirmation",
+                        "purchase_order": d.purchase_order,
+                        "supplier": self.supplier,
+                        "transaction_date": "",
+                        "confirmation_date": "",
+                        # item_code
+                        # supplier_part_no
+                        # image
+                        # barcode
+                        # supplier_item_description_ar
+                        # item_name
+                        # packing_type_art
+                        # qty_in_selling_pack_art
+                        # qty_per_inner
+                        # qty_per_outer
+                        # qty
+                        # rate
+                        # amount
+                        # total_outer_cartons_art
+                        # cbm_per_outer_art
+                        # total_cbm
+                        # customs_tariff_number
+                    }
+                )
+
+        return []
+
+    @frappe.whitelist()
     def get_supplier_email(self, template="all"):
         items_xlsx = []
         # make supplier file and attach to PQ doc
@@ -45,13 +298,13 @@ class PhotoQuotation(Document):
 
         recipients = frappe.db.sql(
             """
-        select 
-            tce.email_id 
-            from `tabContact Email` tce 
-            inner join `tabDynamic Link` tdl on tdl.parent = tce.parent 
-            and tdl.link_doctype = 'Supplier' and tce.is_primary = 1
-            and tdl.link_name = %s
-        """,
+		select 
+			tce.email_id 
+			from `tabContact Email` tce 
+			inner join `tabDynamic Link` tdl on tdl.parent = tce.parent 
+			and tdl.link_doctype = 'Supplier' and tce.is_primary = 1
+			and tdl.link_name = %s
+		""",
             (self.supplier,),
         )
         if not recipients:
@@ -89,18 +342,18 @@ def get_lead_item_fields():
         )
     ] + frappe.db.sql(
         """
-            select fieldname , label , 
-            case 
-                when fieldtype = 'Attach Image' then 'image'
-                when fieldtype in ('Percent', 'Int', 'Currency') then 'numeric' 
-                when fieldtype in ('Check') then 'checkbox'
-                when fieldtype in ('Date') then 'calendar'
-            else 'text' end fieldtype 
-            from tabDocField tdf where parent = 'Lead Item' 
-            and label is not null
-            and fieldname not in ('naming_series' ,'amended_from')
-            order by idx;
-    """,
+			select fieldname , label , 
+			case 
+				when fieldtype = 'Attach Image' then 'image'
+				when fieldtype in ('Percent', 'Int', 'Currency') then 'numeric' 
+				when fieldtype in ('Check') then 'checkbox'
+				when fieldtype in ('Date') then 'calendar'
+			else 'text' end fieldtype 
+			from tabDocField tdf where parent = 'Lead Item' 
+			and label is not null
+			and fieldname not in ('naming_series' ,'amended_from')
+			order by idx;
+	""",
         as_dict=True,
     )
 
@@ -139,7 +392,7 @@ def get_items_xlsx(docname, template_for="all", with_xlsx_template=False):
     fields = TEMPLATES.get(template_for) or TEMPLATES.get("all")
     data = frappe.db.sql(
         """
-        select {} from `tabLead Item` where photo_quotation = %s {}""".format(
+		select {} from `tabLead Item` where photo_quotation = %s {}""".format(
             ", ".join([f for _, f in fields]), CONDITIONS.get(template_for) or ""
         ),
         (docname,),
@@ -167,14 +420,14 @@ def get_items_xlsx(docname, template_for="all", with_xlsx_template=False):
 
     wb = write_xlsx(
         excel_rows,
-        sheet_name="Items",
+        sheet_name="Lead Items",
         file_path=file_path,
         column_widths=[20] * len(fields),
         skip_rows=skip_rows,
     )
 
     add_images(
-        images, workbook=wb, worksheet="Items", image_col="B", skip_rows=skip_rows
+        images, workbook=wb, worksheet="Lead Items", image_col="B", skip_rows=skip_rows
     )
 
     out = io.BytesIO()
@@ -266,3 +519,23 @@ TEMPLATES = {
         ("Port Of Loading", "port_of_loading"),
     ],
 }
+
+LEAD_ITEM_MANDATORY_FIELDS = [
+    "supplier_part_no",
+    "unit_price",
+    "item_price",
+    "item_price_valid_from",
+    # "pricing_rule_qty",
+    # "pricing_rule_price",
+    # "pricing_rule_valid_from",
+    "inner_qty",
+    "lead_item_name",
+    "item_group",
+    "description",
+    "uom",
+    "selling_pack_qty",
+    "designation",
+    "description1",
+    "description2",
+    "description3",
+]

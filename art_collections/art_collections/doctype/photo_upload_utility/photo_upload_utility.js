@@ -151,7 +151,7 @@ frappe.ui.form.on('Photo Upload Utility', {
 					<li>fr and ba will be only one per item , while Ambiance (a) , Détouré ({item_code}) could be multiple with number suffix
 						. e.g. 34345.jpeg, 34345 (1).jpeg, 34345-a.jpeg, 34345-a (1).jpeg</li>
 					<li> count in filename has to be serial. i.e. if system has 34345-a (1).jpeg next file name has to be 34345-a (2).jpeg. If 34345-a (4).jpeg is given it would give error</li>
-					<li>upon successful upload , the main image images gets attached with the Item along with its thumbnail , while
+					<li>upon successful upload , the main image gets attached with the Item and website slideslow , while
 						website slideshow (with name as item_code) is created with the other item images <br>
 						Upon action --> "Publish in Website" , website item gets created. 
 						Select slidshow (34345) and save it. The relevant images , slideshow becomes visible on web.</li>

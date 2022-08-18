@@ -14,6 +14,7 @@
   "damage_warehouse_type",
   "reserved_warehouse_type",
   "default_email_template_sb_section",
+  "welcome_email_template",
   "cb_et_1",
   "selling_pack_invalid_qty_so_notification",
   "item_defaults_section",
@@ -74,7 +75,7 @@
   {
    "fieldname": "default_email_template_sb_section",
    "fieldtype": "Section Break",
-   "label": "Default Email Template"
+   "label": "Default Email Template & Notification"
   },
   {
    "description": "To set item required by date in purchase order",
@@ -176,12 +177,18 @@
    "fieldtype": "Table",
    "options": "Art Photo Type Detail",
    "reqd": 1
+  },
+  {
+   "fieldname": "welcome_email_template",
+   "fieldtype": "Link",
+   "label": "Welcome Email Template",
+   "options": "Email Template"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-08-16 07:17:51.549704",
+ "modified": "2022-08-18 13:08:37.600040",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

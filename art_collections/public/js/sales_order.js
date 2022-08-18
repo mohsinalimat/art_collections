@@ -89,12 +89,14 @@ frappe.ui.form.on('Sales Order', {
 			if (frm.has_perm("submit")) {
 				if (frm.doc.status === 'On Hold') {
 					// un-hold
+					console.log('1',frm.doc.needs_confirmation_art, frm.doc.order_expiry_date_ar)
 					frm.add_custom_button(__('Resume'), function () {
 						frm.set_value({
 							needs_confirmation_art: 0,
 							order_expiry_date_ar: null
 						})
 						.then(() => {
+							console.log('2',frm.doc.needs_confirmation_art, frm.doc.order_expiry_date_ar)
 							frm.refresh_field('needs_confirmation_art');
 							frm.refresh_field('order_expiry_date_ar');
 							frm.cscript.update_status('Resume', 'Draft')

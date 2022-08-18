@@ -14,14 +14,14 @@ frappe.listview_settings["Sales Order"] = {
   },
   get_indicator: function (doc) {
     var status_color = {
-       "Draft": "pink",
-      "On Hold": "gray",
+       "Draft": "gray",
+      "On Hold": "blue",
       "To Deliver and Bill": "orange",
-      "To Bill": "blue",
-      "To Deliver": "yellow",
+      "To Bill": "orange",
+      "To Deliver": "orange",
       "Completed": "green",
       "Cancelled": "red",
-      "Closed" : "green"
+      "Closed" : "red"
 		};
     if (doc.status) {
       return [__(doc.status), status_color[doc.status], "status,=,"+doc.status];

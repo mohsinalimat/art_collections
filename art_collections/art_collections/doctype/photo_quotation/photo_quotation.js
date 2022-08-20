@@ -176,7 +176,23 @@ frappe.ui.form.on('Photo Quotation', {
 			});
 			// timeout to allow form to reload. else it throws document has been modified error
 		}, 400);
-	}
+	},
+
+	supplier_sample_request_email_callback: function (frm) {
+		// set status after email is sent
+		setTimeout(() => {
+			frappe.call({
+				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.supplier_sample_request_email_callback",
+				args: {
+					docname: frm.doc.name,
+				},
+				callback: function (r) {
+					frm.reload_doc()
+				},
+			});
+			// timeout to allow form to reload. else it throws document has been modified error
+		}, 400);
+	},
 });
 
 

@@ -36,6 +36,7 @@ class SalesConfirmation(Document):
             docname=self.name,
             show_email_dialog=1,
             recipients="",
+            callback="supplier_email_callback",
         )
 
     @frappe.whitelist()
@@ -95,21 +96,24 @@ class SalesConfirmation(Document):
 
 
 @frappe.whitelist()
-def make_from_po(self):
-    po = frappe.get_doc("Purchase Order", self.purchase_order)
-    docname = frappe.db.exists(
-        "Sales Confirmation", {"purchase_order": self.purchase_order}
-    )
-    if docname:
-        doc = frappe.get_doc("Sales Confirmation", docname)
+def supplier_email_callback(docname):
+    frappe.db.set_value("Sales Confirmation", docname, "status", "Replied")
+
+
+@frappe.whitelist()
+def make_from_po(docname):
+    po = frappe.get_doc("Purchase Order", docname)
+    sc_name = frappe.db.exists("Sales Confirmation", {"purchase_order": docname})
+    if sc_name:
+        doc = frappe.get_doc("Sales Confirmation", sc_name)
     else:
         doc = frappe.get_doc(
             {
                 "doctype": "Sales Confirmation",
-                "purchase_order": self.purchase_order,
+                "purchase_order": docname,
                 "supplier": po.supplier,
-                # "transaction_date": "",
-                # "confirmation_date": "",
+                "contact_person": po.get("contact_person"),
+                "contact_email": po.get("contact_email"),
             }
         )
 

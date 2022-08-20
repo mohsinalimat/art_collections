@@ -12,6 +12,22 @@ frappe.ui.form.on('Sales Confirmation', {
 		});
 	},
 
+	supplier: function (frm) {
+		frappe.call({
+			method: 'art_collections.controllers.utils.set_contact_details',
+			args: {
+				party_name: frm.doc.supplier,
+				party_type: 'Supplier'
+			},
+			callback: function (r) {
+				if (r.message) {
+					frm.set_value(r.message)
+				}
+			}
+		});
+	},
+
+
 	add_custom_buttons: function (frm) {
 
 		if (frm.doc.confirmation_date) {
@@ -87,7 +103,23 @@ frappe.ui.form.on('Sales Confirmation', {
 					docname: frm.doc.name,
 				});
 		});
-	}
+	},
+
+	supplier_email_callback: function (frm) {
+		// set status after email is sent
+		setTimeout(() => {
+			frappe.call({
+				method: "art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.supplier_email_callback",
+				args: {
+					docname: frm.doc.name,
+				},
+				callback: function (r) {
+					frm.reload_doc()
+				},
+			});
+			// timeout to allow form to reload. else it throws document has been modified error
+		}, 400);
+	},
 });
 
 const value_formatter_map = {

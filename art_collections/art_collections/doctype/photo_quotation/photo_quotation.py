@@ -122,7 +122,7 @@ class PhotoQuotation(Document):
                         "item_width": "width_art",
                         "item_thickness": "thickness_art",
                         "packing_type": "packing_type_art",
-                        "is_racking_bag": "racking_bag_art",
+                        "racking_bag": "racking_bag_art",
                         "min_order_qty": "min_order_qty",
                     },
                 },
@@ -317,6 +317,12 @@ class PhotoQuotation(Document):
         # make supplier file and attach to PQ doc
         content = get_items_xlsx(self.name, template, with_xlsx_template=1)
 
+        callback = None
+        if template == "supplier_quotation":
+            callback = "supplier_quotation_email_callback"
+        elif template == "supplier_sample_request":
+            callback = "supplier_sample_request_email_callback"
+
         # create doc attachment and open email dialog in client
         attach_file(
             content,
@@ -325,7 +331,7 @@ class PhotoQuotation(Document):
             file_name=get_file_name(self.name, template),
             email_template=EMAIL_TEMPLATES.get(template),
             show_email_dialog=1,
-            callback="supplier_quotation_email_callback",
+            callback=callback,
         )
 
 
@@ -464,6 +470,11 @@ def supplier_quotation_email_callback(docname):
     frappe.db.set_value("Photo Quotation", docname, "status", "Replied")
 
 
+@frappe.whitelist()
+def supplier_sample_request_email_callback(docname):
+    frappe.db.set_value("Photo Quotation", docname, "is_sample_requested", 1)
+
+
 XLSX_TEMPLATES = {
     "supplier_quotation": {
         "filename": "photo_quotation_to_supplier_template.xlsx",
@@ -531,7 +542,7 @@ TEMPLATES = {
         ("item width", "item_width"),
         ("Item thickness", "item_thickness"),
         ("Packaging Type", "packing_type"),
-        ("Racking bag", "is_racking_bag"),
+        ("Racking bag", "racking_bag"),
         ("MOQ", "moq"),
         ("Unit Price (in $)", "unit_price"),
         ("Inner Qty", "inner_qty"),

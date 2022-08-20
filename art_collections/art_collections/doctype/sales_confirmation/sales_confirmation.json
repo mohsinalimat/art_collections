@@ -10,6 +10,8 @@
   "naming_series",
   "purchase_order",
   "supplier",
+  "contact_person",
+  "contact_email",
   "cb_1",
   "transaction_date",
   "confirmation_date",
@@ -118,11 +120,22 @@
    "fieldname": "confirmation_date",
    "fieldtype": "Date",
    "label": "Confirmation Date"
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Supplier Contact",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Small Text",
+   "label": "Contact Email"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-08-13 05:15:12.486862",
+ "modified": "2022-08-20 04:07:33.642002",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Sales Confirmation",

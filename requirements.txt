@@ -1,2 +1,3 @@
-frappe
+# frappe
 natsort
+python-barcode

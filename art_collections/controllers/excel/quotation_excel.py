@@ -132,4 +132,5 @@ def _make_excel_attachment(doctype, docname):
         out.getvalue(),
         doctype=doctype,
         docname=docname,
+        show_email_dialog=1,
     )

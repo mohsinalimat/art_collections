@@ -256,6 +256,8 @@ def get_records(**kwargs):
             conditions = " where ti.name in (%s)" % ",".join(
                 ["'%s'" % d[0] for d in parent_data]
             )
+    elif kwargs.get("filter_sql"):
+        conditions = kwargs.get("filter_sql")
 
     return frappe.db.sql(
         """

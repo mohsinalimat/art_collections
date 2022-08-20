@@ -42,17 +42,42 @@ $(document).on('form-refresh', function (frm) {
     }
 });
 
+frappe.views.CustomCommunicationComposer = class CustomCommunicationComposer extends (
+    frappe.views.CommunicationComposer
+) {
+
+    send_email(btn, form_values, selected_attachments, print_html, print_format) {
+        let me = this;
+        super.send_email(btn, form_values, selected_attachments, print_html, print_format).then(
+            () => {
+                // hack to trigger frm events after an email is sent.
+                // e.g. set frm doc status to Replied.
+                // to use, create a call back in the form that is to be called after email is sent
+                if (me.callback) {
+                    frappe.after_ajax(() => {
+                        me.frm.events[me.callback](me.frm);
+                        // me.frm.reload_doc().then(() => {
+                        // })
+                    });
+                }
+            }
+        );
+    }
+}
+
 frappe.show_email_dialog = function (frm, args) {
     // show email dialog with pre-set values for default print format 
     // and email template and attach_print
 
-    let composer = new frappe.views.CommunicationComposer({
+    let composer = new frappe.views.CustomCommunicationComposer({
+        // let composer = new frappe.views.CommunicationComposer({
         doc: frm.doc,
         frm: frm,
         subject: __(frm.meta.name) + ': ' + frm.docname,
         recipients: args.recipients || frm.doc.email || frm.doc.email_id || frm.doc.contact_email,
         attach_document_print: true,
-        real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name
+        real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name,
+        callback: args.callback
     });
 
     if (args.email_template) {

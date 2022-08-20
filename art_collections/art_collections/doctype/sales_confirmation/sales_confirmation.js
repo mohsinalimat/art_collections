@@ -13,34 +13,53 @@ frappe.ui.form.on('Sales Confirmation', {
 	},
 
 	add_custom_buttons: function (frm) {
+
 		if (frm.doc.confirmation_date) {
-			frm.add_custom_button(__("Validate with PO"), function () {
+			frm.add_custom_button(__("Verify Sales Confirmation and PO"), function () {
 				return frm.call({
-					method: 'validate_with_po',
+					method: 'verify_with_po',
 					doc: frm.doc,
 					args: {}
 				}).then((r) => {
-					frappe.msgprint(__('Items and Purchase Order updated.'))
+					frm.dashboard.clear_headline();
+					if (r.message)
+						frm.dashboard.set_headline(r.message, 'red')
+					else {
+						frappe.confirm(__("Data set corresponds to Purchase Orde. Do you want to Update Items and Purchase Order?"), function () {
+							return frm.call({
+								method: 'update_items_and_po',
+								doc: frm.doc,
+								args: {}
+							}).then((r) => {
+								frappe.msgprint(__('Items and Purchase Order updated.'))
+							});
+						})
+					}
 				});
-			});
+			}, __("Tools"));
 		}
 
-
-		if (frm.doc.confirmation_date) {
-			frm.add_custom_button(__("Update Items & PO"), function () {
-				return frm.call({
-					method: 'update_items_and_po',
-					doc: frm.doc,
-					args: {}
-				}).then((r) => {
-					frappe.msgprint(__('Items and Purchase Order updated.'))
-				});
+		frm.add_custom_button(__("Make Details Excel"), function () {
+			return frm.call({
+				method: 'make_details_excel',
+				doc: frm.doc,
+				args: {}
+			}).then((r) => {
+				frm.reload_doc();
 			});
-		}
+		}, __("Tools"));
+
+		frm.add_custom_button(__("Email Supplier"), function () {
+			return frm.call({
+				method: 'email_supplier',
+				doc: frm.doc,
+				args: {}
+			});
+		}, __("Tools"));
+
 
 		let fieldname = 'sales_confirmation_detail', grid = frm.fields_dict[fieldname].grid;
 		grid.wrapper.find(".grid-upload").removeClass('hidden').on("click", () => {
-
 			new frappe.ui.FileUploader({
 				as_dataurl: true,
 				allow_multiple: false,
@@ -62,13 +81,11 @@ frappe.ui.form.on('Sales Confirmation', {
 		});
 
 		grid.wrapper.find(".grid-download").removeClass('hidden').off('click').on("click", () => {
-
 			open_url_post(
 				'/api/method/art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.download_details'
 				, {
 					docname: frm.doc.name,
 				});
-
 		});
 	}
 });

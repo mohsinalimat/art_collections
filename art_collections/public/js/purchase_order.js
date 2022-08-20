@@ -22,32 +22,49 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 	refresh: function (frm) {
-		if (frm.page.get_inner_group_button(__('Create')).length == 0) {
-			frm.add_custom_button(
-				__("Product Excel"),
-				function () {
-					frappe.call({
-						method: "art_collections.controllers.excel.purchase_order._make_excel_attachment",
-						args: {
-							docname: frm.doc.name,
-							doctype: frm.doc.doctype,
-						},
-						callback: function () {
-							frm.reload_doc();
-						},
-					});
-				},
-				__("Create")
-			);
-		}
+		frm.add_custom_button(
+			__("Email Supplier"),
+			function () {
+				frappe.dom.freeze(__("Please wait. Creating fileds for email."));
+				frappe.call({
+					method: "art_collections.controllers.excel.purchase_order.make_supplier_email_attachments",
+					args: {
+						po_name: frm.doc.name,
+					},
+					callback: function () {
+						frappe.dom.unfreeze();
+						frm.reload_doc();
+					},
+				});
+			},
+			__("Tools")
+		);
+
+		frm.add_custom_button(
+			__("Product Excel"),
+			function () {
+				frappe.call({
+					method: "art_collections.controllers.excel.purchase_order._make_excel_attachment",
+					args: {
+						docname: frm.doc.name,
+						doctype: frm.doc.doctype,
+					},
+					callback: function () {
+						frm.reload_doc();
+					},
+				});
+			},
+			__("Tools")
+		);
+
 		$('div').find('.document-link[data-doctype="Art Shipment"]').remove();
 		if (frm.is_new() == undefined) {
 			frappe.call('art_collections.purchase_order_controller.get_connected_shipment', {
 				purchase_order: frm.doc.name
 			}).then(r => {
-				console.log(r,'r')
+				console.log(r, 'r')
 				if (r.message && r.message != undefined) {
-					let count=r.message.length
+					let count = r.message.length
 					let link = $(`
 			<div class="document-link" data-doctype="Art Shipment">
 				<div class="document-link-badge" data-doctype="Art Shipment"> <span class="count">${count}</span> <a
@@ -68,6 +85,19 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 
+	supplier_email_callback: function (frm) {
+		frappe.after_ajax(() => {
+			frappe.call({
+				method: "art_collections.controllers.excel.purchase_order.supplier_email_callback",
+				args: {
+					docname: frm.doc.name,
+				},
+				callback: function (r) {
+					frappe.set_route('Form', 'Sales Confirmation', r.message);
+				},
+			});
+		});
+	}
 
 });
 
@@ -80,8 +110,6 @@ frappe.ui.form.on("Purchase Order Item", {
 				.then(r => {
 					row.min_order_qty_cf = r.message.min_order_qty
 				})
-
-
 		}
 	}
 

@@ -1,6 +1,7 @@
 # Copyright (c) 2022, GreyCube Technologies and contributors
 # For license information, please see license.txt
 
+from distutils.log import debug
 from attr import field, fields
 import frappe
 from frappe import _
@@ -12,9 +13,17 @@ import openpyxl
 import io
 from erpnext import get_default_company
 from frappe.model.mapper import get_mapped_doc
+from art_collections.ean import calc_check_digit, compact, is_valid
 
 
 class PhotoQuotation(Document):
+    def validate(self):
+        if frappe.db.exists(
+            "Lead Item",
+            {"photo_quotation": self.name, "is_disabled": 0, "is_sample_validated": 1},
+        ):
+            self.status = "Sample Validated"
+
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):
         columns = get_lead_item_fields()
@@ -46,9 +55,11 @@ class PhotoQuotation(Document):
 			select name , {}
 			from `tabLead Item`
 			where is_sample_validated = 1 and status <> 'Item Created' 
+			and photo_quotation = %s
 		""".format(
                 ",".join(LEAD_ITEM_MANDATORY_FIELDS)
             ),
+            (self.name,),
             as_dict=True,
         )
 
@@ -84,7 +95,7 @@ class PhotoQuotation(Document):
             pass
 
         # TODO: remove in release
-        frappe.delete_doc("Item", source.get("name"))
+        # frappe.delete_doc("Item", source.get("name"))
 
         uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
         target_doc = {}
@@ -119,6 +130,10 @@ class PhotoQuotation(Document):
             target_doc,
         )
 
+        from frappe.model.naming import make_autoname
+
+        item.item_code = make_autoname("#####.")
+
         item.insert()
 
         uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
@@ -139,8 +154,9 @@ class PhotoQuotation(Document):
             },
         )
 
-        barcode = "aaabbb"
-        item.append("barcodes", {"barcode_type": "EAN", "barcode": barcode})
+        item.append(
+            "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.item_code)}
+        )
 
         for d in range(1, 4):
             if source.get("product_material" + cstr(d)):
@@ -196,6 +212,12 @@ class PhotoQuotation(Document):
             )
             rule.append("items", {"item_code": item.item_code, "uom": "Selling Pack"})
             rule.insert()
+
+    @frappe.whitelist()
+    def delete_all_lead_items(self):
+        for d in frappe.db.get_all("Lead Item", {"photo_quotation": self.name}):
+            frappe.delete_doc("Lead Item", d.name)
+        frappe.db.commit()
 
     @frappe.whitelist()
     def create_purchase_order(self):
@@ -292,34 +314,18 @@ class PhotoQuotation(Document):
 
     @frappe.whitelist()
     def get_supplier_email(self, template="all"):
-        items_xlsx = []
         # make supplier file and attach to PQ doc
         content = get_items_xlsx(self.name, template, with_xlsx_template=1)
 
-        recipients = frappe.db.sql(
-            """
-		select 
-			tce.email_id 
-			from `tabContact Email` tce 
-			inner join `tabDynamic Link` tdl on tdl.parent = tce.parent 
-			and tdl.link_doctype = 'Supplier' and tce.is_primary = 1
-			and tdl.link_name = %s
-		""",
-            (self.supplier,),
-        )
-        if not recipients:
-            # supplier email ? create contact etc like rfq??
-            frappe.throw("Please create a Contact for Supplier.")
-
         # create doc attachment and open email dialog in client
-
         attach_file(
             content,
             doctype=self.doctype,
             docname=self.name,
-            recipients=recipients[0][0],
             file_name=get_file_name(self.name, template),
             email_template=EMAIL_TEMPLATES.get(template),
+            show_email_dialog=1,
+            callback="supplier_quotation_email_callback",
         )
 
 
@@ -366,6 +372,7 @@ def import_lead_item_photos():
     doc = frappe.get_doc(
         {"doctype": "Lead Item", "uom": "Selling Pack", "photo_quotation": docname}
     )
+    filename = docname + "_" + frappe.local.uploaded_filename
 
     doc.insert(ignore_permissions=True)
 
@@ -376,13 +383,14 @@ def import_lead_item_photos():
             "attached_to_name": doc.name,
             "attached_to_field": "item_photo",
             "folder": folder,
-            "file_name": frappe.local.uploaded_filename,
+            "file_name": filename,
             "file_url": frappe.form_dict.file_url,
             "is_private": 0,
             "content": frappe.local.uploaded_file,
         }
     )
     ret.save(ignore_permissions=True)
+
     doc.db_set("item_photo", ret.get("file_url"))
 
     return ret
@@ -440,6 +448,20 @@ def download_lead_items_template(docname, template):
     frappe.response["filename"] = get_file_name(docname, template)
     frappe.response["filecontent"] = get_items_xlsx(docname, template)
     frappe.response["type"] = "binary"
+
+
+def make_barcode(item_code):
+    barcode_domain = frappe.db.get_single_value(
+        "Art Collections Settings", "barcode_domain"
+    )
+    code_brut = compact(barcode_domain + item_code)
+    barcode = code_brut + calc_check_digit(code_brut)
+    return is_valid(barcode) and barcode or None
+
+
+@frappe.whitelist()
+def supplier_quotation_email_callback(docname):
+    frappe.db.set_value("Photo Quotation", docname, "status", "Replied")
 
 
 XLSX_TEMPLATES = {

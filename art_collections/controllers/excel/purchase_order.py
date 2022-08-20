@@ -6,6 +6,10 @@ import io
 import openpyxl
 from frappe.utils import cint, get_site_url, get_url
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
+from openpyxl import load_workbook, Workbook
+from art_collections.art_collections.doctype.sales_confirmation.sales_confirmation import (
+    make_from_po,
+)
 
 
 def on_submit_purchase_order(doc, method=None):
@@ -14,6 +18,7 @@ def on_submit_purchase_order(doc, method=None):
 
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
+    """for product excel"""
 
     data, existing_art_works = [], []
     site_url = get_url()
@@ -47,7 +52,7 @@ def _make_excel_attachment(doctype, docname):
             get_url()
         ),
         (docname,),
-        as_dict=True
+        as_dict=True,
     )
 
     currency = frappe.db.get_value(doctype, docname, "currency")
@@ -124,4 +129,120 @@ def _make_excel_attachment(doctype, docname):
         out.getvalue(),
         doctype=doctype,
         docname=docname,
+        show_email_dialog=1,
     )
+
+
+@frappe.whitelist()
+def supplier_email_callback(docname):
+    frappe.db.set_value("Purchase Order", docname, "replied_to_supplier_cf", 1)
+    # create/update sales confirmation
+    sc_name = make_from_po(docname)
+    return sc_name
+
+
+@frappe.whitelist()
+def make_supplier_email_attachments(po_name):
+    """
+    1. item details excel same as Item Import template used in Data Import for items
+    2. Packaging Description.
+    3. PO Pdf
+    """
+    template_path = frappe.get_app_path(
+        "art_collections", "controllers", "item_import_template.xlsx"
+    )
+    from art_collections.controllers.item_import import get_records
+
+    template = load_workbook(template_path)
+    sheet = template["Sheet1"]
+    sheet.delete_rows(3, sheet.max_row - 1)
+
+    filter_sql = """
+    where exists (select 1 from `tabPurchase Order Item` x where x.item_code = ti.item_code and x.parent = '{}')
+    """.format(
+        po_name
+    )
+
+    kwargs = {"filter_sql": filter_sql, "doctype": "Item"}
+
+    data = get_records(**kwargs)
+
+    for row, d in enumerate(data):
+        for col, value in enumerate(d):
+            sheet.cell(row=row + 3, column=col + 1, value=value)
+    out = io.BytesIO()
+    template.save(out)
+
+    attach_file(
+        out.getvalue(),
+        doctype="Purchase Order",
+        docname=po_name,
+        file_name="Supplier Item Details %s.xlsx" % (po_name),
+        show_email_dialog=0,
+    )
+
+    # packaging description
+
+    data = frappe.db.sql(
+        """
+select 
+ti.customer_code , ti.item_code , ti.excel_designation_cf ,
+ti.description_1_cf , ti.description_2_cf , ti.description_3_cf , 
+other_language_cf , tib.barcode , nb_inner_in_outer_art , 
+ti.description 
+from tabItem ti 
+inner join `tabPurchase Order Item` tpoi on tpoi.item_code = ti.item_code and tpoi.parent = %s
+left outer join `tabItem Barcode` tib on tib.parent = ti.name  and tib.barcode_type = 'EAN'
+    """,
+        (po_name,),
+        as_list=True,
+    )
+
+    data = [PACKAGING_DESCRIPTION_HEADER] + data
+
+    wb = write_xlsx(
+        data,
+        sheet_name="Sales Confirmation Details",
+        column_widths=[20] * len(PACKAGING_DESCRIPTION_HEADER),
+        skip_rows=0,
+    )
+    out = io.BytesIO()
+    wb.save(out)
+    attach_file(
+        out.getvalue(),
+        doctype="Purchase Order",
+        docname=po_name,
+        file_name="Supplier Packaging Description %s.xlsx" % (po_name),
+        show_email_dialog=0,
+    )
+
+    # PO Pdf
+
+    out = frappe.attach_print(
+        "Purchase Order",
+        po_name,
+        print_format="",
+    )
+
+    attach_file(
+        out["fcontent"],
+        doctype="Purchase Order",
+        docname=po_name,
+        file_name="Purchase Order {} {}.xlsx".format(po_name, frappe.utils.today()),
+        show_email_dialog=1,
+        callback="supplier_email_callback",
+    )
+
+
+PACKAGING_DESCRIPTION_HEADER = [
+    "Your ref",
+    "Our Ref",
+    "Designation",
+    "DESCRIPTION 1",
+    "DESCRIPTION 2",
+    "DESCRIPTION 3",
+    "OTHER LANGUAGES ",
+    "GENCOD",
+    "INNER ",
+    "Description",
+]

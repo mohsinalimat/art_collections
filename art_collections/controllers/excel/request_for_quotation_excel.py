@@ -88,6 +88,7 @@ def _make_excel_attachment(doctype, docname, attach=False):
             out.getvalue(),
             doctype=doctype,
             docname=docname,
+            show_email_dialog=1,
         )
     else:
         frappe.response["filename"] = _("Product Excel") + ".xlsx"

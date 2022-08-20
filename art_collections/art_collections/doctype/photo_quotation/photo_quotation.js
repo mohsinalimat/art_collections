@@ -13,6 +13,21 @@ frappe.ui.form.on('Photo Quotation', {
 		}
 	},
 
+	supplier: function (frm) {
+		frappe.call({
+			method: 'art_collections.controllers.utils.set_contact_details',
+			args: {
+				party_name: frm.doc.supplier,
+				party_type: 'Supplier'
+			},
+			callback: function (r) {
+				if (r.message) {
+					frm.set_value(r.message)
+				}
+			}
+		});
+	},
+
 	add_custom_buttons: function (frm) {
 
 		frm.add_custom_button(__("Create Items"), function () {
@@ -36,7 +51,7 @@ frappe.ui.form.on('Photo Quotation', {
 				doc: frm.doc,
 				args: {}
 			}).then((r) => {
-				console.log(r.message);
+				console.log('Created PO: ', r.message);
 				frappe.set_route("Form", "Purchase Order", r.message);
 			});
 		}, __("Create"));
@@ -44,17 +59,36 @@ frappe.ui.form.on('Photo Quotation', {
 
 
 		frm.add_custom_button(__("Bulk Photo Import"), function () {
-			new frappe.ui.FileUploader({
-				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.import_lead_item_photos",
-				doctype: frm.doctype,
-				docname: frm.docname,
-				frm: frm,
-				folder: 'Home/Attachments',
-				on_success: (file_doc) => {
-					// console.log(file_doc);
-				}
-			})
+			var file_num = 0,
+				fup = new frappe.ui.FileUploader({
+					method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.import_lead_item_photos",
+					doctype: frm.doctype,
+					docname: frm.docname,
+					frm: frm,
+					folder: 'Home/Attachments',
+					on_success: (file_doc) => {
+						file_num++;
+						if (file_num == fup.uploader.files.length) {
+							frm.reload_doc();
+						}
+					}
+				});
+
+			console.log(fup);
 		}, __("Tools"));
+
+		frm.add_custom_button(__("Delete all Lead Items"), function () {
+			frappe.dom.freeze(__("Deleting Lead Items for {0}", [frm.doc.name]));
+			return frm.call({
+				method: 'delete_all_lead_items',
+				doc: frm.doc,
+				args: {}
+			}).then((r) => {
+				frm.reload_doc();
+				frappe.dom.unfreeze();
+			});
+		}, __("Tools"));
+
 
 
 		frm.add_custom_button(__("Email Supplier for Quotation"), function () {
@@ -126,6 +160,22 @@ frappe.ui.form.on('Photo Quotation', {
 				docname: cur_frm.doc.name,
 				template: template
 			});
+	},
+
+	supplier_quotation_email_callback: function (frm) {
+		// set status after email is sent
+		setTimeout(() => {
+			frappe.call({
+				method: "art_collections.art_collections.doctype.photo_quotation.photo_quotation.supplier_quotation_email_callback",
+				args: {
+					docname: frm.doc.name,
+				},
+				callback: function (r) {
+					frm.reload_doc()
+				},
+			});
+			// timeout to allow form to reload. else it throws document has been modified error
+		}, 400);
 	}
 });
 

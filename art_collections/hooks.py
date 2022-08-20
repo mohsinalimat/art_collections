@@ -214,6 +214,9 @@ doc_events = {
     "Stock Entry": {
         "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry"
     },
+    "Communication": {
+        "after_insert": "art_collections.controllers.utils.after_insert_communication"
+    },
 }
 
 # Scheduled Tasks
@@ -226,7 +229,7 @@ scheduler_events = {
     "cron": {
         "15 00 * * *": [
             "art_collections.item_controller.allow_order_still_stock_last",
-            "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art"
+            "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art",
         ]
     },
     "daily": ["art_collections.scheduler_task_controller.daily"]

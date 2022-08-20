@@ -37,8 +37,6 @@ def write_xlsx(
 
     ws = wb.get_sheet_by_name(sheet_name)
 
-    print("\n" * 5, ws)
-
     if not file_path:
         for i, column_width in enumerate(column_widths):
             if column_width:
@@ -83,7 +81,8 @@ def attach_file(content, **args):
     )
     _file.save()
     frappe.db.commit()
-    frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
+    if args.get("show_email_dialog"):
+        frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
 
 
 def add_images(data, workbook, worksheet="", image_col="S", skip_rows=0):

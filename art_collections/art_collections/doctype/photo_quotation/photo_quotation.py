@@ -1,8 +1,6 @@
 # Copyright (c) 2022, GreyCube Technologies and contributors
 # For license information, please see license.txt
 
-from distutils.log import debug
-from attr import field, fields
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -14,6 +12,10 @@ import io
 from erpnext import get_default_company
 from frappe.model.mapper import get_mapped_doc
 from art_collections.ean import calc_check_digit, compact, is_valid
+from art_collections.art_collections.doctype.photo_quotation.lead_items_excel import (
+    get_lead_item_fields,
+    get_items_xlsx,
+)
 
 
 class PhotoQuotation(Document):
@@ -268,54 +270,9 @@ class PhotoQuotation(Document):
         return po.name
 
     @frappe.whitelist()
-    def create_sales_confirmation(self):
-        for d in frappe.db.sql(
-            """
-			select 
-				tpo.name purchase_order , tsc.name sales_confirmation
-			from `tabPurchase Order` tpo 
-			inner join `tabPhoto Quotation` tpq on tpq.name = tpo.photo_quotation_cf and tpq.name = %s
-			left outer join `tabSales Confirmation` tsc on tsc.purchase_order = tpo.name;
-		""",
-            (self.name,),
-            as_dict=True,
-        ):
-            if d.sales_confirmation:
-                doc = frappe.get_doc("Sales Confirmation", d.sales_confirmation)
-            else:
-                doc = frappe.get_doc(
-                    {
-                        "doctype": "Sales Confirmation",
-                        "purchase_order": d.purchase_order,
-                        "supplier": self.supplier,
-                        "transaction_date": "",
-                        "confirmation_date": "",
-                        # item_code
-                        # supplier_part_no
-                        # image
-                        # barcode
-                        # supplier_item_description_ar
-                        # item_name
-                        # packing_type_art
-                        # qty_in_selling_pack_art
-                        # qty_per_inner
-                        # qty_per_outer
-                        # qty
-                        # rate
-                        # amount
-                        # total_outer_cartons_art
-                        # cbm_per_outer_art
-                        # total_cbm
-                        # customs_tariff_number
-                    }
-                )
-
-        return []
-
-    @frappe.whitelist()
-    def get_supplier_email(self, template="all"):
+    def get_supplier_email(self, template="", filters=None):
         # make supplier file and attach to PQ doc
-        content = get_items_xlsx(self.name, template, with_xlsx_template=1)
+        content = get_items_xlsx(self.name, template, filters)
 
         callback = None
         if template == "supplier_quotation":
@@ -340,33 +297,6 @@ def get_file_name(name, template):
         name,
         frappe.unscrub(template),
         now()[:16].replace(" ", "-").replace(":", ""),
-    )
-
-
-def get_lead_item_fields():
-    return [
-        frappe._dict(
-            {
-                "fieldname": "name",
-                "label": "Lead Item#",
-                "fieldtype": "text",
-            }
-        )
-    ] + frappe.db.sql(
-        """
-			select fieldname , label , 
-			case 
-				when fieldtype = 'Attach Image' then 'image'
-				when fieldtype in ('Percent', 'Int', 'Currency') then 'numeric' 
-				when fieldtype in ('Check') then 'checkbox'
-				when fieldtype in ('Date') then 'calendar'
-			else 'text' end fieldtype 
-			from tabDocField tdf where parent = 'Lead Item' 
-			and label is not null
-			and fieldname not in ('naming_series' ,'amended_from')
-			order by idx;
-	""",
-        as_dict=True,
     )
 
 
@@ -402,53 +332,6 @@ def import_lead_item_photos():
     return ret
 
 
-def get_items_xlsx(docname, template_for="all", with_xlsx_template=False):
-    fields = TEMPLATES.get(template_for) or TEMPLATES.get("all")
-    data = frappe.db.sql(
-        """
-		select {} from `tabLead Item` where photo_quotation = %s {}""".format(
-            ", ".join([f for _, f in fields]), CONDITIONS.get(template_for) or ""
-        ),
-        (docname,),
-        as_list=1,
-    )
-
-    excel_rows = [[d for d, f in fields]] + list(data)
-    images = [""] + [d[1] for d in data]
-
-    from frappe.modules import get_doc_path
-    import os
-
-    file_path, skip_rows = None, 0
-
-    if with_xlsx_template and template_for in XLSX_TEMPLATES:
-        file_path = os.path.join(
-            get_doc_path("art_collections", "doctype", "Photo Quotation"),
-            XLSX_TEMPLATES.get(template_for)["filename"],
-        )
-        skip_rows = XLSX_TEMPLATES.get(template_for)["skip_rows"]
-
-        if XLSX_TEMPLATES.get(template_for, {}).get("skip_header"):
-            excel_rows = excel_rows[1:]
-            images = images[1:]
-
-    wb = write_xlsx(
-        excel_rows,
-        sheet_name="Lead Items",
-        file_path=file_path,
-        column_widths=[20] * len(fields),
-        skip_rows=skip_rows,
-    )
-
-    add_images(
-        images, workbook=wb, worksheet="Lead Items", image_col="B", skip_rows=skip_rows
-    )
-
-    out = io.BytesIO()
-    wb.save(out)
-    return out.getvalue()
-
-
 @frappe.whitelist()
 def download_lead_items_template(docname, template):
     frappe.response["filename"] = get_file_name(docname, template)
@@ -475,82 +358,9 @@ def supplier_sample_request_email_callback(docname):
     frappe.db.set_value("Photo Quotation", docname, "is_sample_requested", 1)
 
 
-XLSX_TEMPLATES = {
-    "supplier_quotation": {
-        "filename": "photo_quotation_to_supplier_template.xlsx",
-        "skip_rows": 6,
-        "skip_header": 1,
-    }
-}
-
 EMAIL_TEMPLATES = {
     "supplier_quotation": "Photo Quotation Supplier Notification",
     "supplier_sample_request": "Photo Quotation Supplier Request for Sample Notification",
-}
-
-CONDITIONS = {
-    "all": "",
-    "supplier_quotation": " and (disabled = 0 and is_quoted = 0)",
-    "supplier_sample_request": " and (disabled = 0 and is_quoted = 1 and sample_validated = 0)",
-}
-
-TEMPLATES = {
-    "all": [(d.label, d.fieldname) for d in get_lead_item_fields()],
-    "supplier_quotation": [
-        ("Item #", "name"),
-        ("Photo", "item_photo"),
-        ("Description", "description"),
-        ("Product Material", "product_material1"),
-        ("Pourcentage", "percentage1"),
-        ("Product Material 2", "product_material2"),
-        ("Pourcentage 2", "percentage2"),
-        ("Product Material 3", "product_material3"),
-        ("Pourcentage 3", "percentage3"),
-        ("HS CODES", "customs_tariff_number"),
-        ("Item length (in cm)", "item_length"),
-        ("Item width (in cm)", "item_width"),
-        ("Item thickness (in cm)", "item_thickness"),
-        ("Packaging type", "packing_type"),
-        ("MOQ", "moq"),
-        ("Unit price (in $)", "unit_price"),
-        ("Inner Qty", "inner_qty"),
-        ("Display box?", "is_display_box"),
-        ("Special mentions?", "is_special_mentions"),
-        ("Test Report", "test_report"),
-        ("Abandoned?", "is_abandoned"),
-        ("Quoted", "is_quoted"),
-        ("Samples Validated?", "sample_validated"),
-        ("PO Created?", "is_po_created"),
-    ],
-    "supplier_sample_request": [
-        ("Item #", "name"),
-        ("Photo", "item_photo"),
-        ("Disabled", "disabled"),
-        ("Quoted", "is_quoted"),
-        ("Samples validated", "sample_validated"),
-        ("PO created", "is_po_created"),
-        ("Your Item code", "supplier_part_no"),
-        ("Your description", "supplier_item_description"),
-        ("Product Material 1", "product_material1"),
-        ("Pourcentage 1", "percentage1"),
-        ("Product Material 2", "product_material2"),
-        ("Pourcentage 2", "percentage2"),
-        ("Product Material 3", "product_material3"),
-        ("Pourcentage 3", "percentage3"),
-        ("HS CODES", "customs_tariff_number"),
-        ("Item length", "item_length"),
-        ("item width", "item_width"),
-        ("Item thickness", "item_thickness"),
-        ("Packaging Type", "packing_type"),
-        ("Racking bag", "racking_bag"),
-        ("MOQ", "moq"),
-        ("Unit Price (in $)", "unit_price"),
-        ("Inner Qty", "inner_qty"),
-        ("Display box ?", "is_display_box"),
-        ("Spécial mentions ?", "is_special_mentions"),
-        ("Certificates Required", "is_certificates_reqd"),
-        ("Port Of Loading", "port_of_loading"),
-    ],
 }
 
 LEAD_ITEM_MANDATORY_FIELDS = [

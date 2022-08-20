@@ -96,7 +96,8 @@ frappe.ui.form.on('Photo Quotation', {
 				method: 'get_supplier_email',
 				doc: frm.doc,
 				args: {
-					template: "supplier_quotation"
+					template: "lead_items_supplier_template",
+					filters: 'supplier_quotation'
 				}
 			});
 		}, __("Tools"));
@@ -107,7 +108,8 @@ frappe.ui.form.on('Photo Quotation', {
 				method: 'get_supplier_email',
 				doc: frm.doc,
 				args: {
-					template: "supplier_sample_request"
+					template: "lead_items_supplier_template",
+					filters: 'supplier_sample_request'
 				}
 			});
 		}, __("Tools"));
@@ -154,11 +156,15 @@ frappe.ui.form.on('Photo Quotation', {
 		// const workbook = XLSX.utils.book_new();
 		// XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Items');
 		// XLSX.writeFile(workbook, cur_frm.doc.name + "-Lead Items.xlsx");
+
+		let xlsx_template = ['supplier_quotation', 'supplier_sample_request'].includes(template) ? 'lead_items_supplier_template' : 'lead_items_art_template';
+
 		open_url_post(
 			'/api/method/art_collections.art_collections.doctype.photo_quotation.photo_quotation.download_lead_items_template'
 			, {
 				docname: cur_frm.doc.name,
-				template: template
+				template: xlsx_template,
+				filters: template
 			});
 	},
 
@@ -258,10 +264,9 @@ function make_items_grid(frm) {
 		jSuites.dropdown(document.getElementById('templates'), {
 			data: [
 				{ text: 'Artyfetes', value: 'artyfetes' },
-				{ text: 'Supplier', value: 'supplier_quotation' },
+				{ text: 'Supplier Quotation', value: 'supplier_quotation' },
 				{ text: 'Sample Request', value: 'supplier_sample_request' },
-				{ text: 'Create Items', value: 'create_items' },
-				{ text: 'All Columns', value: 'all' },
+				{ text: 'Create Items', value: 'create_lead_items' },
 			],
 			placeholder: "Select Template to Dowmload",
 			width: '240px',
@@ -275,3 +280,4 @@ function make_items_grid(frm) {
 	}
 
 }
+

@@ -42,12 +42,20 @@ class PhotoQuotation(Document):
 
     @frappe.whitelist()
     def update_lead_items(self, items=[]):
+        meta = frappe.get_meta("Lead Item")
         fields = [d.fieldname for d in get_lead_item_fields()]
         for d in items:
             if not d[0]:
                 continue
-            doc = frappe.get_doc("Lead Item", d[0])
-            doc.update(dict(zip(fields, d)))
+            doc = frappe.get_doc(
+                "Lead Item", {"name": d[0], "photo_quotation": self.name}
+            )
+            for idx, f in enumerate(fields):
+                value = d[idx]
+                if meta.get_field(f) and meta.get_field(f).get("fieldtype") == "Check":
+                    value = cint(value)
+                if d[idx]:
+                    doc.update({f: value})
             doc.save()
 
     @frappe.whitelist()

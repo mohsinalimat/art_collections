@@ -162,5 +162,5 @@ function set_sheet_ref(ws, skip_rows = 0) {
 			break
 		}
 	}
-	ws['!ref'] = "A6:Q" + rowNum;
+	ws['!ref'] = XLSX.utils.encode_cell({ r: skip_rows + 1, c: 1 }) + ":Q" + rowNum;
 }

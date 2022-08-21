@@ -118,6 +118,7 @@ frappe.ui.form.on('Photo Quotation', {
 
 	before_save: function (frm) {
 		let data = frm.items_table.getData();
+
 		return frm.call({
 			method: 'update_lead_items',
 			doc: frm.doc,
@@ -132,13 +133,11 @@ frappe.ui.form.on('Photo Quotation', {
 			as_dataurl: true,
 			allow_multiple: false,
 			on_success(file) {
-				debugger;
 				var reader = new FileReader();
 				reader.onload = function (e) {
 					var workbook = XLSX.read(e.target.result);
-					var csv = XLSX.utils.sheet_to_csv(workbook.Sheets['Lead Items']);
-					var data = frappe.utils.csv_to_array(csv);
-					frm.items_table.setData(data.slice(1));
+					let data = get_excel_data(workbook, 'Lead Items', 'configuration')
+					frm.items_table.setData(data);
 					frm.dirty();
 				}
 				reader.readAsArrayBuffer(file.file_obj)
@@ -221,7 +220,8 @@ function make_items_grid(frm) {
 		let columns = r.message.columns.map(t => {
 			return {
 				title: t.label,
-				type: t.fieldtype
+				type: t.fieldtype,
+				fieldname: t.fieldname
 			}
 		})
 
@@ -281,3 +281,57 @@ function make_items_grid(frm) {
 
 }
 
+function get_excel_data(workbook, data_sheet, configuration_sheet) {
+	// excel
+	// read configuration sheet for skip rows and field names
+	let config_ws = workbook.Sheets[configuration_sheet];
+	set_sheet_range(config_ws, 1, 2)
+	let aoa = frappe.utils.csv_to_array(XLSX.utils.sheet_to_csv(config_ws));
+	let skip_rows = cint(aoa[0][2]);
+	var excel_columns = aoa.map(i => i[1])
+
+	// get data from Lead Items
+	let ws = workbook.Sheets['Lead Items'];
+	set_sheet_range(ws, skip_rows, excel_columns.length)
+	let csv = XLSX.utils.sheet_to_csv(ws);
+	var data = frappe.utils.csv_to_array(csv);
+
+	// get columns in grid, and reshape excel as per grid columns
+	let grid_columns = items_table.getConfig().columns.map(t => t.fieldname);
+	let grid_data = items_table.getData()
+
+	let values = [], item = [], idx = -1;
+	for (const row of data) {
+		item = grid_data.filter(t => t[0] === row[0])
+		if (item.length) {
+			item = item[0];
+		} else {
+			// initialize blank array
+			item = Array.from({ length: grid_columns.length }, (v, i) => null);
+		}
+
+		grid_columns.forEach((col, i) => {
+			idx = excel_columns.indexOf(col);
+			if (idx > -1 && row[idx] && row[idx] != "") {
+				item[i] = row[idx]
+			}
+		});
+		values.push(item)
+	}
+	return values;
+}
+
+function set_sheet_range(ws, skip_rows, column_count) {
+	let ref = XLSX.utils.decode_range(ws["!ref"]);
+	let max_row = skip_rows;
+	while (true) {
+		var nextCell = ws[XLSX.utils.encode_cell({ r: max_row, c: 1 })];
+		if ((typeof nextCell === 'undefined') || (nextCell == ""))
+			break;
+		max_row++;
+	}
+	ref.s.r = skip_rows;
+	ref.e.r = max_row - 1;
+	ref.e.c = column_count;
+	ws["!ref"] = XLSX.utils.encode_range(ref)
+}

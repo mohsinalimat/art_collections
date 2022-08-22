@@ -1,4 +1,18 @@
 frappe.ui.form.on('Customer', {
+	onload: function(frm) {
+        if (frm.is_new()==undefined) {
+            frm.set_query('address_title','customer_sales_person',function(doc, cdt, cdn) {
+                return {
+                    query: 'art_collections.api.get_filtered_address_list',
+                    filters: {
+                        'name': frm.doc.name,
+                        'doctype':frm.doc.doctype
+                    }
+                };
+            });            
+        }
+
+	},    
     territory: function (frm) {
         if (frm.doc.territory) {
             frappe.call('art_collections.customer_controller.get_payment_terms_based_on_territory', {
@@ -122,29 +136,73 @@ frappe.ui.form.on('Customer', {
                         if (r.message) {
                             var no_change=true
                             var customer_address_list=r.message
-                            if (customer_address_list.length==frm.doc.customer_sales_person.length) {
-                                customer_address_list.forEach(function (row,i) {
-                                    if (row.name!=frm.doc.customer_sales_person[i].address_title) {
-                                        no_change=false;
-                                        console.log('title not amtch'+i)
-                                    }
-                                });                       
-                                
-                            } else {
-                                console.log('leng not match')
-                                no_change=false
-                            }
-                            if (no_change==false) {
+                            if (customer_address_list.length==0){
                                 frm.doc.customer_sales_person=undefined
-                                customer_address_list.forEach(function (row,i) {
-                                    console.log(i)
-                                    var child = cur_frm.add_child("customer_sales_person");
-                                    frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
-                                }); 
                                 frm.refresh_field("customer_sales_person")
-                                frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
-                                                         
+                                frappe.show_alert({message:__("No address present, hence  'Customer Sales Person' table is empty"), indicator:'green'});
                             }
+                            else if (customer_address_list.length>0){
+                                let existing_sales_persons=frm.doc.customer_sales_person
+                               
+                                for (let index = 0; index < existing_sales_persons.length; index++) {
+                                    let found_existing=false
+                                    debugger
+                                    let address_title=existing_sales_persons[index].address_title;
+                                    customer_address_list.forEach(function (row,i) {
+                                        if (row.name==address_title) {
+                                            found_existing=true
+                                        }
+                                    });    
+                                    if (found_existing==false) {
+                                        frappe.show_alert({message:__("Address <b>{0}</b> is removed from 'Customer Sales Person' table",[address_title]), indicator:'yellow'});
+                                        cur_frm.get_field('customer_sales_person').grid.grid_rows[index].remove();
+                                    }     
+
+                                    
+                                }
+                                frm.refresh_field("customer_sales_person")
+                               
+                                customer_address_list.forEach(function (row,i) {
+                                    let is_it_a_new_address=true
+                                    for (let index = 0; index < existing_sales_persons.length; index++) {
+                                        let address_title=existing_sales_persons[index].address_title;
+                                        if (row.name==address_title) {
+                                            is_it_a_new_address=false
+                                        }                                        
+                                    }
+                                    if (is_it_a_new_address==true) {
+                                        var child = cur_frm.add_child("customer_sales_person");
+                                        frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
+                                        frm.refresh_field("customer_sales_person")
+                                        frappe.show_alert({message:__("Please add sales person againt address <b>{0}</b> in 'Customer Sales Person' table",[row.name]), indicator:'yellow'});                                         
+                                    } 
+                                });
+
+                            }
+
+                            // if (customer_address_list.length==frm.doc.customer_sales_person.length) {
+                            //     customer_address_list.forEach(function (row,i) {
+                            //         if (row.name!=frm.doc.customer_sales_person[i].address_title) {
+                            //             no_change=false;
+                            //             console.log('title not amtch'+i)
+                            //         }
+                            //     });                       
+                                
+                            // } else {
+                            //     console.log('leng not match')
+                            //     no_change=false
+                            // }
+                            // if (no_change==false) {
+                            //     frm.doc.customer_sales_person=undefined
+                            //     customer_address_list.forEach(function (row,i) {
+                            //         console.log(i)
+                            //         var child = cur_frm.add_child("customer_sales_person");
+                            //         frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
+                            //     }); 
+                            //     frm.refresh_field("customer_sales_person")
+                            //     frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
+                                                         
+                            // }
                         }
                     }
                 });

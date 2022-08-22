@@ -6,6 +6,7 @@ from frappe.utils import nowdate,add_days
 from frappe.utils import getdate,format_date
 import json
 from frappe.desk.notifications import get_filters_for
+from frappe.desk.reportview import get_match_cond
 
 @frappe.whitelist()
 def get_sales_person_based_on_address(address=None):
@@ -18,6 +19,26 @@ where address.name=%s""",address,as_dict=True)
         return sales_person[0] if sales_person else None
     else:
         return None
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_filtered_address_list(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql(
+		"""SELECT
+				parent
+			FROM
+				`tabDynamic Link`
+			WHERE
+				parenttype = 'Address'and
+				link_doctype =%(doctype)s and 
+				link_name = %(name)s
+		limit {start}, {page_len}""".format(
+			match_cond=get_match_cond(doctype), start=start, page_len=page_len
+		),
+		{"txt": "%{0}%".format(txt), "_txt": txt.replace("%", ""), "name": filters["name"], "doctype": filters["doctype"]},
+	)
+
 
 @frappe.whitelist()
 def get_address_list(name,doctype):

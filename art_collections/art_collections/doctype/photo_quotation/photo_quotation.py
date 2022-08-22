@@ -278,9 +278,11 @@ class PhotoQuotation(Document):
         return po.name
 
     @frappe.whitelist()
-    def get_supplier_email(self, template="", filters=None):
+    def get_supplier_email(self, template="", supplier=None, filters=None):
         # make supplier file and attach to PQ doc
-        content = get_items_xlsx(self.name, template, filters)
+        content = get_items_xlsx(
+            self.name, template=template, supplier=supplier, filters=filters
+        )
 
         callback = None
         if template == "supplier_quotation":

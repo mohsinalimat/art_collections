@@ -7,9 +7,12 @@ from frappe.utils import now, cstr, cint, add_days, today, add_to_date
 import json
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 import openpyxl
+from openpyxl.styles.alignment import Alignment
 import io
 import os
 from openpyxl import load_workbook
+from erpnext.accounts.party import get_party_details
+import re
 
 
 def get_lead_item_fields():
@@ -39,7 +42,7 @@ def get_lead_item_fields():
     )
 
 
-def get_items_xlsx(docname, template="", filters=None):
+def get_items_xlsx(docname, template="", supplier=None, filters=None):
     SHEET_NAME = "Lead Items"
 
     template_file_path = os.path.join(os.path.dirname(__file__), template + ".xlsx")
@@ -78,6 +81,18 @@ def get_items_xlsx(docname, template="", filters=None):
     )
     wb.active = wb[SHEET_NAME]
 
+    # set supplier details
+    if template == "lead_items_supplier_template" and supplier:
+        wb[SHEET_NAME]["R1"] = re.sub(
+            "<br>",
+            "\n\n",
+            frappe.render_template(
+                SUPPLIER_DISPLAY_TEMPLATE,
+                get_party_details(supplier, party_type="Supplier"),
+            ),
+        )
+        wb[SHEET_NAME]["R1"].alignment = Alignment(horizontal="left")
+
     out = io.BytesIO()
     wb.save(out)
     return out.getvalue()
@@ -89,3 +104,11 @@ LEAD_ITEM_CONDITIONS = {
     "create_lead_items": " and (disabled = 0 and sample_validated = 1)",
     "artyfetes": "",
 }
+
+SUPPLIER_DISPLAY_TEMPLATE = """
+{{supplier_name}}
+{{address_display}}
+{{contact_person}}
+{{contact_mobile}}
+{{contact_email}}
+"""

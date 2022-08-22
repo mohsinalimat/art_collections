@@ -97,6 +97,7 @@ frappe.ui.form.on('Photo Quotation', {
 				doc: frm.doc,
 				args: {
 					template: "lead_items_supplier_template",
+					supplier: frm.doc.supplier,
 					filters: 'supplier_quotation'
 				}
 			});
@@ -109,6 +110,7 @@ frappe.ui.form.on('Photo Quotation', {
 				doc: frm.doc,
 				args: {
 					template: "lead_items_supplier_template",
+					supplier: frm.doc.supplier,
 					filters: 'supplier_sample_request'
 				}
 			});

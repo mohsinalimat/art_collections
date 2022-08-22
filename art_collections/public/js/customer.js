@@ -146,7 +146,6 @@ frappe.ui.form.on('Customer', {
                                
                                 for (let index = 0; index < existing_sales_persons.length; index++) {
                                     let found_existing=false
-                                    debugger
                                     let address_title=existing_sales_persons[index].address_title;
                                     customer_address_list.forEach(function (row,i) {
                                         if (row.name==address_title) {
@@ -179,30 +178,6 @@ frappe.ui.form.on('Customer', {
                                 });
 
                             }
-
-                            // if (customer_address_list.length==frm.doc.customer_sales_person.length) {
-                            //     customer_address_list.forEach(function (row,i) {
-                            //         if (row.name!=frm.doc.customer_sales_person[i].address_title) {
-                            //             no_change=false;
-                            //             console.log('title not amtch'+i)
-                            //         }
-                            //     });                       
-                                
-                            // } else {
-                            //     console.log('leng not match')
-                            //     no_change=false
-                            // }
-                            // if (no_change==false) {
-                            //     frm.doc.customer_sales_person=undefined
-                            //     customer_address_list.forEach(function (row,i) {
-                            //         console.log(i)
-                            //         var child = cur_frm.add_child("customer_sales_person");
-                            //         frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
-                            //     }); 
-                            //     frm.refresh_field("customer_sales_person")
-                            //     frappe.show_alert({message:__("Please add sales person againt address in 'Customer Sales Person' table"), indicator:'yellow'});                                    
-                                                         
-                            // }
                         }
                     }
                 });

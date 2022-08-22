@@ -91,8 +91,13 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2022-08-20 05:57:18.894027",
+ "links": [
+  {
+   "link_doctype": "Purchase Order",
+   "link_fieldname": "photo_quotation_cf"
+  }
+ ],
+ "modified": "2022-08-22 05:25:50.811117",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

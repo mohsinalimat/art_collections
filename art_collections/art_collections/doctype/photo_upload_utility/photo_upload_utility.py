@@ -131,7 +131,7 @@ def upload_photo_files(start_time):
             item_code_in_fname=None
             suffix_in_fname=None
             reason=None
-            fname=filename.lower()
+            fname=filename
 
             # Extract suffix and item_code from file name
             item_code_in_fname,suffix_in_fname,count_in_fname,extn,reason=extract_meta_from_filename(fname)
@@ -140,27 +140,33 @@ def upload_photo_files(start_time):
                     reason='not_an_image_file'
                 elif frappe.db.exists("File", {"file_name": fname}):
                     reason='duplicate_entry'
+                elif check_duplicate_content(dirpath, filename)!=None:
+                    reason=check_duplicate_content(dirpath, filename)
                 elif item_code_in_fname not in list_of_item_code:
                     reason='item_code_doesnot_exist'
+                elif ((suffix_in_fname not in single_file_suffix) and (suffix_in_fname not in multi_file_suffix)):   
+                    reason='not_a_valid_suffix' 
                 elif suffix_in_fname:
                     if (suffix_in_fname in single_file_suffix):
                         reason=None
                         suffix_heading=heading(suffix_in_fname,count_in_fname)
                     elif (suffix_in_fname in multi_file_suffix ):
+                        file_count_from_db=get_count_of_image_type(item_code_in_fname,suffix_in_fname)
+                        if file_count_from_db!=None:
+                            next_count=int(int(file_count_from_db)+1)
+                        else:
+                            next_count=None
                         if int(count_in_fname)>0: 
-                            file_count_from_db=get_count_of_image_type(item_code_in_fname,suffix_in_fname)
-                            if file_count_from_db!=None:
-                                next_count=int(int(file_count_from_db)+1)
-                                if count_in_fname==next_count:
-                                    suffix_heading=heading(suffix_in_fname,count_in_fname)
-                                    reason=None
-                                else:
-                                    reason='incorrect_suffix_count_it_should_be_'+str(next_count)
-                        elif int(count_in_fname)==0:
+                            if count_in_fname==next_count:
+                                suffix_heading=heading(suffix_in_fname,count_in_fname)
+                                reason=None
+                            else:
+                                reason='incorrect_suffix_count_it_should_be_'+str(next_count)
+                        elif int(count_in_fname)==0 and next_count==None:
                                 suffix_heading=heading(suffix_in_fname,count_in_fname)
                                 reason=None                                         
                         else:
-                            reason='incorrect_suffix_count'
+                            reason='incorrect_suffix_count. count should be '+ str(next_count)
                     else:
                         reason='incorrect_suffix'
             if reason:
@@ -303,6 +309,25 @@ def add_comment(dt,dn):
                 "file_name": file_doc.file_name or file_doc.file_url
             })))
 
+def check_duplicate_content(dirpath, filename):
+    from frappe.core.doctype.file.file import get_content_hash
+
+    fileobj=open(os.path.join(dirpath, filename), 'rb')
+    content=fileobj.read()
+    content_hash = get_content_hash(content)
+    duplicate_file = frappe.get_value(
+        "File",
+        {"content_hash": content_hash},
+        ["file_url", "name"],
+        as_dict=True,
+    )
+
+    if duplicate_file:
+        reason='duplicate_content_with_filename_'+duplicate_file.name    
+    else:
+        reason=None
+    return reason
+
 def heading(i,count=None):
     if not bool(switcher):
         header_seperator='_'
@@ -355,13 +380,13 @@ def get_count_of_image_type(item_code,suffix):
     if suffix=='item_code':
         data = frappe.db.sql("""
     select
-        IF (STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '(', -1), ')', 1), LOWER(file_name))= 0,
+        IF (STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '(', -1), ')', 1), SUBSTRING_INDEX(LOWER(file_url), '/files/', -1))= 0,
         '0',
-        SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '(', -1), ')', 1)) as file_count_from_db	
+        SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '(', -1), ')', 1)) as file_count_from_db	
     FROM
         `tabFile`
     where
-        STRCMP(IF(STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '-', -1),'.',1),' ',1),attached_to_name)=0,'item_code',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '-', -1),'.',1)), %s)= 0 
+        STRCMP(IF(STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '-', -1),'.',1),' ',1),attached_to_name)=0,'item_code',SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '-', -1),'.',1)), %s)= 0 
         and
         attached_to_name =  %s
     ORDER BY
@@ -370,13 +395,13 @@ def get_count_of_image_type(item_code,suffix):
     else:    
         data = frappe.db.sql("""
     select
-        IF (STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '(', -1), ')', 1), LOWER(file_name))= 0,
+        IF (STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '(', -1), ')', 1), SUBSTRING_INDEX(LOWER(file_url), '/files/', -1))= 0,
         '0',
-        SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '(', -1), ')', 1)) as file_count_from_db
+        SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '(', -1), ')', 1)) as file_count_from_db
     FROM
         `tabFile`
     where
-        STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_name), '-', -1), '.', 1), ' ', 1), %s)= 0
+        STRCMP(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER(file_url), '/files/', -1), '-', -1), '.', 1), ' ', 1), %s)= 0
         and attached_to_name =  %s
     ORDER BY
         CAST(file_count_from_db AS UNSIGNED)DESC""", (suffix,item_code))

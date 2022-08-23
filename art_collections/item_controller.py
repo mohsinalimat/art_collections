@@ -71,15 +71,6 @@ def update_flag_table(self):
 	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
 
 
-def set_item_code_for_pre_item(self,method):
-	if self.is_pre_item_art==1:
-		pre_item_naming_series_art= self.meta.get_field("pre_item_naming_series_art").options
-		from frappe.model.naming import make_autoname
-		self.name=make_autoname(pre_item_naming_series_art, "", self)
-		self.item_code = self.name
-		self.is_stock_item=1
-		self.include_item_in_manufacturing=0
-		self.is_sales_item=0	
 
 @frappe.whitelist()
 def get_item_art_dashboard_data(item_code):

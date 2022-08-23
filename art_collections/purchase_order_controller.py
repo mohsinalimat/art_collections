@@ -83,7 +83,6 @@ def fill_item_pack_details(self):
 
 
 def purchase_order_custom_on_submit(self, method):
-    purchase_order_convert_preorder_item(self, method)
 
     # previous logic based on expected_delivery_date
     # purchase_order_update_delivery_date_of_item(self,method)
@@ -106,42 +105,6 @@ def set__availability_date_to_blank_for_item_based_on_po_shipping_date_art(self,
             frappe.msgprint(_("Availability date for item {0} is set to blank.".format(
                         po_item.item_code)),indicator="orage",alert=True)                
 
-
-def purchase_order_convert_preorder_item(self, method):
-    purchase_order_items = self.get("items")
-    for item in purchase_order_items:
-        item_doc = frappe.get_doc("Item", item.item_code)
-        if item_doc.is_pre_item_art == 1:
-            from art_collections.ean import calc_check_digit, compact
-            from stdnum import ean
-            from frappe.model.rename_doc import rename_doc
-
-            # id = frappe.db.sql("""SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0""")[0][0]
-            id = (
-                frappe.db.sql(
-                    """SELECT (max(t1.item_code) + 1) id FROM `tabItem` t1 WHERE  cast(t1.item_code AS UNSIGNED)!=0 and t1.item_code like '79%'"""
-                )[0][0]
-                or 79000
-            )
-            if id:
-                id = str(int(id))
-                new = rename_doc("Item", old=item_doc.name, new=id, merge=False)
-                # new
-                item_doc = frappe.get_doc("Item", new)
-                item_doc.is_pre_item_art = 0
-                item_doc.is_stock_item = 1
-                item_doc.is_sales_item = 1
-                domain = "3700091"
-                code_brut = compact(domain + item_doc.item_code)
-                key = calc_check_digit(code_brut)
-                barcode = code_brut + key
-                if ean.is_valid(str(barcode)) == True:
-                    row = item_doc.append("barcodes", {})
-                    row.barcode = barcode
-                    row.barcode_type = "EAN"
-                    item_doc.save(ignore_permissions=True)
-            else:
-                frappe.throw(_("Conversion failed for Pre Item. New id not found."))
 
 
 # def purchase_order_update_delivery_date_of_item(self, method):

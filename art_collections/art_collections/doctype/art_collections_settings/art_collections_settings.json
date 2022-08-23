@@ -1,238 +1,252 @@
 {
-    "actions": [],
-    "creation": "2021-08-20 08:22:57.250219",
-    "doctype": "DocType",
-    "editable_grid": 1,
-    "engine": "InnoDB",
-    "field_order": [
-     "picker_role",
-     "item_availability_buffer_days",
-     "column_break_2",
-     "use_pos_in_offline_mode",
-     "barcode_domain",
-     "warehouse_type_sb_section",
-     "saleable_warehouse_type",
-     "damage_warehouse_type",
-     "reserved_warehouse_type",
-     "default_email_template_sb_section",
-     "welcome_email_template",
-     "cb_et_1",
-     "selling_pack_invalid_qty_so_notification",
-     "item_defaults_section",
-     "inner_carton_uom",
-     "outer_carton_uom",
-     "maxi_inner_carton_uom",
-     "product_uom",
-     "pallet_uom",
-     "dummy_item",
-     "section_break_17",
-     "filling_percentage_for_20_foot_container",
-     "filling_percentage_for_40_foot_container",
-     "auto_email_sb_section",
-     "art_auto_email_template",
-     "photo_upload_utility_section",
-     "art_photo_types"
-    ],
-    "fields": [
-     {
-      "fieldname": "picker_role",
-      "fieldtype": "Link",
-      "label": "Picker Role",
-      "options": "Role"
-     },
-     {
-      "fieldname": "column_break_2",
-      "fieldtype": "Column Break"
-     },
-     {
-      "default": "1",
-      "fieldname": "use_pos_in_offline_mode",
-      "fieldtype": "Check",
-      "label": "Use POS in Offline Mode"
-     },
-     {
-      "fieldname": "warehouse_type_sb_section",
-      "fieldtype": "Section Break",
-      "label": "Warehouse Type"
-     },
-     {
-      "fieldname": "saleable_warehouse_type",
-      "fieldtype": "Table MultiSelect",
-      "label": "Saleable Warehouse Type",
-      "options": "Art Warehouse Types"
-     },
-     {
-      "fieldname": "damage_warehouse_type",
-      "fieldtype": "Table MultiSelect",
-      "label": "Damage Warehouse Type",
-      "options": "Art Warehouse Types"
-     },
-     {
-      "fieldname": "reserved_warehouse_type",
-      "fieldtype": "Table MultiSelect",
-      "label": "Reserved Warehouse Type",
-      "options": "Art Warehouse Types"
-     },
-     {
-      "fieldname": "default_email_template_sb_section",
-      "fieldtype": "Section Break",
-      "label": "Default Email Template & Notification"
-     },
-     {
-      "description": "To set item required by date in purchase order",
-      "fieldname": "item_availability_buffer_days",
-      "fieldtype": "Int",
-      "label": "Item Availability Buffer Days "
-     },
-     {
-      "fieldname": "item_defaults_section",
-      "fieldtype": "Section Break",
-      "label": "UOMs"
-     },
-     {
-      "fieldname": "inner_carton_uom",
-      "fieldtype": "Link",
-      "label": "Inner Carton UOM ",
-      "options": "UOM",
-      "reqd": 1
-     },
-     {
-      "fieldname": "outer_carton_uom",
-      "fieldtype": "Link",
-      "label": "Outer Carton UOM",
-      "options": "UOM",
-      "reqd": 1
-     },
-     {
-      "fieldname": "product_uom",
-      "fieldtype": "Link",
-      "label": "Product UOM",
-      "options": "UOM"
-     },
-     {
-      "fieldname": "cb_et_1",
-      "fieldtype": "Column Break"
-     },
-     {
-      "description": "It will be fired when a Sales Order is submitted having an item for which the selling pack is not in the multiple of the inner carton.",
-      "fieldname": "selling_pack_invalid_qty_so_notification",
-      "fieldtype": "Link",
-      "label": "Selling Pack Invalid Qty Sales Order Notification",
-      "options": "Notification"
-     },
-     {
-      "fieldname": "section_break_17",
-      "fieldtype": "Section Break"
-     },
-     {
-      "fieldname": "filling_percentage_for_20_foot_container",
-      "fieldtype": "Int",
-      "label": "Filling % for 20 Foot Container"
-     },
-     {
-      "fieldname": "filling_percentage_for_40_foot_container",
-      "fieldtype": "Int",
-      "label": "Filling % for 40 Foot Container"
-     },
-     {
-      "fieldname": "maxi_inner_carton_uom",
-      "fieldtype": "Link",
-      "label": "Maxi Inner Carton",
-      "options": "UOM",
-      "reqd": 1
-     },
-     {
-      "fieldname": "auto_email_sb_section",
-      "fieldtype": "Section Break",
-      "label": "Art Auto Email Template"
-     },
-     {
-      "fieldname": "art_auto_email_template",
-      "fieldtype": "Table",
-      "options": "Art Auto Email Template",
-      "reqd": 1
-     },
-     {
-      "fieldname": "pallet_uom",
-      "fieldtype": "Link",
-      "in_list_view": 1,
-      "label": "Pallet UOM",
-      "options": "UOM",
-      "reqd": 1
-     },
-     {
-      "fieldname": "dummy_item",
-      "fieldtype": "Link",
-      "label": "Dummy Item",
-      "options": "Item",
-      "reqd": 1
-     },
-     {
-      "fieldname": "photo_upload_utility_section",
-      "fieldtype": "Section Break",
-      "label": "Photo Upload Utility"
-     },
-     {
-      "description": "Code: item_code is required",
-      "fieldname": "art_photo_types",
-      "fieldtype": "Table",
-      "options": "Art Photo Type Detail",
-      "reqd": 1
-     },
-     {
-      "fieldname": "welcome_email_template",
-      "fieldtype": "Link",
-      "label": "Welcome Email Template",
-      "options": "Email Template"
-     },
-     {
-      "fieldname": "barcode_domain",
-      "fieldtype": "Data",
-      "label": "Barcode Domain"
-     }
-    ],
-    "index_web_pages_for_search": 1,
-    "issingle": 1,
-    "links": [],
-    "modified": "2022-08-20 06:13:31.826753",
-    "modified_by": "Administrator",
-    "module": "Art Collections",
-    "name": "Art Collections Settings",
-    "owner": "Administrator",
-    "permissions": [
-     {
-      "create": 1,
-      "delete": 1,
-      "email": 1,
-      "print": 1,
-      "read": 1,
-      "role": "System Manager",
-      "share": 1,
-      "write": 1
-     },
-     {
-      "email": 1,
-      "print": 1,
-      "read": 1,
-      "role": "Item Manager",
-      "share": 1
-     },
-     {
-      "email": 1,
-      "print": 1,
-      "read": 1,
-      "role": "Sales Manager",
-      "share": 1
-     },
-     {
-      "email": 1,
-      "print": 1,
-      "read": 1,
-      "role": "Sales User",
-      "share": 1
-     }
-    ],
-    "sort_field": "modified",
-    "sort_order": "DESC",
-    "track_changes": 1
-   }
+ "actions": [],
+ "creation": "2021-08-20 08:22:57.250219",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "picker_role",
+  "item_availability_buffer_days",
+  "column_break_2",
+  "use_pos_in_offline_mode",
+  "barcode_domain",
+  "warehouse_type_sb_section",
+  "saleable_warehouse_type",
+  "damage_warehouse_type",
+  "reserved_warehouse_type",
+  "default_email_template_sb_section",
+  "welcome_email_template",
+  "photo_quotation_supplier_quotation",
+  "cb_et_1",
+  "selling_pack_invalid_qty_so_notification",
+  "photo_quotation_supplier_sample_request",
+  "item_defaults_section",
+  "inner_carton_uom",
+  "outer_carton_uom",
+  "maxi_inner_carton_uom",
+  "product_uom",
+  "pallet_uom",
+  "dummy_item",
+  "section_break_17",
+  "filling_percentage_for_20_foot_container",
+  "filling_percentage_for_40_foot_container",
+  "auto_email_sb_section",
+  "art_auto_email_template",
+  "photo_upload_utility_section",
+  "art_photo_types"
+ ],
+ "fields": [
+  {
+   "fieldname": "picker_role",
+   "fieldtype": "Link",
+   "label": "Picker Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_pos_in_offline_mode",
+   "fieldtype": "Check",
+   "label": "Use POS in Offline Mode"
+  },
+  {
+   "fieldname": "warehouse_type_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Warehouse Type"
+  },
+  {
+   "fieldname": "saleable_warehouse_type",
+   "fieldtype": "Table MultiSelect",
+   "label": "Saleable Warehouse Type",
+   "options": "Art Warehouse Types"
+  },
+  {
+   "fieldname": "damage_warehouse_type",
+   "fieldtype": "Table MultiSelect",
+   "label": "Damage Warehouse Type",
+   "options": "Art Warehouse Types"
+  },
+  {
+   "fieldname": "reserved_warehouse_type",
+   "fieldtype": "Table MultiSelect",
+   "label": "Reserved Warehouse Type",
+   "options": "Art Warehouse Types"
+  },
+  {
+   "fieldname": "default_email_template_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Default Email Template & Notification"
+  },
+  {
+   "description": "To set item required by date in purchase order",
+   "fieldname": "item_availability_buffer_days",
+   "fieldtype": "Int",
+   "label": "Item Availability Buffer Days "
+  },
+  {
+   "fieldname": "item_defaults_section",
+   "fieldtype": "Section Break",
+   "label": "UOMs"
+  },
+  {
+   "fieldname": "inner_carton_uom",
+   "fieldtype": "Link",
+   "label": "Inner Carton UOM ",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "outer_carton_uom",
+   "fieldtype": "Link",
+   "label": "Outer Carton UOM",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_uom",
+   "fieldtype": "Link",
+   "label": "Product UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "cb_et_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "It will be fired when a Sales Order is submitted having an item for which the selling pack is not in the multiple of the inner carton.",
+   "fieldname": "selling_pack_invalid_qty_so_notification",
+   "fieldtype": "Link",
+   "label": "Selling Pack Invalid Qty Sales Order Notification",
+   "options": "Notification"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "filling_percentage_for_20_foot_container",
+   "fieldtype": "Int",
+   "label": "Filling % for 20 Foot Container"
+  },
+  {
+   "fieldname": "filling_percentage_for_40_foot_container",
+   "fieldtype": "Int",
+   "label": "Filling % for 40 Foot Container"
+  },
+  {
+   "fieldname": "maxi_inner_carton_uom",
+   "fieldtype": "Link",
+   "label": "Maxi Inner Carton",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "auto_email_sb_section",
+   "fieldtype": "Section Break",
+   "label": "Art Auto Email Template"
+  },
+  {
+   "fieldname": "art_auto_email_template",
+   "fieldtype": "Table",
+   "options": "Art Auto Email Template",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pallet_uom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pallet UOM",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dummy_item",
+   "fieldtype": "Link",
+   "label": "Dummy Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "photo_upload_utility_section",
+   "fieldtype": "Section Break",
+   "label": "Photo Upload Utility"
+  },
+  {
+   "description": "Code: item_code is required",
+   "fieldname": "art_photo_types",
+   "fieldtype": "Table",
+   "options": "Art Photo Type Detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "welcome_email_template",
+   "fieldtype": "Link",
+   "label": "Welcome Email Template",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "barcode_domain",
+   "fieldtype": "Data",
+   "label": "Barcode Domain"
+  },
+  {
+   "fieldname": "photo_quotation_supplier_quotation",
+   "fieldtype": "Link",
+   "label": "Photo Quotation Supplier Quotation",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "photo_quotation_supplier_sample_request",
+   "fieldtype": "Link",
+   "label": "Photo Quotation Supplier Sample Request",
+   "options": "Email Template"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-08-23 11:49:03.268655",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Art Collections Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Item Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

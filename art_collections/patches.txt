@@ -1,0 +1,1 @@
+art_collections.patches.v0_0.drop_customer_siren_column

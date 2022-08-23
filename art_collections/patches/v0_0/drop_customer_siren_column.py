@@ -1,9 +1,26 @@
 import frappe
 
 def execute():
-  pass
-  # if frappe.db.exists("DocType", "Customer"):
-  #   frappe.reload_doc("selling", "doctype", "customer")
-  #   if "siren" in frappe.db.get_table_columns("Customer"):
-  #     frappe.db.sql("alter table `tabCustomer` drop column siren")
-  #   frappe.delete_doc_if_exists("Custom Field", "Customer-siren")  
+  if frappe.db.exists("DocType", "Customer"):
+    
+    frappe.reload_doc("selling", "doctype", "customer")
+    frappe.delete_doc_if_exists("Customer", "subledger_account")
+    frappe.delete_doc_if_exists("Custom Field", "Customer-subledger_account")  
+
+    frappe.reload_doc("selling", "doctype", "customer")
+    frappe.delete_doc_if_exists("Customer", "naf")
+    frappe.delete_doc_if_exists("Custom Field", "Customer-naf")   
+
+    frappe.reload_doc("selling", "doctype", "customer")
+    frappe.delete_doc_if_exists("Customer", "siret")
+    frappe.delete_doc_if_exists("Custom Field", "Customer-siret")   
+
+    frappe.reload_doc("selling", "doctype", "customer")
+    frappe.delete_doc_if_exists("Customer", "siren")
+    frappe.delete_doc_if_exists("Custom Field", "Customer-siren")  
+    
+   
+
+  
+
+   

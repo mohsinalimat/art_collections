@@ -147,11 +147,13 @@ frappe.ui.form.on('Customer', {
                                 for (let index = 0; index < existing_sales_persons.length; index++) {
                                     let found_existing=false
                                     let address_title=existing_sales_persons[index].address_title;
-                                    customer_address_list.forEach(function (row,i) {
-                                        if (row.name==address_title) {
+
+                                    for (let i = 0; i < customer_address_list.length; i++) {
+                                        if (customer_address_list[i].name==address_title) {
                                             found_existing=true
-                                        }
-                                    });    
+                                        }                                        
+                                    }
+   
                                     if (found_existing==false) {
                                         frappe.show_alert({message:__("Address <b>{0}</b> is removed from 'Customer Sales Person' table",[address_title]), indicator:'yellow'});
                                         cur_frm.get_field('customer_sales_person').grid.grid_rows[index].remove();
@@ -161,22 +163,23 @@ frappe.ui.form.on('Customer', {
                                 }
                                 frm.refresh_field("customer_sales_person")
                                
-                                customer_address_list.forEach(function (row,i) {
+                                for (let i = 0; i < customer_address_list.length; i++) {
                                     let is_it_a_new_address=true
                                     for (let index = 0; index < existing_sales_persons.length; index++) {
                                         let address_title=existing_sales_persons[index].address_title;
-                                        if (row.name==address_title) {
+                                        if (customer_address_list[i].name==address_title) {
                                             is_it_a_new_address=false
                                         }                                        
                                     }
                                     if (is_it_a_new_address==true) {
                                         var child = cur_frm.add_child("customer_sales_person");
-                                        frappe.model.set_value(child.doctype, child.name, "address_title", row.name)
+                                        frappe.model.set_value(child.doctype, child.name, "address_title", customer_address_list[i].name)
                                         frm.refresh_field("customer_sales_person")
-                                        frappe.show_alert({message:__("Please add sales person againt address <b>{0}</b> in 'Customer Sales Person' table",[row.name]), indicator:'yellow'});                                         
+                                        frappe.show_alert({message:__("Please add sales person againt address <b>{0}</b> in 'Customer Sales Person' table",[customer_address_list[i].name]), indicator:'yellow'});                                         
                                     } 
-                                });
 
+                                    
+                                }
                             }
                         }
                     }

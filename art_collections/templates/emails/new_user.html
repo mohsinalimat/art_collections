@@ -1,6 +1,15 @@
-{% if not frappe.db.get_value("Art Collections Settings","Art Collections Settings","welcome_email_template") %}
+{% set custom_template = frappe.db.get_value("Art Collections Settings","Art Collections
+Settings","welcome_email_template") %}
+
+
+{% if not custom_template %}
 {% include "frappe/templates/emails/new_user.html" %}
 {% else %}
-frappe.db.get_value("Email Template", frappe.db.get_value("Art Collections Settings","Art Collections
-Settings","welcome_email_template"),"response_html")
+
+{% set html = frappe.db.get_value("Email Template", custom_template,"response_html") %}
+{{frappe.render_template(html,
+{ "first_name": first_name, "user": user, "title": subject, "login_url": login_url, "site_url": site_url,"created_by":
+created_by, "link": link }
+) }}
+
 {% endif %}

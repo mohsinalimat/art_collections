@@ -6,14 +6,25 @@ from os.path import join
 
 
 def after_migrations():
-    update_dashboard_link_for_core_doctype("Customer","Directive","apply_for_value","Directive")    
-    update_dashboard_link_for_core_doctype("Customer Group","Directive","apply_for_value","Directive")
-    update_dashboard_link_for_core_doctype("Supplier","Directive","apply_for_value","Directive")
-    update_dashboard_link_for_core_doctype("Supplier Group","Directive","apply_for_value","Directive")
+    update_dashboard_link_for_core_doctype(
+        "Customer", "Directive", "apply_for_value", "Directive"
+    )
+    update_dashboard_link_for_core_doctype(
+        "Customer Group", "Directive", "apply_for_value", "Directive"
+    )
+    update_dashboard_link_for_core_doctype(
+        "Supplier", "Directive", "apply_for_value", "Directive"
+    )
+    update_dashboard_link_for_core_doctype(
+        "Supplier Group", "Directive", "apply_for_value", "Directive"
+    )
 
-    update_dashboard_link_for_core_doctype("Item","Directive","apply_for_item_value","Directive")
-    update_dashboard_link_for_core_doctype("Item Group","Directive","apply_for_item_value","Directive")
-
+    update_dashboard_link_for_core_doctype(
+        "Item", "Directive", "apply_for_item_value", "Directive"
+    )
+    update_dashboard_link_for_core_doctype(
+        "Item Group", "Directive", "apply_for_item_value", "Directive"
+    )
 
     # if(not frappe.db.exists('Notification','validate_inner_qty_for_sales_order')):
     fname = "notification.json"
@@ -92,6 +103,20 @@ def add_fixtures():
             "show_section_headings": 0,
         }
     ]
+
+    if not frappe.db.exists("Email Template", "Welcome Email Art"):
+        print("adding welcome email art, email template")
+        records = records + [
+            {
+                "doctype": "Email Template",
+                "name": "Welcome Email Art",
+                "response_html": '\n\t{{_("Hello")}} {{ first_name }}{% if last_name %} {{ last_name}}{% endif %},\n<p>\n    This is a custom welcome message set from Email Template <br>\n\n</p>\n{% set site_link = "<a href=\'" + site_url + "\'>" + site_url + "</a>" %}\n<p>{{_("A new account has been created for you at {0}").format(site_link)}}.</p>\n<p>{{_("Your login id is")}}: <b>{{ user }}</b>\n<p>{{_("Click on the link below to complete your registration and set a new password")}}.</p>\n\n<p style="margin: 15px 0px;">\n\t<a href="{{ link }}" rel="nofollow" class="btn btn-primary">{{ _("Complete Registration") }}</a>\n</p>\n\n{% if created_by != "Administrator" %}\n<br>\n<p style="margin-top: 15px">\n\t{{_("Thanks")}},<br>\n\t{{ created_by }}\n</p>\n{% endif %}\n<br>\n<p>\n\t{{_("You can also copy-paste following link in your browser")}}<br>\n\t<a href="{{ link }}">{{ link }}</a>\n</p>',
+                "subject": " Welcome to Artifêtes Diffusion",
+                "use_html": 1,
+                "owner": "Administrator",
+            }
+        ]
+
     from frappe.desk.page.setup_wizard.setup_wizard import make_records as _make_records
 
     _make_records(records)

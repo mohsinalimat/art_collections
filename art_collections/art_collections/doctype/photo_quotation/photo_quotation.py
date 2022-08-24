@@ -70,6 +70,7 @@ class PhotoQuotation(Document):
 			select name , {}
 			from `tabLead Item`
 			where is_sample_validated = 1 and status <> 'Item Created' 
+            and is_disabled = 0
 			and photo_quotation = %s
 		""".format(
                 ",".join(LEAD_ITEM_MANDATORY_FIELDS)

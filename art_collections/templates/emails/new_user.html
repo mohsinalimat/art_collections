@@ -1,0 +1,6 @@
+{% if not frappe.db.get_value("Art Collections Settings","Art Collections Settings","welcome_email_template") %}
+{% include "frappe/templates/emails/new_user.html" %}
+{% else %}
+{{ frappe.db.get_value("Email Template", frappe.db.get_value("Art Collections Settings","Art Collections
+Settings","welcome_email_template"),"response_html") }}
+{% endif %}

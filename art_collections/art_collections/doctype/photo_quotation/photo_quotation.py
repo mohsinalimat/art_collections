@@ -249,8 +249,9 @@ class PhotoQuotation(Document):
 
         items = frappe.db.sql(
             """
-			select name , uom , selling_pack_qty 
-			from `tabLead Item`
+			select ti.item_code , tli.uom , tli.selling_pack_qty 
+			from `tabLead Item` tli
+			inner join tabItem ti on ti.lead_item_cf = tli.name  
 			where is_po_created = 0 and status = 'Item Created' 
 		""",
             as_dict=True,
@@ -280,7 +281,7 @@ class PhotoQuotation(Document):
             po.append(
                 "items",
                 {
-                    "item_code": d.name,
+                    "item_code": d.item_code,
                     "schedule_date": add_to_date(today(), days=7),
                     "warehouse": default_warehouse,
                     "stock_uom": d.uom,

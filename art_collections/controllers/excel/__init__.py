@@ -83,6 +83,7 @@ def attach_file(content, **args):
     frappe.db.commit()
     if args.get("show_email_dialog"):
         frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
+    return _file
 
 
 def add_images(data, workbook, worksheet="", image_col="S", skip_rows=0):

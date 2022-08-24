@@ -28,14 +28,14 @@ def after_insert_communication(doc, method=None):
         ):
             if reference_doctype == "Photo Quotation":
                 frappe.db.set_value(
-                    "Photo Quotation", reference_name, "status", "To be Treated"
+                    reference_doctype, reference_name, "status", "To be Treated"
                 )
             elif reference_doctype == "Sales Confirmation":
                 frappe.db.set_value(
-                    "Sales Confirmation", reference_name, "status", "To be Treated"
+                    reference_doctype, reference_name, "status", "To be Treated"
                 )
                 frappe.db.set_value(
-                    "Sales Confirmation",
+                    reference_doctype,
                     reference_name,
                     "confirmation_date",
                     frappe.utils.today(),

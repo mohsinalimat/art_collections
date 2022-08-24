@@ -73,26 +73,67 @@ class SalesConfirmation(Document):
 
     @frappe.whitelist()
     def verify_with_po(self):
-        invalid_items, msg = [], 0
-        po = frappe.get_doc("Purchase Order", self.purchase_order)
-
-        for d in self.sales_confirmation_detail:
-            for po_item in list(filter(lambda x: x.item_code == x.item_code, po.items)):
-                for field in FIELDS_TO_VALIDATE_WITH_PO:
-                    if not d.get(field) == po_item.get(field):
-                        invalid_items.append((po_item, d))
-                        break
+        invalid_items = frappe.db.sql(
+            """
+    select 
+        tscd.item_code, ti.item_name ,
+        tscd.supplier_part_no, tpoi.supplier_part_no poi_supplier_part_no,
+        tscd.barcode, tib.barcode item_barcode,
+        tscd.packing_type_art, ti.packing_type_art item_packing_type_art,
+        tscd.qty, tpoi.qty poi_qty,
+        tscd.rate, tpoi.rate poi_rate,
+        tscd.qty_in_selling_pack_art, ti.qty_in_selling_pack_art item_qty_in_selling_pack_art,
+        tscd.qty_per_inner , ti.nb_inner_in_outer_art item_qty_per_inner
+    from `tabSales Confirmation` tsc 
+    inner join `tabSales Confirmation Detail` tscd on tscd.parent = tsc.name 
+    left outer join `tabPurchase Order Item` tpoi on tpoi.item_code = tscd.item_code and tpoi.parent = tsc.purchase_order 
+    left outer join tabItem ti on ti.name = tscd.item_code
+    left outer join `tabItem Barcode` tib on tib.parent = ti.item_code and tib.barcode_type = 'EAN'
+    and tpoi.parent = tsc.purchase_order 
+    where tsc.name = %s and
+    (
+        tscd.supplier_part_no <> tpoi.supplier_part_no or
+        tscd.barcode <> tib.barcode or
+        tscd.item_name <> tpoi.item_name or
+        tscd.packing_type_art <> ti.packing_type_art or
+        tscd.qty <> tpoi.qty or
+        tscd.rate <> tpoi.rate or
+        tscd.qty_in_selling_pack_art <> ti.qty_in_selling_pack_art or
+        tscd.qty_per_inner  <> ti.nb_inner_in_outer_art
+    ) 
+        """,
+            (self.name),
+        )
 
         if invalid_items:
             self.db_set("Status", "To be Treated")
-            # TODO: create table field-wise
-            msg = ", ".join(x[0].item_code for x in invalid_items)
+            # create excel attachment with differences
+            wb = write_xlsx(
+                invalid_items,
+                "Invalid Items",
+                file_path=os.path.join(
+                    os.path.dirname(__file__),
+                    "invalid_items_in_sales_confirmation" + ".xlsx",
+                ),
+                skip_rows=1,
+            )
+
+            out = io.BytesIO()
+            wb.save(out)
+
+            error_file = attach_file(
+                out.getvalue(),
+                doctype=self.doctype,
+                docname=self.name,
+                file_name="%s Invalid items.xlsx" % (self.name + frappe.utils.today()),
+                show_email_dialog=0,
+            )
             frappe.msgprint(
                 _(
                     "Purchase Order items and Sales Confirmation do not match. Please check the errors"
                 )
             )
-        return msg
+            return error_file.file_url
 
 
 @frappe.whitelist()

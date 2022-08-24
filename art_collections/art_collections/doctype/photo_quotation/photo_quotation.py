@@ -52,10 +52,15 @@ class PhotoQuotation(Document):
             )
             for idx, f in enumerate(fields):
                 value = d[idx]
-                if meta.get_field(f) and meta.get_field(f).get("fieldtype") == "Check":
+                # in order to allow overwriting flag = 1 with 0
+                is_flag = (
+                    meta.get_field(f) and meta.get_field(f).get("fieldtype") == "Check"
+                )
+                if is_flag:
                     value = cint(value)
-                if d[idx]:
+                if value or is_flag:
                     doc.update({f: value})
+
             doc.save()
 
     @frappe.whitelist()
@@ -290,13 +295,23 @@ class PhotoQuotation(Document):
         elif template == "supplier_sample_request":
             callback = "supplier_sample_request_email_callback"
 
+        email_template = None
+        if template == "supplier_quotation":
+            email_template = frappe.db.get_single_value(
+                "Art Collections Settings", "photo_quotation_supplier_quotation"
+            )
+        elif template == "supplier_sample_request":
+            email_template = frappe.db.get_single_value(
+                "Art Collections Settings", "photo_quotation_supplier_sample_request"
+            )
+
         # create doc attachment and open email dialog in client
         attach_file(
             content,
             doctype=self.doctype,
             docname=self.name,
             file_name=get_file_name(self.name, template),
-            email_template=EMAIL_TEMPLATES.get(template),
+            email_template=email_template,
             show_email_dialog=1,
             callback=callback,
         )
@@ -367,11 +382,6 @@ def supplier_quotation_email_callback(docname):
 def supplier_sample_request_email_callback(docname):
     frappe.db.set_value("Photo Quotation", docname, "is_sample_requested", 1)
 
-
-EMAIL_TEMPLATES = {
-    "supplier_quotation": "Photo Quotation Supplier Notification",
-    "supplier_sample_request": "Photo Quotation Supplier Request for Sample Notification",
-}
 
 LEAD_ITEM_MANDATORY_FIELDS = [
     "supplier_part_no",

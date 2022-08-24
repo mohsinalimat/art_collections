@@ -7,7 +7,7 @@ frappe.ui.form.on('Sales Confirmation', {
 	},
 
 	validate: function (frm) {
-		frm.doc.sales_confirmation_detail.forEach(d => {
+		(frm.doc.sales_confirmation_detail || []).forEach(d => {
 			d.amount = (d.qty || 0) * (d.rate || 0);
 		});
 	},
@@ -38,10 +38,14 @@ frappe.ui.form.on('Sales Confirmation', {
 					args: {}
 				}).then((r) => {
 					frm.dashboard.clear_headline();
-					if (r.message)
-						frm.dashboard.set_headline(r.message, 'red')
+					if (r.message) {
+						frm.reload_doc();
+						setTimeout(() => {
+							frm.dashboard.set_headline(__('Please check Invalid Items file <a href="{0}"></a> for errors. ', r.message), 'red');
+						}, 200);
+					}
 					else {
-						frappe.confirm(__("Data set corresponds to Purchase Orde. Do you want to Update Items and Purchase Order?"), function () {
+						frappe.confirm(__("Data set corresponds to Purchase Order. Do you want to Update Items and Purchase Order?"), function () {
 							return frm.call({
 								method: 'update_items_and_po',
 								doc: frm.doc,
@@ -75,7 +79,7 @@ frappe.ui.form.on('Sales Confirmation', {
 
 
 		let fieldname = 'sales_confirmation_detail', grid = frm.fields_dict[fieldname].grid;
-		grid.wrapper.find(".grid-upload").removeClass('hidden').on("click", () => {
+		grid.wrapper.find(".grid-upload").removeClass('hidden').off('click').on("click", () => {
 			new frappe.ui.FileUploader({
 				as_dataurl: true,
 				allow_multiple: false,
@@ -85,6 +89,9 @@ frappe.ui.form.on('Sales Confirmation', {
 						var rowNum;
 						var workbook = XLSX.readFile(e.target.result);
 						var ws = workbook.Sheets['Sales Confirmation Details'];
+						if (!ws) {
+							frappe.throw(__("Invalid Upload file for Sales Confirmation"))
+						}
 						set_sheet_ref(ws, 5);
 						var csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
 						var data = frappe.utils.csv_to_array(csv);
@@ -158,7 +165,7 @@ function set_sheet_ref(ws, skip_rows = 0) {
 	var range = XLSX.utils.decode_range(ws['!ref']);
 	for (rowNum = skip_rows + 1; rowNum <= range.e.r; rowNum++) {
 		var nextCell = ws[XLSX.utils.encode_cell({ r: rowNum, c: 1 })];
-		if (typeof nextCell === 'undefined') {
+		if (typeof nextCell === 'undefined' || nextCell == "") {
 			break
 		}
 	}

@@ -16,6 +16,9 @@ from art_collections.art_collections.doctype.photo_quotation.lead_items_excel im
     get_lead_item_fields,
     get_items_xlsx,
 )
+from erpnext.e_commerce.doctype.website_item.website_item import (
+    make_website_item,
+)
 
 
 class PhotoQuotation(Document):
@@ -77,17 +80,22 @@ class PhotoQuotation(Document):
             ),
             (self.name,),
             as_dict=True,
+            debug=1,
         )
 
-        invalid_items = [
-            d for d in items if [x for x in LEAD_ITEM_MANDATORY_FIELDS if not d.get(x)]
-        ]
+        print(items)
+
+        invalid_items = []
+        for d in items:
+            missing = list(filter(lambda x: not d.get(x), LEAD_ITEM_MANDATORY_FIELDS))
+            if missing:
+                invalid_items.append(d.name + ": " + ",".join(missing))
+
         if invalid_items:
             frappe.throw(
                 _(
-                    "Please complete {} for these items: {}".format(
-                        ", ".join(LEAD_ITEM_MANDATORY_FIELDS),
-                        ", ".join([d.name for d in invalid_items]),
+                    "Please complete details for these items: <br><br>{}".format(
+                        "<br>".join(invalid_items),
                     )
                 )
             )
@@ -107,7 +115,7 @@ class PhotoQuotation(Document):
 
     def make_item(self, source, supplier):
         def postprocess(source, target, source_parent):
-            # target.nb_inner_in_outer_art = 120
+            target.item_name = target.name
             pass
 
         # TODO: remove in release
@@ -124,7 +132,6 @@ class PhotoQuotation(Document):
                     "postprocess": postprocess,
                     "field_map": {
                         "name": "item_code",
-                        "lead_item_name": "item_name",
                         "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
                         "packaging_description_excel": "packaging_description_cf",
                         "other_language": "other_language_cf",
@@ -228,6 +235,8 @@ class PhotoQuotation(Document):
             )
             rule.append("items", {"item_code": item.item_code, "uom": "Selling Pack"})
             rule.insert()
+
+        make_website_item(item)
 
     @frappe.whitelist()
     def delete_all_lead_items(self):
@@ -385,21 +394,20 @@ def supplier_sample_request_email_callback(docname):
 
 
 LEAD_ITEM_MANDATORY_FIELDS = [
-    "supplier_part_no",
-    "unit_price",
-    "item_price",
-    "item_price_valid_from",
-    # "pricing_rule_qty",
-    # "pricing_rule_price",
-    # "pricing_rule_valid_from",
-    "inner_qty",
-    "lead_item_name",
-    "item_group",
+    "name",
+    "item_photo",
     "description",
-    "uom",
-    "selling_pack_qty",
-    "designation",
-    "description1",
-    "description2",
-    "description3",
+    "product_material1",
+    "percentage1",
+    "product_material2",
+    "percentage2",
+    "product_material3",
+    "percentage3",
+    "customs_tariff_number",
+    "item_length",
+    "item_width",
+    "item_thickness",
+    "packing_type",
+    "minimum_order_qty",
+    "unit_price",
 ]

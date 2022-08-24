@@ -99,9 +99,9 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
 
 
 LEAD_ITEM_CONDITIONS = {
-    "supplier_quotation": " and (disabled = 0 and is_quoted = 0)",
-    "supplier_sample_request": " and (disabled = 0 and is_quoted = 1 and sample_validated = 0)",
-    "create_lead_items": " and (disabled = 0 and sample_validated = 1)",
+    "supplier_quotation": " and (is_disabled = 0 and is_quoted = 0)",
+    "supplier_sample_request": " and (is_disabled = 0 and is_quoted = 1 and is_sample_validated = 0)",
+    "create_lead_items": " and (is_disabled = 0 and is_sample_validated = 1)",
     "artyfetes": "",
 }
 

@@ -158,14 +158,12 @@ frappe.ui.form.on('Photo Quotation', {
 		// XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Items');
 		// XLSX.writeFile(workbook, cur_frm.doc.name + "-Lead Items.xlsx");
 
-		let xlsx_template = ['supplier_quotation', 'supplier_sample_request'].includes(template) ? 'lead_items_supplier_template' : 'lead_items_art_template';
-
 		open_url_post(
 			'/api/method/art_collections.art_collections.doctype.photo_quotation.photo_quotation.download_lead_items_template'
 			, {
 				docname: cur_frm.doc.name,
-				template: xlsx_template,
-				filters: template
+				template: template,
+				supplier: cur_frm.doc.supplier
 			});
 	},
 
@@ -223,7 +221,8 @@ function make_items_grid(frm) {
 			return {
 				title: t.label,
 				type: t.fieldtype,
-				fieldname: t.fieldname
+				fieldname: t.fieldname,
+				readOnly: ['photo_quotation', 'name',].includes(t.fieldname)
 			}
 		})
 
@@ -238,6 +237,8 @@ function make_items_grid(frm) {
 			tableHeight: "500px",
 			search: true,
 			freezeColumns: 2,
+			allowManualInsertRow: false,
+			allowManualInsertColumn: false,
 			// pagination: 10,
 			updateTable: function (instance, cell, col, row, val, id) {
 				if (col == 1 && val) {

@@ -4,6 +4,12 @@ from frappe import _
 from frappe.utils import nowdate,add_days,flt,cstr
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 
+
+def item_autoname(self, method):
+    if self.get("lead_item_cf"):
+        self.name = self.name.split("-")[-1]
+        self.item_name = self.item_name or self.item_code
+
 def item_custom_validation(self,method):
 	set_uom_quantity_of_inner_in_outer(self)
 	set_weight_for_stock_uom_of_packing_dimensions(self)

@@ -75,7 +75,7 @@ frappe.show_email_dialog = function (frm, args) {
         frm: frm,
         subject: __(frm.meta.name) + ': ' + frm.docname,
         recipients: args.recipients || frm.doc.email || frm.doc.email_id || frm.doc.contact_email,
-        attach_document_print: true,
+        attach_document_print: false,
         real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name,
         callback: args.callback
     });

@@ -108,6 +108,7 @@ frappe.ui.form.on('Sales Confirmation', {
 				'/api/method/art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.download_details'
 				, {
 					docname: frm.doc.name,
+					supplier: frm.doc.supplier,
 				});
 		});
 	},

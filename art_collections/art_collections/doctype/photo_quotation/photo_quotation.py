@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import now, cstr, cint, add_days, today, add_to_date
 import json
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
+from frappe.utils.data import getdate
 import openpyxl
 import io
 from erpnext import get_default_company
@@ -82,8 +83,6 @@ class PhotoQuotation(Document):
             as_dict=True,
         )
 
-        print(items)
-
         invalid_items = []
         for d in items:
             missing = list(filter(lambda x: not d.get(x), LEAD_ITEM_MANDATORY_FIELDS))
@@ -114,18 +113,28 @@ class PhotoQuotation(Document):
 
     def make_item(self, source, supplier):
         def postprocess(source, target, source_parent):
-            target.item_name = target.name
+            target.naming_series = None
             pass
 
-        # TODO: remove in release
-        # frappe.delete_doc("Item", source.get("name"))
-
-        naming_series = (
-            frappe.get_meta("Item")
-            .get_field("naming_series")
-            .options.strip()
-            .split("\n")[0]
-        )
+        FIELD_MAP = {
+            "lead_item_name": "item_name",
+            "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
+            "packaging_description_excel": "packaging_description_cf",
+            "other_language": "other_language_cf",
+            "description1": "description_1_cf",
+            "description2": "description_2_cf",
+            "description3": "description_3_cf",
+            "designation": "excel_designation_cf",
+            "selling_pack_qty": "qty_in_selling_pack_art",
+            "uom": "stock_uom",
+            "item_length": "length_art",
+            "item_width": "width_art",
+            "item_thickness": "thickness_art",
+            "packing_type": "packing_type_art",
+            "racking_bag": "racking_bag_art",
+            "min_order_qty": "min_order_qty",
+            "name": "lead_item_cf",
+        }
 
         uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
         target_doc = {}
@@ -136,35 +145,20 @@ class PhotoQuotation(Document):
                 "Lead Item": {
                     "doctype": "Item",
                     "postprocess": postprocess,
-                    "field_map": {
-                        "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
-                        "packaging_description_excel": "packaging_description_cf",
-                        "other_language": "other_language_cf",
-                        "description1": "description_1_cf",
-                        "description2": "description_2_cf",
-                        "description3": "description_3_cf",
-                        "designation": "excel_designation_cf",
-                        "selling_pack_qty": "qty_in_selling_pack_art",
-                        "uom": "stock_uom",
-                        "item_length": "length_art",
-                        "item_width": "width_art",
-                        "item_thickness": "thickness_art",
-                        "packing_type": "packing_type_art",
-                        "racking_bag": "racking_bag_art",
-                        "min_order_qty": "min_order_qty",
-                    },
+                    "field_map": FIELD_MAP,
                 },
             },
             target_doc,
         )
 
-        from frappe.model.naming import set_name_by_naming_series
-
-        item.naming_series = naming_series
-        set_name_by_naming_series(item)
-
-        item.name = item.name.split("-")[-1]
-        item.item_code = item.name
+        if frappe.db.exists("Item", {"lead_item_cf": source.get("name")}):
+            frappe.db.sql(
+                """
+                update tabItem set lead_item_cf = NULL
+                where lead_item_cf = %s    
+            """,
+                (source.get("name")),
+            )
 
         item.insert()
 
@@ -186,7 +180,9 @@ class PhotoQuotation(Document):
             },
         )
 
-        # item.append("barcodes", {"barcode_type": "EAN", "barcode": item.item_code})
+        item.append(
+            "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.name)}
+        )
 
         for d in range(1, 4):
             if source.get("product_material" + cstr(d)):
@@ -197,6 +193,7 @@ class PhotoQuotation(Document):
                         "percentage": source.get("percentage" + cstr(d)),
                     },
                 )
+
         item.save()
 
         if cint(source.get("unit_price")):
@@ -260,7 +257,9 @@ class PhotoQuotation(Document):
 			from `tabLead Item` tli
 			inner join tabItem ti on ti.lead_item_cf = tli.name  
 			where is_po_created = 0 and status = 'Item Created' 
+            and tli.photo_quotation = %s
 		""",
+            (self.name,),
             as_dict=True,
         )
 
@@ -277,25 +276,30 @@ class PhotoQuotation(Document):
                     "doctype": "Purchase Order",
                     "supplier": self.supplier,
                     "transaction_date": today(),
+                    "photo_quotation_cf": self.name,
                 }
             )
-
         default_warehouse = frappe.db.get_single_value(
-            "Stock Settings", "default_warehouse"
+            "Art Collections Settings", "default_lead_item_warehouse"
         )
 
         for d in items:
+            if list(
+                filter(lambda x: x.item_code == d.item_code, po.get("items") or [])
+            ):
+                continue
             po.append(
                 "items",
                 {
                     "item_code": d.item_code,
-                    "schedule_date": add_to_date(today(), days=7),
+                    "schedule_date": getdate(),
                     "warehouse": default_warehouse,
                     "stock_uom": d.uom,
                     "uom": d.uom,
                     "qty": 1,
                 },
             )
+
         po.save()
         self.db_set("status", "PO Created")
         return po.name
@@ -308,18 +312,19 @@ class PhotoQuotation(Document):
         )
 
         callback = None
-        if template == "supplier_quotation":
+        if filters == "supplier_quotation":
             callback = "supplier_quotation_email_callback"
-        elif template == "supplier_sample_request":
+        elif filters == "supplier_sample_request":
             callback = "supplier_sample_request_email_callback"
 
         email_template = None
+
         if template == "lead_items_supplier_template":
             if filters == "supplier_quotation":
                 email_template = frappe.db.get_single_value(
                     "Art Collections Settings", "photo_quotation_supplier_quotation"
                 )
-            elif template == "supplier_sample_request":
+            elif filters == "supplier_sample_request":
                 email_template = frappe.db.get_single_value(
                     "Art Collections Settings",
                     "photo_quotation_supplier_sample_request",
@@ -378,9 +383,15 @@ def import_lead_item_photos():
 
 
 @frappe.whitelist()
-def download_lead_items_template(docname, template):
+def download_lead_items_template(docname, template, supplier=None):
+    xl_template = "lead_items_art_template"
+    if template in ("supplier_quotation", "supplier_sample_request"):
+        xl_template = "lead_items_supplier_template"
+
     frappe.response["filename"] = get_file_name(docname, template)
-    frappe.response["filecontent"] = get_items_xlsx(docname, template)
+    frappe.response["filecontent"] = get_items_xlsx(
+        docname, template=xl_template or template, filters=template, supplier=supplier
+    )
     frappe.response["type"] = "binary"
 
 
@@ -410,10 +421,10 @@ LEAD_ITEM_MANDATORY_FIELDS = [
     "description",
     "product_material1",
     "percentage1",
-    "product_material2",
-    "percentage2",
-    "product_material3",
-    "percentage3",
+    # "product_material2",
+    # "percentage2",
+    # "product_material3",
+    # "percentage3",
     "customs_tariff_number",
     "item_length",
     "item_width",

@@ -23,9 +23,27 @@ frappe.ui.form.on('Purchase Order', {
 	},
 	refresh: function (frm) {
 		frm.add_custom_button(
+			__("Sales Confirmation"),
+			function () {
+				frappe.dom.freeze(__("Creating Sales Confirmation. Please wait."));
+				frappe.call({
+					method: 'art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.make_from_po',
+					args: {
+						docname: frm.doc.name,
+					},
+					callback: function (r) {
+						frappe.dom.unfreeze();
+						frappe.set_route('Form', 'Sales Confirmation', r.message);
+					},
+				});
+			},
+			__("Create")
+		);
+
+		frm.add_custom_button(
 			__("Email Supplier"),
 			function () {
-				frappe.dom.freeze(__("Please wait. Creating fileds for email."));
+				frappe.dom.freeze(__("Please wait while attachments for the email are created."));
 				frappe.call({
 					method: "art_collections.controllers.excel.purchase_order.make_supplier_email_attachments",
 					args: {

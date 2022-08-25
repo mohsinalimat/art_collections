@@ -123,6 +123,7 @@ doc_events = {
     },
     "Item": {
         "validate": "art_collections.item_controller.item_custom_validation",
+        "autoname": "art_collections.item_controller.item_autoname",
         # "before_insert": "art_collections.item_controller.set_custom_item_name",
     },
     "Pricing Rule": {

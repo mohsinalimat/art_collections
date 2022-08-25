@@ -3,12 +3,16 @@
 
 import frappe
 from frappe import _
-from frappe.utils import cstr, cint
+from frappe.utils import cstr, cint, today, now_datetime, getdate, format_date
 from frappe.model.document import Document
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 import io
 import os
 from frappe.modules import get_doc_path
+import re
+from erpnext.accounts.party import get_party_details
+from frappe.utils.data import format_date
+from openpyxl.styles.alignment import Alignment
 
 FIELDS_TO_VALIDATE_WITH_PO = [
     "item_code",
@@ -29,7 +33,7 @@ class SalesConfirmation(Document):
 
     @frappe.whitelist()
     def email_supplier(self):
-        content = get_items_xlsx(self.name)
+        content = get_items_xlsx(self.name, self.supplier)
         attach_file(
             content,
             doctype=self.doctype,
@@ -139,6 +143,7 @@ class SalesConfirmation(Document):
 @frappe.whitelist()
 def supplier_email_callback(docname):
     frappe.db.set_value("Sales Confirmation", docname, "status", "Replied")
+    frappe.db.set_value("Sales Confirmation", docname, "confirmation_date", None)
 
 
 @frappe.whitelist()
@@ -147,6 +152,7 @@ def make_from_po(docname):
     sc_name = frappe.db.exists("Sales Confirmation", {"purchase_order": docname})
     if sc_name:
         doc = frappe.get_doc("Sales Confirmation", sc_name)
+        doc.sales_confirmation_detail = []
     else:
         doc = frappe.get_doc(
             {
@@ -155,6 +161,7 @@ def make_from_po(docname):
                 "supplier": po.supplier,
                 "contact_person": po.get("contact_person"),
                 "contact_email": po.get("contact_email"),
+                "transaction_date": po.get("transaction_date"),
             }
         )
 
@@ -176,52 +183,36 @@ def make_from_po(docname):
                 "total_cbm": d.total_cbm,
             },
         )
-        values = frappe.db.get_value(
-            "Item",
-            {"parent": d.item_code},
-            [
-                "packing_type_art",
-                "qty_in_selling_pack_art",
-                "customs_tariff_number",
-            ],
-            as_dict=1,
-        )
-        for k in values or {}:
-            child.update({k: values.get(k)})
-        values = frappe.db.get_value(
-            "Item Supplier",
-            {"parent": d.item_code, "supplier": po.supplier},
-            ["supplier_part_no", "supplier_part_description_art"],
-            as_dict=1,
-        )
-        for k in values or {}:
-            child.update({k: values.get(k)})
-        values = frappe.db.get_value(
-            "Item Barcode",
-            {"parent": d.item_code, "barcode_type": "EAN"},
-            [
-                "barcode",
-            ],
-            as_dict=1,
-        )
-        for k in values or {}:
-            child.update({k: values.get(k)})
+
+        for item_details in frappe.db.sql(
+            """
+                select packing_type_art , qty_in_selling_pack_art , customs_tariff_number ,
+                tis.supplier_part_no , tis.supplier_part_description_art supplier_item_description_ar, tib.barcode
+                from tabItem ti
+                inner join `tabItem Supplier` tis on tis.parent = ti.name and tis.supplier = %s
+                inner join `tabItem Barcode` tib on tib.parent = ti.name and tib.barcode_type = 'EAN'
+                where ti.item_code = %s
+            """,
+            (po.supplier, d.item_code),
+            as_dict=True,
+        ):
+            child.update(item_details)
+
     doc.save()
     return doc.name
 
 
 @frappe.whitelist()
-def download_details(docname):
-    frappe.response["filename"] = "Sales Confirmation-{name}-{supplier}.xlsx".format(
-        **frappe.db.get_value(
-            "Sales Confirmation", docname, ["name", "supplier"], as_dict=True
-        )
+def download_details(docname, supplier):
+    frappe.response["filename"] = "Sales Confirmation-{}-{}.xlsx".format(
+        docname, supplier
     )
-    frappe.response["filecontent"] = get_items_xlsx(docname)
+    frappe.response["filecontent"] = get_items_xlsx(docname, supplier)
     frappe.response["type"] = "binary"
 
 
-def get_items_xlsx(docname):
+def get_items_xlsx(docname, supplier=None):
+    SHEET_NAME = "Sales Confirmation Details"
 
     data = frappe.db.sql(
         """
@@ -250,7 +241,7 @@ def get_items_xlsx(docname):
 
     wb = write_xlsx(
         excel_rows,
-        sheet_name="Sales Confirmation Details",
+        sheet_name=SHEET_NAME,
         file_path=file_path,
         column_widths=[20] * len(columns),
         skip_rows=skip_rows,
@@ -259,11 +250,46 @@ def get_items_xlsx(docname):
     add_images(
         images,
         workbook=wb,
-        worksheet="Sales Confirmation Details",
+        worksheet=SHEET_NAME,
         image_col="C",
         skip_rows=skip_rows,
     )
 
+    wb.active = wb[SHEET_NAME]
+
+    if supplier:
+        details = frappe.render_template(
+            SUPPLIER_DISPLAY_TEMPLATE,
+            get_party_details(supplier, party_type="Supplier"),
+        )
+        # set supplier details
+        wb[SHEET_NAME]["E2"] = re.sub("<br>", "\n\n", details)
+        wb[SHEET_NAME]["E2"].alignment = Alignment(horizontal="center")
+
+        for d in frappe.db.sql(
+            """
+            select tpo.schedule_date , tpo.name
+            from `tabPurchase Order` tpo 
+            inner join `tabSales Confirmation` tsc on tsc.purchase_order = tpo.name
+            where tsc.name = %s
+        """,
+            (docname,),
+            as_dict=True,
+        ):
+            wb[SHEET_NAME]["Q2"] = "-"
+            wb[SHEET_NAME]["Q3"] = format_date(today(), "dd/mm/yy")
+            wb[SHEET_NAME]["Q4"] = d.name
+            wb[SHEET_NAME]["Q5"] = format_date(d.schedule_date, "dd/mm/yy")
+
     out = io.BytesIO()
     wb.save(out)
     return out.getvalue()
+
+
+SUPPLIER_DISPLAY_TEMPLATE = """
+{{supplier_name}}
+{{address_display}}
+{{contact_person}}
+{{contact_mobile}}
+{{contact_email}}
+"""

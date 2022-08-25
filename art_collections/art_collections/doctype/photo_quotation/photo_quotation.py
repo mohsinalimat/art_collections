@@ -163,7 +163,8 @@ class PhotoQuotation(Document):
         item.naming_series = naming_series
         set_name_by_naming_series(item)
 
-        item.item_code = item.name.split("-")[-1]
+        item.name = item.name.split("-")[-1]
+        item.item_code = item.name
 
         item.insert()
 
@@ -185,9 +186,7 @@ class PhotoQuotation(Document):
             },
         )
 
-        item.append(
-            "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.item_code)}
-        )
+        item.append("barcodes", {"barcode_type": "EAN", "barcode": item.item_code})
 
         for d in range(1, 4):
             if source.get("product_material" + cstr(d)):
@@ -423,3 +422,8 @@ LEAD_ITEM_MANDATORY_FIELDS = [
     "minimum_order_qty",
     "unit_price",
 ]
+
+
+def make_items():
+    doc = frappe.get_doc("Photo Quotation", "PQ5")
+    doc.create_items()

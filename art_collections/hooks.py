@@ -214,7 +214,7 @@ doc_events = {
         "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry"
     },
     "Communication": {
-        "after_insert": "art_collections.controllers.utils.after_insert_communication"
+        "on_update": "art_collections.controllers.utils.after_insert_communication"
     },
 }
 

@@ -23,6 +23,7 @@ def after_insert_communication(doc, method=None):
         reference_name = doc.get("reference_name")
         if (
             doc.communication_type == "Communication"
+            # and doc.sent_or_recieved == "Received"
             and reference_doctype
             and reference_name
         ):

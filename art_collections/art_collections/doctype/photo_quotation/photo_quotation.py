@@ -186,7 +186,7 @@ class PhotoQuotation(Document):
             },
         )
 
-        item.append("barcodes", {"barcode_type": "EAN", "barcode": item.item_code})
+        # item.append("barcodes", {"barcode_type": "EAN", "barcode": item.item_code})
 
         for d in range(1, 4):
             if source.get("product_material" + cstr(d)):

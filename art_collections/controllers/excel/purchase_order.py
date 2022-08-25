@@ -15,6 +15,18 @@ from art_collections.art_collections.doctype.sales_confirmation.sales_confirmati
 def on_submit_purchase_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
 
+    # set is_po_created 1 in lead items connected to PO Items
+    frappe.db.sql(
+        """
+    update `tabPurchase Order Item` tpoi 
+	inner join tabItem ti on ti.item_code = tpoi.item_code 
+	inner join `tabLead Item` tli on tli.name = ti.lead_item_cf 
+	set tli.is_po_created = 1 
+	where tpoi.parent = %s
+    """,
+        (doc.name,),
+    )
+
 
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
@@ -148,6 +160,10 @@ def make_supplier_email_attachments(po_name):
     2. Packaging Description.
     3. PO Pdf
     """
+
+    # item details excel
+
+    # frappe.throw("TODO: change excel template for items excel")
     template_path = frappe.get_app_path(
         "art_collections", "controllers", "item_import_template.xlsx"
     )
@@ -185,14 +201,14 @@ def make_supplier_email_attachments(po_name):
 
     data = frappe.db.sql(
         """
-select 
-ti.customer_code , ti.item_code , ti.excel_designation_cf ,
-ti.description_1_cf , ti.description_2_cf , ti.description_3_cf , 
-other_language_cf , tib.barcode , nb_inner_in_outer_art , 
-ti.description 
-from tabItem ti 
-inner join `tabPurchase Order Item` tpoi on tpoi.item_code = ti.item_code and tpoi.parent = %s
-left outer join `tabItem Barcode` tib on tib.parent = ti.name  and tib.barcode_type = 'EAN'
+        select 
+        ti.customer_code , ti.item_code , ti.excel_designation_cf ,
+        ti.description_1_cf , ti.description_2_cf , ti.description_3_cf , 
+        other_language_cf , tib.barcode , nb_inner_in_outer_art , 
+        ti.description 
+        from tabItem ti 
+        inner join `tabPurchase Order Item` tpoi on tpoi.item_code = ti.item_code and tpoi.parent = %s
+        left outer join `tabItem Barcode` tib on tib.parent = ti.name  and tib.barcode_type = 'EAN'
     """,
         (po_name,),
         as_list=True,
@@ -218,17 +234,26 @@ left outer join `tabItem Barcode` tib on tib.parent = ti.name  and tib.barcode_t
 
     # PO Pdf
 
+    auto_formats = (
+        frappe.db.get_single_value(
+            "Art Collections Settings", "art_auto_email_template"
+        )
+        or []
+    )
+
+    print_format = [d.doc_type for d in auto_formats]
+
     out = frappe.attach_print(
         "Purchase Order",
         po_name,
-        print_format="",
+        print_format=print_format and print_format[0],
     )
 
     attach_file(
         out["fcontent"],
         doctype="Purchase Order",
         docname=po_name,
-        file_name="Purchase Order {} {}.xlsx".format(po_name, frappe.utils.today()),
+        file_name="Purchase Order {} {}.pdf".format(po_name, frappe.utils.today()),
         show_email_dialog=1,
         callback="supplier_email_callback",
     )

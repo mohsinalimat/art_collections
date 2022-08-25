@@ -80,7 +80,6 @@ class PhotoQuotation(Document):
             ),
             (self.name,),
             as_dict=True,
-            debug=1,
         )
 
         print(items)
@@ -121,6 +120,13 @@ class PhotoQuotation(Document):
         # TODO: remove in release
         # frappe.delete_doc("Item", source.get("name"))
 
+        naming_series = (
+            frappe.get_meta("Item")
+            .get_field("naming_series")
+            .options.strip()
+            .split("\n")[0]
+        )
+
         uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
         target_doc = {}
         item = get_mapped_doc(
@@ -131,7 +137,6 @@ class PhotoQuotation(Document):
                     "doctype": "Item",
                     "postprocess": postprocess,
                     "field_map": {
-                        "name": "item_code",
                         "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
                         "packaging_description_excel": "packaging_description_cf",
                         "other_language": "other_language_cf",
@@ -153,9 +158,12 @@ class PhotoQuotation(Document):
             target_doc,
         )
 
-        from frappe.model.naming import make_autoname
+        from frappe.model.naming import set_name_by_naming_series
 
-        item.item_code = make_autoname("#####.")
+        item.naming_series = naming_series
+        set_name_by_naming_series(item)
+
+        item.item_code = item.name.split("-")[-1]
 
         item.insert()
 
@@ -307,14 +315,16 @@ class PhotoQuotation(Document):
             callback = "supplier_sample_request_email_callback"
 
         email_template = None
-        if template == "supplier_quotation":
-            email_template = frappe.db.get_single_value(
-                "Art Collections Settings", "photo_quotation_supplier_quotation"
-            )
-        elif template == "supplier_sample_request":
-            email_template = frappe.db.get_single_value(
-                "Art Collections Settings", "photo_quotation_supplier_sample_request"
-            )
+        if template == "lead_items_supplier_template":
+            if filters == "supplier_quotation":
+                email_template = frappe.db.get_single_value(
+                    "Art Collections Settings", "photo_quotation_supplier_quotation"
+                )
+            elif template == "supplier_sample_request":
+                email_template = frappe.db.get_single_value(
+                    "Art Collections Settings",
+                    "photo_quotation_supplier_sample_request",
+                )
 
         # create doc attachment and open email dialog in client
         attach_file(
@@ -381,6 +391,7 @@ def make_barcode(item_code):
     )
     code_brut = compact(barcode_domain + item_code)
     barcode = code_brut + calc_check_digit(code_brut)
+
     return is_valid(barcode) and barcode or None
 
 

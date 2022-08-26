@@ -114,13 +114,13 @@ class PhotoQuotation(Document):
     def make_item(self, source, supplier):
         def postprocess(source, target, source_parent):
             target.naming_series = None
-            pass
 
         FIELD_MAP = {
             "lead_item_name": "item_name",
             "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
             "packaging_description_excel": "packaging_description_cf",
             "other_language": "other_language_cf",
+            "description": "description",
             "description1": "description_1_cf",
             "description2": "description_2_cf",
             "description3": "description_3_cf",
@@ -134,6 +134,14 @@ class PhotoQuotation(Document):
             "racking_bag": "racking_bag_art",
             "min_order_qty": "min_order_qty",
             "name": "lead_item_cf",
+            "item_photo": "image",
+            "is_certificates_reqd": "certificates_required_art",
+            "is_disabled": "disabled",
+            "is_display_box": "display_box_art",
+            "is_need_photo_for_packaging": "need_photo_for_packaging_cf",
+            "is_special_mentions": "special_mentions_art",
+            "item_group": "item_group",
+            "minimum_order_qty": "min_order_qty",
         }
 
         uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
@@ -183,6 +191,14 @@ class PhotoQuotation(Document):
         item.append(
             "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.name)}
         )
+
+        default_warehouse = frappe.db.get_single_value(
+            "Art Collections Settings", "default_lead_item_warehouse"
+        )
+        if default_warehouse:
+            for d in item.item_defaults:
+                d.default_warehouse = default_warehouse
+                break
 
         for d in range(1, 4):
             if source.get("product_material" + cstr(d)):
@@ -240,7 +256,9 @@ class PhotoQuotation(Document):
             rule.append("items", {"item_code": item.item_code, "uom": "Selling Pack"})
             rule.insert()
 
-        make_website_item(item)
+        website_item = make_website_item(item)
+        frappe.db.set_value("Website Item", website_item[0], "published", 0)
+        frappe.db.set_value("Website Item", website_item[0], "image", item.image)
 
     @frappe.whitelist()
     def delete_all_lead_items(self):
@@ -250,7 +268,6 @@ class PhotoQuotation(Document):
 
     @frappe.whitelist()
     def create_purchase_order(self):
-
         items = frappe.db.sql(
             """
 			select ti.item_code , tli.uom , tli.selling_pack_qty 
@@ -279,9 +296,6 @@ class PhotoQuotation(Document):
                     "photo_quotation_cf": self.name,
                 }
             )
-        default_warehouse = frappe.db.get_single_value(
-            "Art Collections Settings", "default_lead_item_warehouse"
-        )
 
         for d in items:
             if list(
@@ -293,7 +307,6 @@ class PhotoQuotation(Document):
                 {
                     "item_code": d.item_code,
                     "schedule_date": getdate(),
-                    "warehouse": default_warehouse,
                     "stock_uom": d.uom,
                     "uom": d.uom,
                     "qty": 1,

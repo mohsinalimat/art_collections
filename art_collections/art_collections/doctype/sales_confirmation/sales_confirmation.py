@@ -32,46 +32,100 @@ class SalesConfirmation(Document):
         pass
 
     @frappe.whitelist()
-    def email_supplier(self):
+    def email_supplier(self, show_email_dialog=1):
         content = get_items_xlsx(self.name, self.supplier)
         attach_file(
             content,
             doctype=self.doctype,
             docname=self.name,
-            show_email_dialog=1,
+            show_email_dialog=show_email_dialog,
             recipients="",
-            callback="supplier_email_callback",
+            callback=show_email_dialog and "supplier_email_callback" or 0,
         )
 
     @frappe.whitelist()
     def update_items_and_po(self):
         if not self.confirmation_date:
-            frappe.throw(_("Confirmation Date is not set."))
+            msg += _("Confirmation Date is not set.")
+        msg = ""
+        for d in filter(lambda x: not x.is_verified, self.sales_confirmation_detail):
+            msg += _("Please verify all items to update. ")
+            break
+        for d in filter(lambda x: not x.is_checked, self.sales_confirmation_detail):
+            msg += _("Please check all items to update. ")
+            break
+
+        if msg:
+            frappe.throw(msg)
 
         po = frappe.get_doc("Purchase Order", self.purchase_order)
 
-        update_po_fields = [
-            "packing_type_art",
-            "qty_in_selling_pack_art",
-            "customs_tariff_number",
-        ]
-        update_poi_fields = [
-            "total_outer_cartons_art",
-            "cbm_per_outer_art ",
-            "total_cbm",
-            "rate",
-            "qty",
-        ]
-
         for d in self.sales_confirmation_detail:
-            if not cint(d.is_verified):
-                continue
+            # update item
             item = frappe.get_doc("Item", d.item_code)
-            item.update({field: d.get(field) for field in update_po_fields})
+            item.update(
+                {
+                    field: d.get(field)
+                    for field in [
+                        "packing_type_art",
+                        "qty_in_selling_pack_art",
+                        "customs_tariff_number",
+                    ]
+                }
+            )
+            # update item child tables
+            for cdn in item.supplier_items:
+                if cdn.supplier == self.supplier:
+                    cdn.supplier_part_description_art = d.supplier_item_description_ar
+
+            # update uoms
+            inner = frappe.db.get_single_value(
+                "Art Collections Settings", "inner_carton_uom"
+            )
+            if inner:
+                uom = next((cdt for cdt in item.uoms if cdt.uom == inner), None)
+                if not uom:
+                    uom = item.append(
+                        "uoms",
+                        {
+                            "uom": inner,
+                            "conversion_factor": cint(d.qty_per_inner),
+                        },
+                    )
+                else:
+                    uom.conversion_factor = cint(d.qty_per_inner)
+            outer = frappe.db.get_single_value(
+                "Art Collections Settings", "outer_carton_uom"
+            )
+            if outer:
+                uom = next((cdt for cdt in item.uoms if cdt.uom == outer), None)
+                if not uom:
+                    uom = item.append(
+                        "uoms",
+                        {
+                            "uom": outer,
+                            "conversion_factor": cint(d.qty_per_outer),
+                        },
+                    )
+                else:
+                    uom.conversion_factor = cint(d.qty_per_outer)
+
+            # update po items
             for poi in [x for x in po.items if x.item_code == d.item_code]:
-                if not cint(d.is_checked):
-                    continue
-                poi.update({field: d.get(field) for field in update_poi_fields})
+                poi.update(
+                    {
+                        field: d.get(field)
+                        for field in [
+                            "total_outer_cartons_art",
+                            "cbm_per_outer_art ",
+                            "total_cbm",
+                            "rate",
+                            "qty",
+                        ]
+                    }
+                )
+            item.save()
+        po.save()
 
         self.db_set("status", "Validated")
 
@@ -87,13 +141,16 @@ class SalesConfirmation(Document):
         tscd.qty, tpoi.qty poi_qty,
         tscd.rate, tpoi.rate poi_rate,
         tscd.qty_in_selling_pack_art, ti.qty_in_selling_pack_art item_qty_in_selling_pack_art,
-        tscd.qty_per_inner , ti.nb_inner_in_outer_art item_qty_per_inner
+        tscd.qty_per_inner , tucd.conversion_factor item_qty_per_inner
     from `tabSales Confirmation` tsc 
     inner join `tabSales Confirmation Detail` tscd on tscd.parent = tsc.name 
     left outer join `tabPurchase Order Item` tpoi on tpoi.item_code = tscd.item_code and tpoi.parent = tsc.purchase_order 
+    and tpoi.parent = tsc.purchase_order 
     left outer join tabItem ti on ti.name = tscd.item_code
     left outer join `tabItem Barcode` tib on tib.parent = ti.item_code and tib.barcode_type = 'EAN'
-    and tpoi.parent = tsc.purchase_order 
+    left outer join `tabUOM Conversion Detail` tucd on tucd.parent = ti.name 
+    and tucd.uom = (select value from tabSingles ts 
+        where doctype = 'Art Collections Settings' and field = 'inner_carton_uom')
     where tsc.name = %s and
     (
         tscd.supplier_part_no <> tpoi.supplier_part_no or
@@ -103,7 +160,7 @@ class SalesConfirmation(Document):
         tscd.qty <> tpoi.qty or
         tscd.rate <> tpoi.rate or
         tscd.qty_in_selling_pack_art <> ti.qty_in_selling_pack_art or
-        tscd.qty_per_inner  <> ti.nb_inner_in_outer_art
+        tscd.qty_per_inner  <> tucd.conversion_factor
     ) 
         """,
             (self.name),

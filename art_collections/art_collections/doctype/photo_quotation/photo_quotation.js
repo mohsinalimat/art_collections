@@ -4,7 +4,7 @@
 frappe.ui.form.on('Photo Quotation', {
 	refresh: function (frm) {
 		make_items_grid(frm);
-		frm.trigger("add_custom_buttons");
+		if (!frm.is_new()) { frm.trigger("add_custom_buttons"); }
 	},
 
 	validate_is_clean: function (frm) {
@@ -39,7 +39,7 @@ frappe.ui.form.on('Photo Quotation', {
 					doc: frm.doc,
 					args: {}
 				}).then((r) => {
-					frappe.msgprint(__('{0} items created.', [r.message]))
+					frappe.msgprint(__('{0} item(s) created.', [r.message]))
 				});
 			});
 		}, __("Create"));

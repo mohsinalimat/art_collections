@@ -22,23 +22,6 @@ frappe.ui.form.on('Purchase Order', {
 		}
 	},
 	refresh: function (frm) {
-		frm.add_custom_button(
-			__("Sales Confirmation"),
-			function () {
-				frappe.dom.freeze(__("Creating Sales Confirmation. Please wait."));
-				frappe.call({
-					method: 'art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.make_from_po',
-					args: {
-						docname: frm.doc.name,
-					},
-					callback: function (r) {
-						frappe.dom.unfreeze();
-						frappe.set_route('Form', 'Sales Confirmation', r.message);
-					},
-				});
-			},
-			__("Create")
-		);
 
 		frm.add_custom_button(
 			__("Email Supplier"),
@@ -75,12 +58,30 @@ frappe.ui.form.on('Purchase Order', {
 			__("Tools")
 		);
 
+		frm.add_custom_button(
+			__("Make Sales Confirmation"),
+			function () {
+				frappe.dom.freeze(__("Creating Sales Confirmation. Please wait."));
+				frappe.call({
+					method: 'art_collections.art_collections.doctype.sales_confirmation.sales_confirmation.make_from_po',
+					args: {
+						docname: frm.doc.name,
+					},
+					callback: function (r) {
+						frappe.dom.unfreeze();
+						frappe.set_route('Form', 'Sales Confirmation', r.message);
+					},
+				});
+			},
+			__("Tools")
+		);
+
+
 		$('div').find('.document-link[data-doctype="Art Shipment"]').remove();
 		if (frm.is_new() == undefined) {
 			frappe.call('art_collections.purchase_order_controller.get_connected_shipment', {
 				purchase_order: frm.doc.name
 			}).then(r => {
-				console.log(r, 'r')
 				if (r.message && r.message != undefined) {
 					let count = r.message.length
 					let link = $(`

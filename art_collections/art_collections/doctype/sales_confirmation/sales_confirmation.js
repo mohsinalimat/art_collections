@@ -2,6 +2,19 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Sales Confirmation', {
+
+	setup: function (frm) {
+		frm.set_query("contact_person", function () {
+			return {
+				query: 'frappe.contacts.doctype.contact.contact.contact_query',
+				filters: {
+					link_doctype: "Supplier",
+					link_name: frm.doc.supplier
+				}
+			};
+		});
+	},
+
 	refresh: function (frm) {
 		frm.trigger("add_custom_buttons");
 	},
@@ -11,6 +24,8 @@ frappe.ui.form.on('Sales Confirmation', {
 			d.amount = (d.qty || 0) * (d.rate || 0);
 		});
 	},
+
+
 
 	supplier: function (frm) {
 		frappe.call({
@@ -59,11 +74,13 @@ frappe.ui.form.on('Sales Confirmation', {
 			}, __("Tools"));
 		}
 
-		frm.add_custom_button(__("Make Details Excel"), function () {
+		frm.add_custom_button(__("Make Item Details Excel"), function () {
 			return frm.call({
-				method: 'make_details_excel',
+				method: 'email_supplier',
 				doc: frm.doc,
-				args: {}
+				args: {
+					show_email_dialog: 0
+				}
 			}).then((r) => {
 				frm.reload_doc();
 			});
@@ -93,9 +110,21 @@ frappe.ui.form.on('Sales Confirmation', {
 							frappe.throw(__("Invalid Upload file for Sales Confirmation"))
 						}
 						set_sheet_ref(ws, 5);
-						var csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
-						var data = frappe.utils.csv_to_array(csv);
-						frappe.utils.add_rows(frm, frm.fields_dict[fieldname], data)
+
+						// set xlsx values to grid items
+						let items = XLSX.utils.sheet_to_json(ws, { blankrows: false });
+						items.forEach(cdn => {
+							frm.doc.sales_confirmation_detail
+								.filter(d => { return d.item_code == cdn["Item Code"] })
+								.forEach(d => {
+									for (const key in cdn) {
+										if (Object.hasOwnProperty.call(cdn, key)) {
+											frappe.model.set_value(d.doctype, d.name, frappe.scrub(key), cdn[key])
+										}
+									}
+								})
+						});
+						frm.refresh_field('sales_confirmation_detail')
 						frm.dirty();
 					}
 					reader.readAsArrayBuffer(file.file_obj)
@@ -137,38 +166,14 @@ const value_formatter_map = {
 	"Float": val => flt(val),
 };
 
-frappe.utils.add_rows = function (frm, grid_field, data) {
-	frm.clear_table(grid_field.df.fieldname);
-
-	const HEADER_ROW = 0;
-	const fieldnames = data[HEADER_ROW].map(i => { return frappe.scrub(i) });
-
-	$.each(data.slice(1), (i, row) => {
-		if (row.some((cell) => cell != undefined)) {
-			let d = frm.add_child(grid_field.df.fieldname);
-			$.each(row, (ci, value) => {
-				let fieldname = fieldnames[ci];
-				let df = frappe.meta.get_docfield(grid_field.df.options, fieldname);
-				if (df) {
-					d[fieldnames[ci]] = value_formatter_map[df.fieldtype]
-						? value_formatter_map[df.fieldtype](value)
-						: value;
-				}
-			});
-		}
-	});
-	frm.refresh_field(grid_field.df.fieldname)
-
-}
-
 function set_sheet_ref(ws, skip_rows = 0) {
 	var rowNum;
 	var range = XLSX.utils.decode_range(ws['!ref']);
-	for (rowNum = skip_rows + 1; rowNum <= range.e.r; rowNum++) {
-		var nextCell = ws[XLSX.utils.encode_cell({ r: rowNum, c: 1 })];
+	for (rowNum = skip_rows; rowNum <= range.e.r; rowNum++) {
+		var nextCell = ws[XLSX.utils.encode_cell({ r: rowNum, c: 0 })];
 		if (typeof nextCell === 'undefined' || nextCell == "") {
 			break
 		}
 	}
-	ws['!ref'] = XLSX.utils.encode_cell({ r: skip_rows + 1, c: 1 }) + ":Q" + rowNum;
+	ws['!ref'] = XLSX.utils.encode_cell({ r: skip_rows, c: 0 }) + ":Q" + rowNum;
 }

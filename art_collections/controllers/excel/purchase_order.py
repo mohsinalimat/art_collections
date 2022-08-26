@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from locale import currency
+from unittest import skip
 import frappe
 from frappe import _
 import io
@@ -10,6 +11,7 @@ from openpyxl import load_workbook, Workbook
 from art_collections.art_collections.doctype.sales_confirmation.sales_confirmation import (
     make_from_po,
 )
+import os
 
 
 def on_submit_purchase_order(doc, method=None):
@@ -162,32 +164,42 @@ def make_supplier_email_attachments(po_name):
     """
 
     # item details excel
-
-    # frappe.throw("TODO: change excel template for items excel")
-    template_path = frappe.get_app_path(
-        "art_collections", "controllers", "item_import_template.xlsx"
-    )
+    data = []
     from art_collections.controllers.item_import import get_records
 
-    template = load_workbook(template_path)
-    sheet = template["Sheet1"]
-    sheet.delete_rows(3, sheet.max_row - 1)
+    if frappe.db.exists("Purchase Order", po_name):
+        filter_sql = """
+        where exists (select 1 from `tabPurchase Order Item` x where x.item_code = ti.item_code and x.parent = '{}')
+        """.format(
+            po_name
+        )
+        kwargs = {"filter_sql": filter_sql, "doctype": "Item", "as_dict": True}
+        data = get_records(**kwargs)
+        print([d for d in data[0].keys()])
 
-    filter_sql = """
-    where exists (select 1 from `tabPurchase Order Item` x where x.item_code = ti.item_code and x.parent = '{}')
-    """.format(
-        po_name
+    template_file_path = os.path.join(
+        os.path.dirname(__file__),
+        "purchase_order_supplier_email_item_details.xlsx",
     )
+    workbook = load_workbook(template_file_path)
 
-    kwargs = {"filter_sql": filter_sql, "doctype": "Item"}
+    sheet = workbook["configuration"]
+    fields = [col.value for col in sheet["B"][1:]]
+    skip_rows = cint(sheet["C2"].value)
 
-    data = get_records(**kwargs)
+    SHEET_NAME = "Item Details"
+    sheet = workbook[SHEET_NAME]
+    sheet.delete_rows(skip_rows + 1, sheet.max_row - 1)
+    workbook.active = workbook[SHEET_NAME]
+
+    # take fields from configuration in excel
+    data = [[d.get(col) for col in fields] for d in data]
 
     for row, d in enumerate(data):
         for col, value in enumerate(d):
-            sheet.cell(row=row + 3, column=col + 1, value=value)
+            sheet.cell(row=row + skip_rows + 1, column=col + 1, value=value)
     out = io.BytesIO()
-    template.save(out)
+    workbook.save(out)
 
     attach_file(
         out.getvalue(),
@@ -198,7 +210,6 @@ def make_supplier_email_attachments(po_name):
     )
 
     # packaging description
-
     data = frappe.db.sql(
         """
         select 

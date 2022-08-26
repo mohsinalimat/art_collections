@@ -119,6 +119,7 @@
   {
    "fieldname": "qty_per_inner",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Qty per inner",
    "oldfieldname": "conversion_factor",
    "oldfieldtype": "Currency",
@@ -219,7 +220,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-08-17 06:48:48.442297",
+ "modified": "2022-08-26 06:41:07.162704",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Sales Confirmation Detail",

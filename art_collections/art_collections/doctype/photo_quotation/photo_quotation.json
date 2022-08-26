@@ -42,6 +42,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Today",
    "fieldname": "pq_date",
    "fieldtype": "Date",
    "label": "PQ Date"
@@ -101,7 +102,7 @@
    "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-08-25 12:27:00.358792",
+ "modified": "2022-08-26 06:05:20.849423",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

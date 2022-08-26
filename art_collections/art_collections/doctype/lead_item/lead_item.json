@@ -42,8 +42,8 @@
   "is_display_box",
   "is_special_mentions",
   "is_certificates_reqd",
-  "port_of_loading",
   "lead_item_name",
+  "item_group",
   "description",
   "uom",
   "selling_pack_qty",
@@ -201,14 +201,10 @@
    "label": "Certificates Required"
   },
   {
-   "fieldname": "port_of_loading",
-   "fieldtype": "Link",
-   "label": "Port of Loading",
-   "options": "Port Art"
-  },
-  {
    "fieldname": "lead_item_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Lead Item Name"
   },
   {
@@ -262,18 +258,22 @@
   },
   {
    "fieldname": "photo_quotation",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Photo Quotation",
+   "options": "Photo Quotation",
    "read_only": 1
   },
   {
    "default": "Selection in Progress",
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Status",
-   "options": "Selection in Progress\nItem Created\nDisabled"
+   "options": "Selection in Progress\nItem Created\nDisabled",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -340,12 +340,24 @@
    "fieldname": "racking_bag",
    "fieldtype": "Check",
    "label": "Racking Bag"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2022-08-26 03:40:52.693806",
+ "links": [
+  {
+   "link_doctype": "Item",
+   "link_fieldname": "lead_item_cf"
+  }
+ ],
+ "modified": "2022-08-26 06:10:31.262649",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

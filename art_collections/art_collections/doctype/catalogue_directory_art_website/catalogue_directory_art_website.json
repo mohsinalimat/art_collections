@@ -1,0 +1,45 @@
+{
+ "actions": [],
+ "allow_guest_to_view": 1,
+ "allow_rename": 1,
+ "creation": "2022-08-26 08:22:18.833200",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "catalogue",
+  "universe"
+ ],
+ "fields": [
+  {
+   "description": "filter only Catalogue",
+   "fieldname": "catalogue",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Catalogue",
+   "options": "Catalogue Directory Art",
+   "reqd": 1
+  },
+  {
+   "fieldname": "universe",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Universe",
+   "options": "Catalogue Directory Art",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2022-08-26 08:41:01.720527",
+ "modified_by": "Administrator",
+ "module": "Art Collections",
+ "name": "Catalogue Directory Art Website",
+ "nsm_parent_field": "parent_catalogue_directory_art",
+ "owner": "Administrator",
+ "permissions": [],
+ "route": "route",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -95,9 +95,13 @@
   {
    "link_doctype": "Purchase Order",
    "link_fieldname": "photo_quotation_cf"
+  },
+  {
+   "link_doctype": "Sales Confirmation",
+   "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-08-22 05:25:50.811117",
+ "modified": "2022-08-25 12:27:00.358792",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

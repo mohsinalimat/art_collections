@@ -1,4 +1,21 @@
 frappe.ui.form.on('Item', {
+   onload:function (frm) {
+      frm.set_query('catalogue', 'catalogue_directory_art_item_detail_cf', () => {
+         return {
+             filters: {
+                 'node_type': 'Catalogue'
+             }
+         }
+     })
+     frm.set_query('universe', 'catalogue_directory_art_item_detail_cf', (frm,cdt,cdn) => {
+      let row=locals[cdt][cdn]
+      return {
+          filters: {
+              'parent_catalogue_directory_art': row.catalogue
+          }
+      }
+  })     
+   },
    qty_in_selling_pack_art:function (frm) {
       if (frm.is_new() == 1) {
       frm.set_value("item_name", new_item_name(frm))
@@ -201,6 +218,24 @@ frappe.ui.form.on('Product Packing Dimensions', {
       var product_packing_dimensions_art = frappe.get_doc(cdt, cdn);
 		   frappe.model.set_value(cdt, cdn, 'cbm', calculate_cbm(row.length,row.width,row.thickness,product_packing_dimensions_art));
 	},      
+});
+
+frappe.ui.form.on('Catalogue Directory Art Item Detail', {
+   before_catalogue_directory_art_item_detail_cf_remove: function(frm, cdt, cdn) {
+      let row=locals[cdt][cdn]
+		frappe.call({
+			method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.del_catalogue_item_universe_based_on_item_doc',
+			args: {
+				'catalogue':row.catalogue,
+				'universe': row.universe,
+            'item':frm.doc.name
+			},
+			freeze: true,
+			callback: (r) => {
+            console.log(r)
+			},
+		})	      
+   }
 });
 
 function calculate_cbm(length,width,thickness,product_packing_dimensions_art) {

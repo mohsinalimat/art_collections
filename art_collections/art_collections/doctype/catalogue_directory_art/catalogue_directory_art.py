@@ -12,6 +12,7 @@ from frappe.utils.nestedset import NestedSet
 from frappe.website.website_generator import WebsiteGenerator
 from frappe.website.render import clear_cache
 from frappe.website.doctype.website_slideshow.website_slideshow import get_slideshow
+from frappe.utils import get_link_to_form
 # from erpnext.shopping_cart.product_info import set_product_info_for_website
 from erpnext.e_commerce.shopping_cart.product_info import set_product_info_for_website
 # from erpnext.utilities.product import get_qty_in_stock
@@ -277,3 +278,72 @@ def get_item_group_defaults(item, company):
 
 	return frappe._dict()
 
+@frappe.whitelist()
+def impact_on_website_item_due_to_catalogue_directory_art(show_in_website,catalogue_name):
+	catalogue=frappe.get_doc('Catalogue Directory Art',catalogue_name)
+	if int(show_in_website)==1:
+		for item in catalogue.get('items_in_universe'):
+			website_item_list=frappe.db.get_list('Website Item', filters={'item_code':item.item},fields=['name'])
+			if len(website_item_list)>0:
+				for website_item in website_item_list:
+					frappe.db.set_value('Website Item', website_item.name, 'published', 1)
+					frappe.msgprint(_("Website item {0} is set to <b>published</b> for item {0} of universe.")
+					.format(get_link_to_form("Website Item",website_item.name),item.item), alert=True)
+			else:
+				frappe.msgprint(_("There is no website item for item {0} of universe.").format(item.item), alert=True)
+
+	elif int(show_in_website)==0:
+		parent_catalogue_directory_art=catalogue.parent_catalogue_directory_art
+		for item in catalogue.get('items_in_universe'):
+			website_item_list=frappe.db.get_list('Website Item', filters={'item_code':item.item},fields=['name'])
+			if len(website_item_list)>0:
+				for website_item in website_item_list:
+					website_item_doc=frappe.get_doc('Website Item',website_item.name)
+					found_catalogue_item=False
+					for catalogue_directory_art_website in website_item_doc.get("catalogue_directory_art_website_cf"):
+						print('catalogue_directory_art_website',catalogue_directory_art_website)
+						print(catalogue_directory_art_website.catalogue,parent_catalogue_directory_art, catalogue_directory_art_website.universe,catalogue_name)
+						if catalogue_directory_art_website.catalogue==parent_catalogue_directory_art and catalogue_directory_art_website.universe==catalogue_name:
+							found_catalogue_item=True
+							[website_item_doc.catalogue_directory_art_website_cf.remove(d) for d in website_item_doc.get('catalogue_directory_art_website_cf') if d.name == catalogue_directory_art_website.name]	
+							website_item_doc.save(ignore_permissions=True)							
+							frappe.msgprint(_("Website item {0} : from 'Catalogue Directory Art Website' : row {1} with catalogue {2} and universe {3} is removed")
+			.format(get_link_to_form("Website Item",website_item.name),catalogue_directory_art_website.idx,catalogue_directory_art_website.catalogue,catalogue_directory_art_website.universe), alert=True)
+				if found_catalogue_item==False:
+					frappe.msgprint(_("There is no corresponding entry in 'Catalogue Directory Art' website item {0} of universe.").format(item.item), alert=True)
+
+			else:
+				frappe.msgprint(_("There is no website item for item {0} of universe.").format(item.item), alert=True)		
+
+@frappe.whitelist()
+def get_universe_items_from_catalogue_directory_art(item_name):
+	catalogue_directory_art_website_cf=[]
+	item_universe_list=frappe.db.get_list('Item Universe Page Art', filters={'item':item_name},fields=['parent'])
+	for universe in item_universe_list:
+		catalogue_dict = frappe.db.get_value('Catalogue Directory Art', universe.parent, ['show_in_website', 'parent_catalogue_directory_art'], as_dict=1)
+		if catalogue_dict.show_in_website==1:
+			catalogue_directory_art_website_cf.append({'catalogue':catalogue_dict.parent_catalogue_directory_art,'universe':universe.parent})
+	return catalogue_directory_art_website_cf
+
+#  from item --> cat
+@frappe.whitelist()
+def del_catalogue_item_universe_based_on_item_doc(catalogue,universe,item):
+	item_universe_list=frappe.db.get_list('Item Universe Page Art', filters={'item':item},fields=['parent','name'])
+	for universe_row in item_universe_list:
+		if universe_row.parent==universe:
+			parent_catalogue_directory_art = frappe.db.get_value('Catalogue Directory Art', universe_row.parent, 'parent_catalogue_directory_art')	
+			if parent_catalogue_directory_art==catalogue:
+				catalogue_doc=frappe.get_doc("Catalogue Directory Art",universe_row.parent)
+				[catalogue_doc.items_in_universe.remove(d) for d in catalogue_doc.get('items_in_universe') if d.name == universe_row.name]	
+				catalogue_doc.save(ignore_permissions=True)
+				frappe.msgprint(_("{0} is removed from Catalogue Directory {1} universe.").format(item,universe), alert=True)
+
+#  from cat --> item
+@frappe.whitelist()
+def del_catalogue_directory_art_item_based_on_catalogue(catalogue,universe,item):
+	catalogue_directory_art_item_list=frappe.db.get_list('Catalogue Directory Art Item Detail', filters={'catalogue':catalogue,'universe':universe,'parent':item},fields=['name'])
+	for catalogue_directory_art_item in catalogue_directory_art_item_list:
+		item_doc=frappe.get_doc("Item",item)
+		[item_doc.catalogue_directory_art_item_detail_cf.remove(d) for d in item_doc.get('catalogue_directory_art_item_detail_cf') if d.name == catalogue_directory_art_item.name]	
+		item_doc.save(ignore_permissions=True)	
+		frappe.msgprint(_("{0} is removed from Item's universe {1} under catalogue {2}.").format(item,universe,catalogue), alert=True)

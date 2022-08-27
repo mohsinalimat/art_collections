@@ -3,6 +3,7 @@ import frappe
 from frappe import _
 from frappe.utils import nowdate,add_days,flt,cstr
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
+from frappe.utils import get_link_to_form
 
 
 def item_autoname(self, method):
@@ -13,10 +14,27 @@ def item_autoname(self, method):
 def item_custom_validation(self,method):
 	set_uom_quantity_of_inner_in_outer(self)
 	set_weight_for_stock_uom_of_packing_dimensions(self)
+	sync_catalogue_directory_universe_details(self)
 	# set_custom_item_name(self)
 	# fix : shopping_cart
 	# sync_description_with_web_long_description(self)
 	# update_flag_table(self)
+
+@frappe.whitelist()
+def sync_catalogue_directory_universe_details(self):
+	for item_universe in self.catalogue_directory_art_item_detail_cf:
+		found=False
+		catalogue=frappe.get_doc('Catalogue Directory Art',item_universe.universe)
+		if catalogue.parent_catalogue_directory_art==item_universe.catalogue:
+			for item in catalogue.get('items_in_universe'):
+				if item.item==self.name:
+					found=True
+		if found==False:
+			universe_item=catalogue.append("items_in_universe",{})
+			universe_item.item=self.name
+			catalogue.save(ignore_permissions=True)
+			frappe.msgprint(_("Item {0} is added to universe {1} under catalogue {2}.")
+					.format(self.name,get_link_to_form("Catalogue Directory Art",item_universe.universe),catalogue.parent_catalogue_directory_art), alert=True)		
 
 def set_weight_for_stock_uom_of_packing_dimensions(self):
 	if self.weight_per_unit:

@@ -112,9 +112,12 @@ def _make_excel_attachment(doctype, docname):
 def attach_print_pdf(doctype, name):
     doc = frappe.get_doc(doctype, name)
     print_formats = ["Art Sales invoice"]
-    if frappe.db.get_value("Sales Invoice", name, ["mode_of_payment_art"]) in (
-        "Traite",
-        "LCR",
+    mode_of_payment_art = frappe.db.get_value(
+        "Sales Invoice", name, ["mode_of_payment_art"]
+    )
+
+    if mode_of_payment_art and (
+        mode_of_payment_art == "Traite" or "LCR" in mode_of_payment_art
     ):
         print_formats.append("Art SI")
 

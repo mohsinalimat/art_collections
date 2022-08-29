@@ -5,8 +5,10 @@ Settings","welcome_email_template") %}
 {% if not custom_template %}
 {% include "frappe/templates/emails/new_user.html" %}
 {% else %}
-
-{% set html = frappe.db.get_value("Email Template", custom_template,"response_html") %}
+{% set html_field = "response_html" if frappe.utils.cint(frappe.db.get_value("Email Template",
+custom_template,"use_html")) else
+"response" %}
+{% set html = frappe.db.get_value("Email Template", custom_template, html_field) %}
 {{frappe.render_template(html,
 { "first_name": first_name, "user": user, "title": subject, "login_url": login_url, "site_url": site_url,"created_by":
 created_by, "link": link }

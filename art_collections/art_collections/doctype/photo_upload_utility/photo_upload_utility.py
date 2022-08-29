@@ -140,12 +140,12 @@ def upload_photo_files(start_time):
                     reason='not_an_image_file'
                 elif frappe.db.exists("File", {"file_name": fname}):
                     reason='duplicate_entry'
+                elif ((suffix_in_fname not in single_file_suffix) and (suffix_in_fname not in multi_file_suffix)):   
+                    reason='not_a_valid_suffix' 
                 elif check_duplicate_content(dirpath, filename)!=None:
                     reason=check_duplicate_content(dirpath, filename)
                 elif item_code_in_fname not in list_of_item_code:
                     reason='item_code_doesnot_exist'
-                elif ((suffix_in_fname not in single_file_suffix) and (suffix_in_fname not in multi_file_suffix)):   
-                    reason='not_a_valid_suffix' 
                 elif suffix_in_fname:
                     if (suffix_in_fname in single_file_suffix):
                         reason=None

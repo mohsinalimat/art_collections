@@ -138,20 +138,21 @@ frappe.ui.form.on('Photo Upload Utility', {
 						${__('Notes')}
 					</h4>
 					<ul>
-					<li>valid Photo file formats(i.e. file extensions) gif, jpg, jpeg,tiff,png,svg</li>
-					<li>valid File name convention&nbsp; 
-						: a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; 
+					<li>Valid photo file formats(i.e. file extensions) gif, jpg, jpeg, tiff, png, svg</li>
+					<li>Valid file name convention&nbsp; 
+						:a) For main item :&nbsp;&nbsp;itemcode.jpg&nbsp; 
 						b)&nbsp;For website
 						slideshow&nbsp; : Itemcode-{suffix} ({count}).extn</li>
 					<li>e.g. 34345.jpeg, 34345 (1).jpeg, 34345 (2).jpeg <br>
 					34345-a.jpeg, 34345-a (1).jpeg, 34345-a (2).jpeg<br>
 					34345-ba.jpeg<br>
 					34345-fr.jpeg</li>
-					<li>valid suffix = {item_code}, fr, ba, a. It needs to be set in 'Art Collections Settings' under 'Photo Upload Utility' section</li>
+					<li>Valid suffix = {item_code}, fr, ba, a. It needs to be set in 'Art Collections Settings' under 'Photo Upload Utility' section</li>
 					<li>fr and ba will be only one per item , while Ambiance (a) , Détouré ({item_code}) could be multiple with number suffix
 						. e.g. 34345.jpeg, 34345 (1).jpeg, 34345-a.jpeg, 34345-a (1).jpeg</li>
-					<li> count in filename has to be serial. i.e. if system has 34345-a (1).jpeg next file name has to be 34345-a (2).jpeg. If 34345-a (4).jpeg is given it would give error</li>
-					<li>upon successful upload , the main image gets attached with the Item and website slideslow , while
+					<li>Count in filename has to be serial. i.e. if system has 34345-a (1).jpeg next file name has to be 34345-a (2).jpeg. If 34345-a (4).jpeg is given it would give error</li>
+					<li>Count in filename with suffix that are allowed multiple times should start with None. i.e. first file for 'a' has to be  34345-a.jpeg and not  34345-a (1).jpeg</li>
+					<li>Upon successful upload , the main image gets attached with the Item and website slideslow , while
 						website slideshow (with name as item_code) is created with the other item images <br>
 						Upon action --> "Publish in Website" , website item gets created. 
 						Select slidshow (34345) and save it. The relevant images , slideshow becomes visible on web.</li>

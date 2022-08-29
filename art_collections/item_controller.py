@@ -22,19 +22,41 @@ def item_custom_validation(self,method):
 
 @frappe.whitelist()
 def sync_catalogue_directory_universe_details(self):
+	#  add from item --> catalogue
 	for item_universe in self.catalogue_directory_art_item_detail_cf:
 		found=False
 		catalogue=frappe.get_doc('Catalogue Directory Art',item_universe.universe)
 		if catalogue.parent_catalogue_directory_art==item_universe.catalogue:
 			for item in catalogue.get('items_in_universe'):
 				if item.item==self.name:
+					item_universe.page_no=item.item_page_no
 					found=True
 		if found==False:
 			universe_item=catalogue.append("items_in_universe",{})
 			universe_item.item=self.name
 			catalogue.save(ignore_permissions=True)
 			frappe.msgprint(_("Item {0} is added to universe {1} under catalogue {2}.")
-					.format(self.name,get_link_to_form("Catalogue Directory Art",item_universe.universe),catalogue.parent_catalogue_directory_art), alert=True)		
+					.format(self.name,get_link_to_form("Catalogue Directory Art",item_universe.universe),catalogue.parent_catalogue_directory_art), alert=True)	
+
+	# add from catalogue --> item
+	item_universe_list=frappe.db.get_list('Item Universe Page Art', filters={'item':self.name},fields=['parent','name','item_page_no'])
+	for universe_row in item_universe_list:
+			parent_catalogue_directory_art = frappe.db.get_value('Catalogue Directory Art', universe_row.parent, 'parent_catalogue_directory_art')	
+			catalogue_type= frappe.db.get_value('Catalogue Directory Art', parent_catalogue_directory_art, 'catalogue_type')	or None
+			catalogue_universe=universe_row.parent
+			item_page_no=universe_row.item_page_no
+			for item_universe in self.catalogue_directory_art_item_detail_cf:
+				found=False			
+				if item_universe.catalogue==parent_catalogue_directory_art and item_universe.universe==catalogue_universe:
+					found=True
+					break
+			if found==False:
+				row=self.append("catalogue_directory_art_item_detail_cf",{})
+				row.catalogue=parent_catalogue_directory_art
+				row.catalogue_type=catalogue_type
+				row.universe=catalogue_universe
+				row.page_no=item_page_no
+				frappe.msgprint(_("Catalogue {0} is with universe {1} is added in item.").format(row.catalogue,row.universe), alert=True)	 
 
 def set_weight_for_stock_uom_of_packing_dimensions(self):
 	if self.weight_per_unit:

@@ -68,6 +68,7 @@ frappe.views.CustomCommunicationComposer = class CustomCommunicationComposer ext
 frappe.show_email_dialog = function (frm, args) {
     // show email dialog with pre-set values for default print format 
     // and email template and attach_print
+    let attach_print = !['Sales Confirmation', 'Photo Quotation'].includes(frm.doc.doctype);
 
     let composer = new frappe.views.CustomCommunicationComposer({
         // let composer = new frappe.views.CommunicationComposer({
@@ -75,7 +76,7 @@ frappe.show_email_dialog = function (frm, args) {
         frm: frm,
         subject: __(frm.meta.name) + ': ' + frm.docname,
         recipients: args.recipients || frm.doc.email || frm.doc.email_id || frm.doc.contact_email,
-        attach_document_print: false,
+        attach_document_print: attach_print,
         real_name: frm.doc.real_name || frm.doc.contact_display || frm.doc.contact_name,
         callback: args.callback
     });

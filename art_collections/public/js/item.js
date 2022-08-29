@@ -16,46 +16,46 @@ frappe.ui.form.on('Item', {
       }
   })     
    },
-   qty_in_selling_pack_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   item_group:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   main_design_color_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },      
-   length_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   width_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   thickness_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   product_size_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },
-   product_size_group_art:function (frm) {
-      if (frm.is_new() == 1) {
-      frm.set_value("item_name", new_item_name(frm))
-      }
-   },         
+   // qty_in_selling_pack_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // item_group:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // main_design_color_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },      
+   // length_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // width_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // thickness_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // product_size_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },
+   // product_size_group_art:function (frm) {
+   //    if (frm.is_new() == 1) {
+   //    frm.set_value("item_name", new_item_name(frm))
+   //    }
+   // },         
    validate:function (frm) {
       if (frm.doc.is_existing_product_cf==1) {
          for (let index = 0; index < frm.doc.existing_product_art_work_cf.length; index++) {

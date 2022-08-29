@@ -42,7 +42,7 @@
    "fieldname": "thickness",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Thickness (cm)"
+   "label": "Thickness / Height (cm)"
   },
   {
    "columns": 2,
@@ -71,7 +71,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-03-25 08:22:39.837110",
+ "modified": "2022-08-29 09:09:26.155433",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Product Packing Dimensions",

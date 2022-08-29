@@ -159,7 +159,7 @@
   {
    "fieldname": "item_thickness",
    "fieldtype": "Data",
-   "label": "Item Thickness (cm)"
+   "label": "Item Thickness / Height (cm)"
   },
   {
    "fieldname": "packing_type",
@@ -356,7 +356,7 @@
    "link_fieldname": "lead_item_cf"
   }
  ],
- "modified": "2022-08-26 15:04:58.776790",
+ "modified": "2022-08-29 09:10:28.844627",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

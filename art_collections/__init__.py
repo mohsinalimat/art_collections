@@ -8,44 +8,6 @@ __version__ = "0.0.1"
 
 import frappe
 
-patches_loaded = False
-app_name = "art_collections"
-
-
-def load_monkey_patches():
-    """
-    https://github.com/aakvatech/CSF_TZ/blob/f3fd774aa8bb37e314f769a59f24285d238dae94/csf_tz/__init__.py
-    Loads all modules present in monkey_patches to override some logic
-    in Frappe / ERPNext. Returns if patches have already been loaded earlier.
-    """
-    global patches_loaded
-
-    if patches_loaded:
-        return
-
-    patches_loaded = True
-
-    if app_name not in frappe.get_installed_apps():
-        return
-
-    for module_name in os.listdir(frappe.get_app_path(app_name, "monkey_patches")):
-        if not module_name.endswith(".py") or module_name == "__init__.py":
-            continue
-
-        importlib.import_module(app_name + ".monkey_patches." + module_name[:-3])
-        frappe.log_error(app_name + ": loaded module " + module_name)
-
-
-old_get_hooks = frappe.get_hooks
-
-
-def get_hooks(*args, **kwargs):
-    load_monkey_patches()
-    return old_get_hooks(*args, **kwargs)
-
-
-frappe.get_hooks = get_hooks
-
 # from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation,get_party
 # from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings import get_shopping_cart_settings, show_quantity_in_website
 # from erpnext.utilities.product import get_price

@@ -110,9 +110,23 @@ def add_fixtures():
             {
                 "doctype": "Email Template",
                 "name": "Welcome Email Art",
-                "response_html": '\n\t{{_("Hello")}} {{ first_name }}{% if last_name %} {{ last_name}}{% endif %},\n<p>\n    This is a custom welcome message set from Email Template <br>\n\n</p>\n{% set site_link = "<a href=\'" + site_url + "\'>" + site_url + "</a>" %}\n<p>{{_("A new account has been created for you at {0}").format(site_link)}}.</p>\n<p>{{_("Your login id is")}}: <b>{{ user }}</b>\n<p>{{_("Click on the link below to complete your registration and set a new password")}}.</p>\n\n<p style="margin: 15px 0px;">\n\t<a href="{{ link }}" rel="nofollow" class="btn btn-primary">{{ _("Complete Registration") }}</a>\n</p>\n\n{% if created_by != "Administrator" %}\n<br>\n<p style="margin-top: 15px">\n\t{{_("Thanks")}},<br>\n\t{{ created_by }}\n</p>\n{% endif %}\n<br>\n<p>\n\t{{_("You can also copy-paste following link in your browser")}}<br>\n\t<a href="{{ link }}">{{ link }}</a>\n</p>',
+                "response": """
+                        {% set site_link = "<a href='" + site_url + "'>" + site_url + "</a>" %}
+                        <p>{{_("Hello")}} {{ first_name }}{% if last_name %} {{ last_name}}{% endif %},</p>
+                        <p> This is a custom welcome message set from Email Template <br></p>
+                        <p>{{_("A new account has been created for you at {0}").format(site_link)}}.</p>
+                        <p>{{_("Your login id is")}}: <b>{{ user }}</b></p>
+                        <p>{{_("Click on the link below to complete your registration and set a new password")}}.</p>
+                        <p><a href="{{ link }}" rel="nofollow" class="btn btn-primary">{{ _("Complete Registration") }}</a></p>
+                        {% if created_by != "Administrator" %}
+                        <p>{{_("Thanks")}},<br></p>
+                        <p>{{ created_by }}</p>
+                        {% endif %}
+                        <p>{{_("You can also copy-paste following link in your browser")}}<br></p>
+                        <p><a href="{{ link }}">{{ link }}</a></p>
+                """,
                 "subject": " Welcome to Artifêtes Diffusion",
-                "use_html": 1,
+                "use_html": 0,
                 "owner": "Administrator",
             }
         ]

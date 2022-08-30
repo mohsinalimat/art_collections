@@ -17,6 +17,11 @@ $(document).ready(function () {
 
 $(document).on('form-refresh', function (frm) {
     if (cur_frm && cur_frm.dashboard) {
+
+        set_ignore_pricing_rule(cur_frm);
+
+
+
         var original = cur_frm.dashboard.set_badge_count;
         cur_frm.dashboard.set_badge_count = function () {
             original.apply(this, arguments);
@@ -68,10 +73,17 @@ frappe.views.CustomCommunicationComposer = class CustomCommunicationComposer ext
 frappe.show_email_dialog = function (frm, args) {
     // show email dialog with pre-set values for default print format 
     // and email template and attach_print
-    let attach_print = !['Sales Confirmation', 'Photo Quotation'].includes(frm.doc.doctype);
+    let attach_print = 1;
+
+    if (['Sales Confirmation', 'Photo Quotation'].includes(frm.doc.doctype)) {
+        attach_print = 0;
+    } else if (frm.doc.doctype == "Sales Invoice" && frm.doc.mode_of_payment_art) {
+        if (frm.doc.mode_of_payment_art == 'Traite' || (frm.doc.mode_of_payment_art.indexOf('LCR') > -1)) {
+            attach_print = 0;
+        }
+    }
 
     let composer = new frappe.views.CustomCommunicationComposer({
-        // let composer = new frappe.views.CommunicationComposer({
         doc: frm.doc,
         frm: frm,
         subject: __(frm.meta.name) + ': ' + frm.docname,
@@ -253,4 +265,16 @@ frappe.add_product_excel_button = function (frm, method, btn, attach) {
         },
         __("Tools")
     );
+}
+
+
+set_ignore_pricing_rule = function (frm) {
+    if (frm.is_new()) {
+        if (['Quotation', 'Sales Invoice', 'Sales Order', 'Delivery Note'].includes(frm.doctype)) {
+            if (frm.get_field('ignore_pricing_rule')) {
+                console.log('setting');
+                frm.set_value('ignore_pricing_rule', 1)
+            }
+        }
+    }
 }

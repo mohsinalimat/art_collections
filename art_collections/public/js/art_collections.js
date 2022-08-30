@@ -78,7 +78,7 @@ frappe.show_email_dialog = function (frm, args) {
     if (['Sales Confirmation', 'Photo Quotation'].includes(frm.doc.doctype)) {
         attach_print = 0;
     } else if (frm.doc.doctype == "Sales Invoice" && frm.doc.mode_of_payment_art) {
-        if (frm.doc.mode_of_payment_art == 'Traite' || frm.doc.mode_of_payment_art > -1) {
+        if (frm.doc.mode_of_payment_art == 'Traite' || frm.doc.mode_of_payment_art.indexOf('LCR') > -1) {
             attach_print = 0;
         }
     }

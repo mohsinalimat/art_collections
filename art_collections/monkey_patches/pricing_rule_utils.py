@@ -16,6 +16,11 @@ def filter_pricing_rules_for_qty_amount(qty, rate, pricing_rules, args=None):
     """Override check fo min_qty while applying pricing rule if:
     >> customer has_volume_price = 1
     >> pricing_rule is_volume_price_cf = 1"""
+
+    meta = frappe.get_meta("Customer")
+    if not meta.has_field("has_volume_price_cf"):
+        return _filter_pricing_rules_for_qty_amount(qty, rate, pricing_rules, args)
+
     has_volume_price_cf = frappe.db.get_value(
         "Customer", args.get("customer"), "has_volume_price_cf"
     )
@@ -31,7 +36,8 @@ def filter_pricing_rules_for_qty_amount(qty, rate, pricing_rules, args=None):
             if cint(has_volume_price_cf) and cint(rule.get("is_volume_price_cf")):
                 rule.min_qty = 0
                 rule.min_amt = 0
-    rules = _filter_pricing_rules_for_qty_amount(qty, rate, pricing_rules, args)
+        rules = _filter_pricing_rules_for_qty_amount(qty, rate, pricing_rules, args)
+
     return rules
 
 

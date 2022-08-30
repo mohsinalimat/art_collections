@@ -33,6 +33,7 @@ def load_monkey_patches():
             continue
 
         importlib.import_module(app_name + ".monkey_patches." + module_name[:-3])
+        frappe.log_error(app_name + ": loaded module " + module_name)
 
 
 old_get_hooks = frappe.get_hooks

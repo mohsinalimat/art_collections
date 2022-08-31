@@ -77,6 +77,7 @@ class SalesConfirmation(Document):
             for cdn in item.supplier_items:
                 if cdn.supplier == self.supplier:
                     cdn.supplier_part_description_art = d.supplier_item_description_ar
+                    cdn.supplier_part_no = d.supplier_part_no
 
             # update uoms
             inner = frappe.db.get_single_value(

@@ -288,12 +288,16 @@ class PhotoQuotation(Document):
         if po_name:
             po = frappe.get_doc("Purchase Order", po_name)
         else:
+            supplier_currency = frappe.db.get_value(
+                "Supplier", self.supplier, "default_currency"
+            )
             po = frappe.get_doc(
                 {
                     "doctype": "Purchase Order",
                     "supplier": self.supplier,
                     "transaction_date": today(),
                     "photo_quotation_cf": self.name,
+                    "currency": supplier_currency,
                 }
             )
 

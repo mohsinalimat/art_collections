@@ -156,6 +156,10 @@ frappe.ui.form.on('Photo Upload Utility', {
 						website slideshow (with name as item_code) is created with the other item images <br>
 						Upon action --> "Publish in Website" , website item gets created. 
 						Select slidshow (34345) and save it. The relevant images , slideshow becomes visible on web.</li>
+					<li>if you keep on uploading same file content by renaming it , it would give duplicate content error, with stating the file that has the same content. <br>
+					ex. 77771.jpeg": "failed__duplicate_content_with_filename_e142275285"</li>
+					<li>Each doctype has limit regarding max no of attachments it can have.It can be checked at Customize Form->Max Attachments.<br>
+					ex. Items : max 50, Website Slideshow : max 10.</li>	
 					<li>"Photo Status Report" shows the list of items and their count for various images available in the files folder.
 					</li>
 				</ul>

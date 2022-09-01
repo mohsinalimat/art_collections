@@ -118,6 +118,8 @@ frappe.ui.form.on('Customer', {
 
     },
     refresh: function (frm) {
+      frm.remove_custom_button('Get Customer Group Details','Actions');
+
         if (cur_frm.doc.__onload!=undefined && cur_frm.fields_dict['address_html'] && "addr_list" in cur_frm.doc.__onload) {
             var str = frappe.render_template("address_list", cur_frm.doc.__onload)
 

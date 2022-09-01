@@ -2,9 +2,15 @@ import frappe
 from frappe import _
 from frappe.utils import get_link_to_form
 
+from art_collections.api import get_average_delivery_days_art
+
 def purchase_receipt_custom_submit_logic(self,method):
 	enable_allow_order_still_stock_last_logic(self)
 	stock_availability_notification(self)
+	
+	# ID: #317 calculation of average_delivery_days_art
+	for d in self.items:
+		frappe.db.set_value('Item', d.item_code, 'average_delivery_days_art', get_average_delivery_days_art(d.item_code))
 
 def enable_allow_order_still_stock_last_logic(self):
 	if self.items:

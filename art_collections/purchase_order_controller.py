@@ -56,30 +56,33 @@ def check_set_apart_qty(self):
                     .format(frappe.bold(item.item_code),frappe.bold(set_result_item['qty']),frappe.bold(item.qty))))
 
 def fill_item_pack_details(self):
-    total_cbm_art = 0
+    # commenting as per #312
+    # total_outer_cartons_art, cbm_per_outer_art, total_cbm values in po item 
+    # are updated from Sales Confirmation Detail
+    # total_cbm_art = 0
+    # total_outer_cartons_ordered_art = 0
+    # for item in self.items:
+    #     total_outer_cartons_art = 0
 
-    total_outer_cartons_ordered_art = 0
-    for item in self.items:
-        total_outer_cartons_art = 0
+    #     item.cbm_per_outer_art = flt(get_cbm_per_outer_carton(item.item_code))
 
-        item.cbm_per_outer_art = flt(get_cbm_per_outer_carton(item.item_code))
+    #     total_outer_cartons_art = flt(
+    #         item.stock_qty / (get_qty_of_outer_cartoon(item.item_code))
+    #     ) if get_qty_of_outer_cartoon(item.item_code) else total_outer_cartons_art
+    #     item.total_outer_cartons_art = total_outer_cartons_art
 
-        total_outer_cartons_art = flt(
-            item.stock_qty / (get_qty_of_outer_cartoon(item.item_code))
-        ) if get_qty_of_outer_cartoon(item.item_code) else total_outer_cartons_art
-        item.total_outer_cartons_art = total_outer_cartons_art
+    #     if total_outer_cartons_art != 0 and item.cbm_per_outer_art:
+    #         item.total_cbm = flt(total_outer_cartons_art * item.cbm_per_outer_art)
+    #         total_cbm_art += item.total_cbm
+    #     total_outer_cartons_ordered_art += total_outer_cartons_art
 
-        if total_outer_cartons_art != 0 and item.cbm_per_outer_art:
-            item.total_cbm = flt(total_outer_cartons_art * item.cbm_per_outer_art)
-            total_cbm_art += item.total_cbm
-        total_outer_cartons_ordered_art += total_outer_cartons_art
+    self.total_outer_cartons_ordered_art = sum([d.get('total_outer_cartons_art',0) for d in self.items])
+    self.total_cbm_art = sum([d.get('total_cbm',0) for d in self.items])
 
-    self.total_outer_cartons_ordered_art = total_outer_cartons_ordered_art
-    self.total_cbm_art = total_cbm_art
     twenty_foot_filling_percentage=frappe.db.get_single_value('Art Collections Settings', 'filling_percentage_for_20_foot_container') or 28
     forty_foot_filling_percentage=frappe.db.get_single_value('Art Collections Settings', 'filling_percentage_for_40_foot_container') or 63
-    self.filling_percentage_of_20_foot_container_art = (total_cbm_art * 100) / twenty_foot_filling_percentage
-    self.filling_percentage_of_40_foot_container_art = (total_cbm_art * 100) / forty_foot_filling_percentage
+    self.filling_percentage_of_20_foot_container_art = (self.total_cbm_art * 100) / twenty_foot_filling_percentage
+    self.filling_percentage_of_40_foot_container_art = (self.total_cbm_art * 100) / forty_foot_filling_percentage
 
 
 def purchase_order_custom_on_submit(self, method):

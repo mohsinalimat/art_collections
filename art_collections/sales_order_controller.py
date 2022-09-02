@@ -23,7 +23,7 @@ from frappe.utils.user import get_user_fullname
 
 
 def sales_order_custom_validation(self, method):
-    validate_minimum_order_amount_as_per_customer_group(self)
+    # validate_minimum_order_amount_as_per_customer_group(self)
     valiate_payment_terms_and_credit_limit_for_customer(self)
     # validate_inner_qty_and_send_notification(self)
     update_total_saleable_qty(self)
@@ -209,35 +209,35 @@ def create_system_notification(notification, doc, context):
     enqueue_create_notification(users, notification_doc)
 
 
-def validate_minimum_order_amount_as_per_customer_group(self):
-    if self.customer:
-        customer = frappe.get_doc("Customer", self.customer)
-        customer_group = frappe.db.get_value(
-            "Customer", self.customer, "customer_group"
-        )
-        if customer_group:
-            minimum_order_amount_art = frappe.db.get_value(
-                "Customer Group", customer_group, "minimum_order_amount_art"
-            )
-            if (
-                minimum_order_amount_art
-                and self.base_net_total < minimum_order_amount_art
-            ):
+# def validate_minimum_order_amount_as_per_customer_group(self):
+#     if self.customer:
+#         customer = frappe.get_doc("Customer", self.customer)
+#         customer_group = frappe.db.get_value(
+#             "Customer", self.customer, "customer_group"
+#         )
+#         if customer_group:
+#             minimum_order_amount_art = frappe.db.get_value(
+#                 "Customer Group", customer_group, "minimum_order_amount_art"
+#             )
+#             if (
+#                 minimum_order_amount_art
+#                 and self.base_net_total < minimum_order_amount_art
+#             ):
 
-                msg = _(
-                    "For customer group {0} minimum order amount required is {1}.<br>The sales order amount is {2}. Please set higher order value and continue...".format(
-                        frappe.bold(customer_group),
-                        frappe.bold(minimum_order_amount_art),
-                        frappe.bold(self.base_net_total),
-                    )
-                )
+#                 msg = _(
+#                     "For customer group {0} minimum order amount required is {1}.<br>The sales order amount is {2}. Please set higher order value and continue...".format(
+#                         frappe.bold(customer_group),
+#                         frappe.bold(minimum_order_amount_art),
+#                         frappe.bold(self.base_net_total),
+#                     )
+#                 )
 
-                frappe.msgprint(
-                    msg=msg,
-                    title=_("Minimum Order Amount Alert"),
-                    indicator="orange",
-                    alert=False,
-                )
+#                 frappe.msgprint(
+#                     msg=msg,
+#                     title=_("Minimum Order Amount Alert"),
+#                     indicator="orange",
+#                     alert=False,
+#                 )
 
 
 def valiate_payment_terms_and_credit_limit_for_customer(self):

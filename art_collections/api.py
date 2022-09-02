@@ -354,16 +354,25 @@ and tsi.item_code =%s""",item_code,as_dict=True)
         return None			
 
 def get_average_delivery_days_art(item_code=None):
-    if item_code:
-        average_delivery_days_art=frappe.db.sql("""select 
-		AVG(delay_days) as average_delivery_days from  (
-select po.name,DATEDIFF(min(pr.posting_date), po.transaction_date)as delay_days from `tabPurchase Order` po  
-inner join `tabPurchase Receipt Item` pri on po.name = pri.purchase_order and po.docstatus = 1 and pri.item_code =%s
-inner join `tabPurchase Receipt`  pr on pr.name = pri.parent and pr.docstatus = 1  
-group by po.name ) t""",item_code,as_dict=True)
-        return average_delivery_days_art[0] if average_delivery_days_art else None
-    else:
-        return None
+	# Logic updated as per ID #317
+	# get average diff in date betweeen last modified of sales confirmation and posting date of purchase receipt
+	if item_code:
+		avg_of_last_3_pr = frappe.db.sql("""
+			with fn as
+			(
+				select ROW_NUMBER() OVER (ORDER BY tpr.posting_date desc) rn ,
+					tpri.item_code , tpr.posting_date , tpo.transaction_date , tsc.modified 
+				from `tabPurchase Receipt Item` tpri 
+				inner join `tabPurchase Receipt` tpr on tpr.name = tpri.parent
+				inner join `tabPurchase Order` tpo on tpo.name = tpri.purchase_order 
+				left join `tabSales Confirmation` tsc on tsc.purchase_order = tpo.name 
+			    where tpri.item_code = %s
+			) 
+			select avg(DATEDIFF(fn.posting_date,fn.transaction_date)) avg_delay from fn where fn.rn < 2000
+		""",(item_code,))
+		return avg_of_last_3_pr and avg_of_last_3_pr[0][0] or 0
+	return 0
+
 
 
 @frappe.whitelist()

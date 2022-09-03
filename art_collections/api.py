@@ -364,11 +364,11 @@ def get_average_delivery_days_art(item_code=None):
 					tpri.item_code , tpr.posting_date , tpo.transaction_date , tsc.modified 
 				from `tabPurchase Receipt Item` tpri 
 				inner join `tabPurchase Receipt` tpr on tpr.name = tpri.parent
-				inner join `tabPurchase Order` tpo on tpo.name = tpri.purchase_order 
+				inner join `tabPurchase Order` tpo on tpo.name = tpri.purchase_order and tpo.docstatus = 1
 				left join `tabSales Confirmation` tsc on tsc.purchase_order = tpo.name 
 			    where tpri.item_code = %s
 			) 
-			select avg(DATEDIFF(fn.posting_date,fn.transaction_date)) avg_delay from fn where fn.rn < 2000
+			select avg(DATEDIFF(fn.posting_date,fn.modified)) avg_delay from fn where fn.rn < 4
 		""",(item_code,))
 		return avg_of_last_3_pr and avg_of_last_3_pr[0][0] or 0
 	return 0

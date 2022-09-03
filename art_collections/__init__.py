@@ -8,6 +8,58 @@ __version__ = "0.0.1"
 
 import frappe
 
+
+def trim_tables_dry(doctype=None):
+    """
+    Removes database fields that don't exist in the doctype (json or custom field). This may be needed
+    as maintenance since removing a field in a DocType doesn't automatically
+    delete the db field.
+    Dry run: logs to error log.
+    """
+
+    from frappe.model import (
+        data_fieldtypes,
+        default_fields,
+        no_value_fields,
+        optional_fields,
+        table_fields,
+    )
+
+    out = []
+
+    ignore_fields = default_fields + optional_fields
+    filters = {"issingle": 0, "name": ["!=", "test"]}
+    if doctype:
+        filters["name"] = doctype
+
+    for doctype in frappe.db.get_all("DocType", filters=filters):
+        doctype = doctype.name
+        columns = frappe.db.get_table_columns(doctype)
+        fields = frappe.get_meta(doctype).get_fieldnames_with_value()
+        columns_to_remove = [
+            f
+            for f in list(set(columns) - set(fields))
+            if f not in ignore_fields and not f.startswith("_")
+        ]
+        if columns_to_remove:
+            print(doctype, "columns removed:", columns_to_remove)
+            out.append(doctype + "\tcolumns removed:\t" + ", ".join(columns_to_remove))
+            columns_to_remove = """, """.join(
+                ["drop `{0}`".format(c) for c in columns_to_remove]
+            )
+            query = """alter table `tab{doctype}` {columns}""".format(
+                doctype=doctype, columns=columns_to_remove
+            )
+            # frappe.db.sql_ddl(query)
+    frappe.log_error(
+        """
+""".join(
+            out
+        )
+    )
+    frappe.db.commit()
+
+
 # from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation,get_party
 # from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings import get_shopping_cart_settings, show_quantity_in_website
 # from erpnext.utilities.product import get_price

@@ -46,7 +46,7 @@ frappe.ui.form.on('Sales Confirmation', {
 	add_custom_buttons: function (frm) {
 
 		if (frm.doc.confirmation_date) {
-			frm.add_custom_button(__("Verify Sales Confirmation and PO"), function () {
+			frm.add_custom_button(__("Verify (Match Item/PO Item)"), function () {
 				return frm.call({
 					method: 'verify_with_po',
 					doc: frm.doc,
@@ -58,19 +58,22 @@ frappe.ui.form.on('Sales Confirmation', {
 						setTimeout(() => {
 							frm.dashboard.set_headline(__('Please check Invalid Items file <a href="{0}"></a> for errors. ', r.message), 'red');
 						}, 200);
-					}
-					else {
-						frappe.confirm(__("Data set corresponds to Purchase Order. Do you want to Update Items and Purchase Order?"), function () {
-							return frm.call({
-								method: 'update_items_and_po',
-								doc: frm.doc,
-								args: {}
-							}).then((r) => {
-								frappe.msgprint(__('Items and Purchase Order updated.'))
-							});
-						})
+					} else {
+						frappe.msgprint(__('Items and Purchase Order Items verified.'))
 					}
 				});
+			}, __("Tools"));
+
+			frm.add_custom_button(__("Update Item/PO Item"), function () {
+				frappe.confirm(__("Do you want to Update Items and Purchase Order?"), function () {
+					return frm.call({
+						method: 'update_items_and_po',
+						doc: frm.doc,
+						args: {}
+					}).then((r) => {
+						frappe.msgprint(__('Items and Purchase Order updated.'))
+					});
+				})
 			}, __("Tools"));
 		}
 

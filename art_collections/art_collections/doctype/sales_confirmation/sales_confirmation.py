@@ -196,6 +196,10 @@ class SalesConfirmation(Document):
                 )
             )
             return error_file.file_url
+        else:
+            for d in self.sales_confirmation_detail:
+                d.is_verified = 1
+            self.save()
 
 
 @frappe.whitelist()

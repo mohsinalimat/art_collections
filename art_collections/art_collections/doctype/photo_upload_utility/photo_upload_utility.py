@@ -192,6 +192,13 @@ def upload_photo_files(start_time):
                 else:
                     slideshow_doc =frappe.get_doc('Website Slideshow', item_code_in_fname)
 
+                # set slidshow value in website item
+                website_item=frappe.db.exists("Website Item", {"item_code": item_code_in_fname})
+                if website_item:
+                    website_item_slideshow = frappe.db.get_value("Website Item", website_item, 'slideshow')
+                    if not website_item_slideshow:
+                        frappe.db.set_value("Website Item", website_item, 'slideshow', slideshow_doc.name) 
+
                 # if suffix_in_fname=='item_code' and count_in_fname==0:
                 #     attached_to_doctype='Item'
                 #     attached_to_name=item_code_in_fname
@@ -240,6 +247,14 @@ def upload_photo_files(start_time):
                     item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
+
+                    # attach main image to website item
+                    website_item=frappe.db.exists("Website Item", {"item_code": item_code_in_fname})
+                    if website_item:       
+                        website_item=frappe.get_doc("Website Item",website_item)
+                        website_item.website_image = item_doc.image
+                        website_item.save()
+
 
                 else:
                     row=slideshow_doc.append("slideshow_items",{})

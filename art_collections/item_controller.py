@@ -45,18 +45,19 @@ def sync_catalogue_directory_universe_details(self):
 			catalogue_type= frappe.db.get_value('Catalogue Directory Art', parent_catalogue_directory_art, 'catalogue_type')	or None
 			catalogue_universe=universe_row.parent
 			item_page_no=universe_row.item_page_no
-			for item_universe in self.catalogue_directory_art_item_detail_cf:
-				found=False			
-				if item_universe.catalogue==parent_catalogue_directory_art and item_universe.universe==catalogue_universe:
-					found=True
-					break
-			if found==False:
-				row=self.append("catalogue_directory_art_item_detail_cf",{})
-				row.catalogue=parent_catalogue_directory_art
-				row.catalogue_type=catalogue_type
-				row.universe=catalogue_universe
-				row.page_no=item_page_no
-				frappe.msgprint(_("Catalogue {0} is with universe {1} is added in item.").format(row.catalogue,row.universe), alert=True)	 
+			if self.get("catalogue_directory_art_item_detail_cf"):
+				for item_universe in self.catalogue_directory_art_item_detail_cf:
+					found=False			
+					if item_universe.catalogue==parent_catalogue_directory_art and item_universe.universe==catalogue_universe:
+						found=True
+						break
+				if found==False:
+					row=self.append("catalogue_directory_art_item_detail_cf",{})
+					row.catalogue=parent_catalogue_directory_art
+					row.catalogue_type=catalogue_type
+					row.universe=catalogue_universe
+					row.page_no=item_page_no
+					frappe.msgprint(_("Catalogue {0} is with universe {1} is added in item.").format(row.catalogue,row.universe), alert=True)	 
 
 def set_weight_for_stock_uom_of_packing_dimensions(self):
 	if self.weight_per_unit:

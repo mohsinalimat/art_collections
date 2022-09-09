@@ -96,7 +96,7 @@ def upload_photo_files(start_time):
 
    
 
-    total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
+    # total_files_count=sum([len(filenames) for dirpath, dirnames, filenames in os.walk(temp_public_folder) ])
     sorted_file_name_list=[]
     dirpath=None
     dirnames=None
@@ -106,6 +106,7 @@ def upload_photo_files(start_time):
         dirnames=dirnames
 
     sorted_file_name_list=natsorted(sorted_file_name_list, alg=ns.PATH)
+    total_files_count=len(sorted_file_name_list)
     pending_files_count=total_files_count
     # get list of item codes
     list_of_item_code = frappe.get_list('Item', filters={'docstatus': 0}, fields=['name'], order_by='name')
@@ -196,7 +197,7 @@ def upload_photo_files(start_time):
                 website_item=frappe.db.exists("Website Item", {"item_code": item_code_in_fname})
                 if website_item:
                     website_item_slideshow = frappe.db.get_value("Website Item", website_item, 'slideshow')
-                    if not website_item_slideshow:
+                    if (not website_item_slideshow) or (website_item_slideshow!=slideshow_doc.name):
                         frappe.db.set_value("Website Item", website_item, 'slideshow', slideshow_doc.name) 
 
                 # if suffix_in_fname=='item_code' and count_in_fname==0:
@@ -244,6 +245,7 @@ def upload_photo_files(start_time):
                     row.image=file_doc.file_url 
                     row.heading=suffix_heading
                     slideshow_doc.save()
+                    rearrange_last_row_to_top(slideshow_doc.name)
                     item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
@@ -261,6 +263,7 @@ def upload_photo_files(start_time):
                     row.image=file_doc.file_url 
                     row.heading=suffix_heading
                     slideshow_doc.save()
+                    rearrange_last_row_to_top(slideshow_doc.name)
                     item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
@@ -310,6 +313,19 @@ def upload_photo_files(start_time):
             # doc.notify_update()
             frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
             doc.reload()
+
+def rearrange_last_row_to_top(slide_show_name):
+    slide_show=frappe.get_doc('Website Slideshow',slide_show_name)
+    slide_show_items=slide_show.get("slideshow_items")
+    table_length=len(slide_show_items)
+    if table_length>1:
+        for row in slide_show_items:
+            if row.idx==table_length:
+                row.idx=1
+            else:
+                row.idx=row.idx+1
+        slide_show.save()
+
 
 def add_comment(dt,dn):
     comment = {}

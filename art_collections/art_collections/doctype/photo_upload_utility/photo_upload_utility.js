@@ -90,23 +90,38 @@ frappe.ui.form.on('Photo Upload Utility', {
 				})
 		});
 		frm.page.add_menu_item(__("Upload Zip"), function() {
-			new frappe.ui.FileUploader({
-				folder: this.current_folder,
-				restrictions: {
-					allowed_file_types: ['.zip']
-				},
-				on_success: file => {
-					frappe.show_alert(__('Unzipping files...'));
-					frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.unzip_file', { name: file.name })
-						.then((r) => {
-							if (r.message) {
-								frappe.show_alert(__('Unzipped {0} files', [r.message]));
-								start_processing(frm)
+			frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.empty_all_folder', {
+			}).then(r => 
+				{	
+					if (r.message=='') {
+						frappe.show_alert({
+							title: __('Folder Status'),
+							indicator: 'green',
+							message: __(`[a] Temp Folder is Emptied.`+`<br>`+
+										`[b] failed_zip_folder has now latest 2 files only`)
+						})	
+						new frappe.ui.FileUploader({
+							folder: this.current_folder,
+							restrictions: {
+								allowed_file_types: ['.zip']
+							},
+							on_success: file => {
+								frappe.show_alert(__('Unzipping files...'));
+								frappe.call('art_collections.art_collections.doctype.photo_upload_utility.photo_upload_utility.unzip_file', { name: file.name })
+									.then((r) => {
+										if (r.message) {
+											frappe.show_alert(__('Unzipped {0} files', [r.message]));
+											start_processing(frm)
+										}
+									});
+									
 							}
-						});
-						
-				}
-			});			
+						});											
+					}
+
+				})
+	
+
 
 		});
 

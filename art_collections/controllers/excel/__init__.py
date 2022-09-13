@@ -13,7 +13,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image
-from frappe.utils import cint, get_site_url, get_url, cstr
+from frappe.utils import cint, get_site_url, get_url, cstr, now_datetime
 import frappe
 import requests
 import os
@@ -72,7 +72,8 @@ def attach_file(content, **args):
     _file = frappe.get_doc(
         {
             "doctype": "File",
-            "file_name": args.get("file_name") or "{}.xlsx".format(args.get("docname")),
+            "file_name": args.get("file_name")
+            or get_with_now(args.get("docname"), ".xlsx"),
             "attached_to_doctype": args.get("doctype"),
             "attached_to_name": args.get("docname"),
             "is_private": 1,
@@ -84,6 +85,10 @@ def attach_file(content, **args):
     if args.get("show_email_dialog"):
         frappe.publish_realtime("show_email_dialog", args, user=frappe.session.user)
     return _file
+
+
+def get_with_now(filename, extn):
+    return "{}_{}{}".format(filename, now_datetime().strftime("%y%m%d%H%M"), extn)
 
 
 def add_images(data, workbook, worksheet="", image_col="S", skip_rows=0):

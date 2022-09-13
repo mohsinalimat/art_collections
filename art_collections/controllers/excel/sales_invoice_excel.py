@@ -16,6 +16,7 @@ def on_submit_sales_invoice(doc, method=None):
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
     attach_print_pdf(doctype, docname)
+    currency = frappe.db.get_value(doctype, docname, "currency")
 
     data = frappe.db.sql(
         """
@@ -33,6 +34,9 @@ def _make_excel_attachment(doctype, docname):
             tsii.stock_uom , 
             tsii.conversion_factor , 
             tsii.stock_qty , 
+            tsii.stock_uom_rate , 
+            tsii.base_net_rate , 
+            tsii.base_amount , 
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
                 else concat('{}/',i.image) end image ,
@@ -64,11 +68,14 @@ def _make_excel_attachment(doctype, docname):
         _("Length in cm (of stock_uom)"),
         _("Width in cm (of stock_uom)"),
         _("Thickness in cm (of stock_uom)"),
-        _("Quantity"),
+        _("Qté Inner (SPCB)"),
         _("UOM"),
+        _("Prix Inner ({})").format(currency),
         _("Stock UOM"),
-        _("UOM Conversion Factor"),
-        _("Qty as per stock UOM"),
+        _("Qté colisage (UV)"),
+        _("Qté totale"),
+        _("Prix unité ({})").format(currency),
+        _("Amount ({})").format(currency),
         _("Photo"),
     ]
 
@@ -83,9 +90,12 @@ def _make_excel_attachment(doctype, docname):
         "thickness",
         "qty",
         "uom",
+        "base_net_rate",
         "stock_uom",
         "conversion_factor",
         "stock_qty",
+        "stock_uom_rate",
+        "base_amount",
         "image",
     ]
 
@@ -96,7 +106,7 @@ def _make_excel_attachment(doctype, docname):
         excel_rows.append([d.get(f) for f in fields])
         images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Sales Invoice Items", wb, [20] * len(columns))
-    add_images(images, workbook=wb, worksheet="Sales Invoice Items", image_col="O")
+    add_images(images, workbook=wb, worksheet="Sales Invoice Items", image_col="Q")
 
     # make attachment
     out = io.BytesIO()

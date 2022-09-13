@@ -62,7 +62,12 @@ def get_print_context(doctype, name):
 
 @frappe.whitelist()
 def download_pdf(doctype, name, format=None, doc=None, no_letterhead=0):
-    if doctype == "Pick List":
+    if not format == "Art SI" and doctype in (
+        "Pick List",
+        "Sales Order",
+        "Delivery Note",
+        "Sales Invoice",
+    ):
         """
         Overriding default in order to set pdf options to wkhtmltopdf for custom margin
         Frappe should provide a way to set wkhtmltopdf flags https://wkhtmltopdf.org/usage/wkhtmltopdf.txt

@@ -35,9 +35,11 @@ def _make_excel_attachment(doctype, docname):
             tsoi.qty, 
             tsoi.uom ,
             tsoi.base_net_rate ,     
-            tsoi.stock_uom , 
+            tsoi.stock_uom ,
+            tsoi.stock_uom_rate ,
             tsoi.conversion_factor , 
             tsoi.stock_qty , 
+            tsoi.base_amount ,
             tip.price_list_rate , 
             tpr.min_qty  pricing_rule_min_qty , 
             tpr.rate pricing_rule_rate ,
@@ -88,13 +90,14 @@ def _make_excel_attachment(doctype, docname):
         _("Length in cm (of stock_uom)"),
         _("Width in cm (of stock_uom)"),
         _("Thickness in cm (of stock_uom)"),
-        _("Quantity"),
+        _("Qté Inner (SPCB)"),
         _("UOM"),
-        _("Rate ") + f"({currency})",
+        _("Prix Inner ({})").format(currency),
         _("Stock UOM"),
-        _("UOM Conversion Factor"),
-        _("Qty as per stock UOM"),
-        _("Normal Price Stock UOM") + f"({currency})",
+        _("Qté colisage (UV)"),
+        _("Qté totale"),
+        _("Prix unité ({})").format(currency),
+        _("Amount ({})").format(currency),
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo Link"),
@@ -116,6 +119,8 @@ def _make_excel_attachment(doctype, docname):
         "stock_uom",
         "conversion_factor",
         "stock_qty",
+        "stock_uom_rate",
+        "base_amount",
         "price_list_rate",
         "pricing_rule_min_qty",
         "pricing_rule_rate",
@@ -129,7 +134,7 @@ def _make_excel_attachment(doctype, docname):
             excel_rows.append([d.get(f) for f in fields])
             images.append(d.get("image_url"))
     write_xlsx(excel_rows, "In Stock Items", wb, [20] * len(columns), index=0)
-    add_images(images, workbook=wb, worksheet="In Stock Items")
+    add_images(images, workbook=wb, worksheet="In Stock Items", image_col="T")
 
     excel_rows, images = [columns], [""]
     for d in data:
@@ -137,7 +142,7 @@ def _make_excel_attachment(doctype, docname):
             excel_rows.append([d.get(f) for f in fields])
             images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]), index=1)
-    add_images(images, workbook=wb, worksheet="Out of Stock Items")
+    add_images(images, workbook=wb, worksheet="Out of Stock Items", image_col="T")
 
     discontinued_items = frappe.db.sql(
         """
@@ -179,8 +184,13 @@ def _make_excel_attachment(doctype, docname):
         _("Length (cm)"),
         _("Width (cm)"),
         _("Thickness (cm)"),
-        _("Quantity"),
-        _("UOM Conversion Factor"),
+        _("Qté Inner (SPCB)"),
+        _("UOM"),
+        _("Prix Inner ({})").format(currency),
+        _("Qté colisage (UV)"),
+        _("Qté totale"),
+        _("Prix unité ({})").format(currency),
+        _("Amount ({})").format(currency),
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo Link"),
@@ -195,7 +205,12 @@ def _make_excel_attachment(doctype, docname):
         "width",
         "thickness",
         "qty",
+        "uom",
+        "base_net_rate",
         "conversion_factor",
+        "stock_qty",
+        "stock_uom_rate",
+        "base_amount",
         "pricing_rule_min_qty",
         "pricing_rule_rate",
         "image_url",
@@ -206,7 +221,7 @@ def _make_excel_attachment(doctype, docname):
         excel_rows.append([d.get(f) for f in fields])
         images.append(d.get("image_url"))
     write_xlsx(excel_rows, "Discontinued Items", wb, [20] * len(excel_rows[0]), index=2)
-    add_images(images, workbook=wb, worksheet="Discontinued Items")
+    add_images(images, workbook=wb, worksheet="Discontinued Items", image_col="T")
 
     # existing art works
     # art_works = frappe.db.sql(

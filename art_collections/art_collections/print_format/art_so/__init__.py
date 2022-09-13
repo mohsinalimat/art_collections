@@ -43,7 +43,7 @@ def get_print_context(name):
             case when soi.image is null then ''
                 when SUBSTR(soi.image,1,4) = 'http' then soi.image
                 else concat('{}/',soi.image) end image,
-            spi.delivery_date
+            soi.delivery_date
         from 
             `tabSales Order Item` soi
         inner join `tabSales Order` so on so.name = soi.parent

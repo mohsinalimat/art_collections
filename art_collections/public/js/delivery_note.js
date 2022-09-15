@@ -36,19 +36,3 @@ frappe.ui.form.on('Delivery Note', {
 
 });
 
-
-var _original_get_print_formats = frappe.meta.get_print_formats;
-$.extend(frappe.meta, {
-	get_print_formats: function (doctype) {
-		let cur_frm = me && me.frm;
-		if (cur_frm && cur_frm.doc && cur_frm.doc.hide_rate_in_delivery_note_art) {
-			return ["DN NR"]
-		} else if (cur_frm && cur_frm.doc && cur_frm.doc.hide_rate_in_delivery_note_art === 0) {
-			return ['Art DN']
-		}
-		// in case you want to show list of frappe
-		// ideally never reaches here
-		let print_format_list = _original_get_print_formats(doctype);
-		return print_format_list;
-	},
-});

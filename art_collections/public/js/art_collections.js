@@ -278,3 +278,21 @@ set_ignore_pricing_rule = function (frm) {
         }
     }
 }
+
+
+var _original_get_print_formats = frappe.meta.get_print_formats;
+$.extend(frappe.meta, {
+    get_print_formats: function (doctype) {
+        let print_format_list = _original_get_print_formats(doctype);
+        if (doctype !== "Delivery Note") {
+            return print_format_list;
+        }
+        let dn = frappe.get_route().slice(2).join("/")
+        if (dn) {
+            let dn_doc = frappe.get_doc('Delivery Note', dn);
+            return dn_doc && cint(dn_doc.hide_rate_in_delivery_note_art) ? ["DN NR"] : ["Art DN"]
+        }
+        return print_format_list;
+
+    }
+});

@@ -14,6 +14,7 @@ def on_submit_delivery_note(doc, method=None):
 
 @frappe.whitelist()
 def _make_excel_attachment(doctype, docname):
+    currency = frappe.db.get_value(doctype, docname, "currency")
 
     data = frappe.db.sql(
         """
@@ -31,6 +32,9 @@ def _make_excel_attachment(doctype, docname):
             tdni.stock_uom , 
             tdni.conversion_factor , 
             tdni.stock_qty , 
+            tdni.base_amount ,
+            tdni.base_net_rate ,
+            tdni.stock_uom_rate ,
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
                 else concat('{}/',i.image) end image ,
@@ -62,11 +66,14 @@ def _make_excel_attachment(doctype, docname):
         _("Length in cm (of stock_uom)"),
         _("Width in cm (of stock_uom)"),
         _("Thickness in cm (of stock_uom)"),
-        _("Quantity"),
+        _("Qté Inner (SPCB)"),
         _("UOM"),
+        _("Prix Inner ({})").format(currency),
         _("Stock UOM"),
-        _("UOM Conversion Factor"),
-        _("Qty as per stock UOM"),
+        _("Qté colisage (UV)"),
+        _("Qté totale"),
+        _("Prix unité ({})").format(currency),
+        _("Amount ({})").format(currency),
         _("Photo"),
     ]
 
@@ -81,9 +88,12 @@ def _make_excel_attachment(doctype, docname):
         "thickness",
         "qty",
         "uom",
+        "base_net_rate",
         "stock_uom",
         "conversion_factor",
         "stock_qty",
+        "stock_uom_rate",
+        "base_amount",
         "image",
     ]
 

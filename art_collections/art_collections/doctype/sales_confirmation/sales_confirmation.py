@@ -13,6 +13,7 @@ import re
 from erpnext.accounts.party import get_party_details
 from frappe.utils.data import format_date
 from openpyxl.styles.alignment import Alignment
+from art_collections.item_controller import get_qty_of_inner_cartoon,get_qty_of_outer_cartoon
 
 FIELDS_TO_VALIDATE_WITH_PO = [
     "item_code",
@@ -235,8 +236,8 @@ def make_from_po(docname):
                 "supplier_part_no": d.supplier_part_no,
                 "image": d.image,
                 "item_name": d.item_name,
-                "qty_per_inner": d.nb_selling_packs_in_inner_art,
-                "qty_per_outer": d.nb_selling_packs_in_outer_art,
+                "qty_per_inner": get_qty_of_inner_cartoon(d.item_code) or 0,
+                "qty_per_outer": get_qty_of_outer_cartoon(d.item_code) or 0,
                 "qty": d.qty,
                 "rate": d.rate,
                 "amount": d.amount,

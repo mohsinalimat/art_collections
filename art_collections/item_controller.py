@@ -6,6 +6,7 @@ from art_collections.api import get_average_daily_outgoing_art,get_average_deliv
 from frappe.utils import get_link_to_form
 
 
+
 def item_autoname(self, method):
     if self.get("lead_item_cf"):
         self.name = self.name.split("-")[-1]
@@ -95,8 +96,8 @@ def set_custom_item_name(self,method):
 		self.item_name=custom_item_name
 
 
-def sync_description_with_web_long_description(self):
-	self.web_long_description=self.description
+# def sync_description_with_web_long_description(self):
+# 	self.web_long_description=self.description
 
 def update_flag_table(self):
 	# get new flag values from shopping cart

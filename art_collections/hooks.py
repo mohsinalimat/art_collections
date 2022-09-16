@@ -232,7 +232,7 @@ scheduler_events = {
             "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art",
         ]
     },
-    "daily": ["art_collections.scheduler_task_controller.daily"]
+    # "daily": ["art_collections.scheduler_task_controller.daily"]
     # "hourly": [
     # 	"art_collections.tasks.hourly"
     # ],
@@ -249,14 +249,14 @@ scheduler_events = {
 
 # before_tests = "art_collections.install.before_tests"
 
-standard_portal_menu_items = [
-    {
-        "title": _("Manage Wish List Name"),
-        "route": "/wish-list-name",
-        "reference_doctype": "Wish List Name",
-        "role": "Customer",
-    }
-]
+# standard_portal_menu_items = [
+#     {
+#         "title": _("Manage Wish List Name"),
+#         "route": "/wish-list-name",
+#         "reference_doctype": "Wish List Name",
+#         "role": "Customer",
+#     }
+# ]
 
 # Overriding Whitelisted Methods
 # ------------------------------

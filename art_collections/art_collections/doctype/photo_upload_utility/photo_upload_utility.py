@@ -237,8 +237,8 @@ def upload_photo_files(start_time):
                 if suffix_in_fname=='item_code' and count_in_fname==0:
                     item_doc.image=file_doc.file_url
                     item_doc.save()
-                    item_doc.run_method('validate_website_image')
-                    item_doc.run_method('make_thumbnail')
+                    # item_doc.run_method('validate_website_image')
+                    # item_doc.run_method('make_thumbnail')
                     
                     # attach main image to slide show also
                     row=slideshow_doc.append("slideshow_items",{})
@@ -246,7 +246,7 @@ def upload_photo_files(start_time):
                     row.heading=suffix_heading
                     slideshow_doc.save()
                     rearrange_last_row_to_top(slideshow_doc.name)
-                    item_doc.slideshow=slideshow_doc.name
+                    # item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
 
@@ -255,6 +255,9 @@ def upload_photo_files(start_time):
                     if website_item:       
                         website_item=frappe.get_doc("Website Item",website_item)
                         website_item.website_image = item_doc.image
+                        #  gets called on save
+                        # website_item.run_method('validate_website_image')
+                        # website_item.run_method('make_thumbnail')
                         website_item.save()
 
 
@@ -264,7 +267,7 @@ def upload_photo_files(start_time):
                     row.heading=suffix_heading
                     slideshow_doc.save()
                     rearrange_last_row_to_top(slideshow_doc.name)
-                    item_doc.slideshow=slideshow_doc.name
+                    # item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
                 if os.path.exists(os.path.join(dirpath, filename)):

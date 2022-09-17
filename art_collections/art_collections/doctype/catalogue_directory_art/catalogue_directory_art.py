@@ -62,7 +62,7 @@ class CatalogueDirectoryArt(NestedSet):
 
 	def on_update(self):
 		NestedSet.on_update(self)
-		invalidate_cache_for(self)
+		# invalidate_cache_for(self)
 		self.validate_name_with_item()
 		self.validate_one_root()
 
@@ -241,30 +241,30 @@ def get_group_item_count(item_group):
 				where item_group in (%s))) """ % (child_groups, child_groups))[0][0]
 
 
-def get_parent_item_groups(item_group_name):
-	base_parents = [
-		{"name": frappe._("Home"), "route":"/"},
-		{"name": frappe._("All Products"), "route":"/all-products"},
-	]
-	if not item_group_name:
-		return base_parents
+# def get_parent_item_groups(item_group_name):
+# 	base_parents = [
+# 		{"name": frappe._("Home"), "route":"/"},
+# 		{"name": frappe._("All Products"), "route":"/all-products"},
+# 	]
+# 	if not item_group_name:
+# 		return base_parents
 
-	item_group = frappe.get_doc("Catalogue Directory Art", item_group_name)
-	parent_groups = frappe.db.sql("""select ifnull(title,name) as name, route from `tabCatalogue Directory Art`
-		where lft <= %s and rgt >= %s
-		and show_in_website=1
-		order by lft asc""", (item_group.lft, item_group.rgt), as_dict=True)
+# 	item_group = frappe.get_doc("Catalogue Directory Art", item_group_name)
+# 	parent_groups = frappe.db.sql("""select ifnull(title,name) as name, route from `tabCatalogue Directory Art`
+# 		where lft <= %s and rgt >= %s
+# 		and show_in_website=1
+# 		order by lft asc""", (item_group.lft, item_group.rgt), as_dict=True)
 
-	return base_parents + parent_groups
+# 	return base_parents + parent_groups
 
-def invalidate_cache_for(doc, item_group=None):
-	if not item_group:
-		item_group = doc.name
+# def invalidate_cache_for(doc, item_group=None):
+# 	if not item_group:
+# 		item_group = doc.name
 
-	for d in get_parent_item_groups(item_group):
-		item_group_name = frappe.db.get_value("'Catalogue Directory Art", d.get('name'))
-		if item_group_name:
-			clear_cache(frappe.db.get_value('Catalogue Directory Art', item_group_name, 'route'))
+# 	for d in get_parent_item_groups(item_group):
+# 		item_group_name = frappe.db.get_value("'Catalogue Directory Art", d.get('name'))
+# 		if item_group_name:
+# 			clear_cache(frappe.db.get_value('Catalogue Directory Art', item_group_name))
 
 def get_item_group_defaults(item, company):
 	item = frappe.get_cached_doc("Item", item)

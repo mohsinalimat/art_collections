@@ -1,7 +1,14 @@
 frappe.ui.form.on('Sales Order', {
 
 	setup: function (frm) {
-
+		frm.set_query('delivery_contact_art', () => {
+			return {
+				query: 'art_collections.sales_order_controller.get_contact_filtered_by_customer',
+				filters: {
+					'customer': frm.doc.customer,
+				}
+			}
+		})
 	},
 
 	// onload_post_render: function (frm) {

@@ -328,3 +328,13 @@ def get_shipping_rule(country):
         country,
         as_dict=1
     )
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_contact_filtered_by_customer(doctype, txt, searchfield, start, page_len, filters):
+    customer=filters.get("customer")
+    return frappe.db.sql(
+        """SELECT contact.name from `tabContact` as contact inner join `tabDynamic Link` as link on link.parent=contact.name 
+WHERE link.parenttype ='Contact' and link.link_doctype ='Customer' and link.link_name =%s""",
+			(customer),
+		)

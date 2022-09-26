@@ -38,7 +38,30 @@ class CatalogueDirectoryArt(NestedSet):
 				self.parent_catalogue_directory_art = _('Catalogues')
 		# self.make_route()
 		self.set_title()
+		if self.node_type=="Catalogue":
+			catalogue_list=get_all_child_of_catalogue(self.name)
+			if len(catalogue_list)>0:
+				for catalogue in catalogue_list:
+					frappe.db.set_value('Catalogue Directory Art', catalogue.name, 'show_in_website', self.show_in_website)
+					if catalogue.node_type=="Universe" and self.show_in_website==1:
+						add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+						add_universe_to_website_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)	
+					elif catalogue.node_type=="Universe" and self.show_in_website==0:
+						add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+						remove_universe_from_website_item(catalgoue_name=catalogue.name)
+											
+
+		if self.node_type=="Universe" and self.show_in_website==1:
+			add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+			add_universe_to_website_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+		elif self.node_type=="Universe" and self.show_in_website==0:
+			add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+			remove_universe_from_website_item(catalgoue_name=self.name)
+			
+
 		# self.set_universe_catalogue_in_item_description()
+
+								
 
 	# def set_universe_catalogue_in_item_description(self):
 	# 	if self.items_in_universe and self.node_type=='Universe':
@@ -109,7 +132,88 @@ class CatalogueDirectoryArt(NestedSet):
 	# 		context.update(get_slideshow(self))
 
 	# 	return context
+def add_universe_to_item(catalgoue_name,show_in_website):
+	catalogue_doc=frappe.get_doc('Catalogue Directory Art',catalgoue_name)
+	for catalogue_row in catalogue_doc.get("items_in_universe"):
+		item_code= catalogue_row.get("item")
+		if item_code:
+			item=frappe.get_doc("Item",item_code)
+			found_in_item=False
+			for item_row in item.get("catalogue_directory_art_item_detail_cf"):
+				if item_row.universe==catalogue_doc.name:
+					found_in_item=True
+					item_row.catalogue=catalogue_doc.parent_catalogue_directory_art
+					item_row.catalog_type=frappe.db.get_value('Catalogue Directory Art', catalogue_doc.parent_catalogue_directory_art, 'catalogue_type')
+					item_row.page_no=catalogue_row.item_page_no
+					item_row.show_in_website=show_in_website
+					item.save(ignore_permissions=True)
+					frappe.msgprint(_("Item {0} is updated due to universe {1}")
+					.format(get_link_to_form("Item",item.name),item_row.universe), alert=True)
+					break
+			if found_in_item==False:
+				new_item_row=item.append("catalogue_directory_art_item_detail_cf")
+				new_item_row.catalogue=catalogue_doc.parent_catalogue_directory_art
+				new_item_row.universe=catalogue_doc.name
+				new_item_row.catalog_type=frappe.db.get_value('Catalogue Directory Art', catalogue_doc.parent_catalogue_directory_art, 'catalogue_type')
+				new_item_row.page_no=catalogue_row.item_page_no
+				new_item_row.show_in_website=show_in_website
+				item.save(ignore_permissions=True)			
+				frappe.msgprint(_("Item {0} is updated due to universe {1}")
+				.format(get_link_to_form("Item",item.name),new_item_row.universe), alert=True)	
 
+def add_universe_to_website_item(catalgoue_name,show_in_website):
+	catalogue_doc=frappe.get_doc('Catalogue Directory Art',catalgoue_name)
+	for catalogue_row in catalogue_doc.get("items_in_universe"):
+		item_code= catalogue_row.get("item")
+		website_items=frappe.db.get_list('Website Item', filters={'item_code': item_code},fields=['name'])
+		if len(website_items)>0:
+			website_item_name=website_items[0].name
+			website_item=frappe.get_doc("Website Item",website_item_name)
+			found_in_website_item=False
+			for website_item_row in website_item.get("catalogue_directory_art_website_cf"):
+				if website_item_row.universe==catalogue_doc.name:
+					found_in_website_item=True
+					website_item_row.catalogue=catalogue_doc.parent_catalogue_directory_art
+					if show_in_website==1 and website_item.published==0:
+						website_item.published=1
+					website_item.save(ignore_permissions=True)
+					frappe.msgprint(_("Website Item {0} is updated due to universe {1}")
+					.format(get_link_to_form("Website Item",website_item_name),website_item_row.universe), alert=True)
+					break
+			if found_in_website_item==False:
+				new_website_item_row=website_item.append("catalogue_directory_art_website_cf")
+				new_website_item_row.universe=catalogue_doc.name
+				new_website_item_row.catalogue=catalogue_doc.parent_catalogue_directory_art
+				if show_in_website==1 and website_item.published==0:
+					website_item.published=1
+				website_item.save(ignore_permissions=True)	
+				frappe.msgprint(_("Website Item {0} is updated due to universe {1}")
+				.format(get_link_to_form("Website Item",website_item_name),new_website_item_row.universe), alert=True)		
+
+def remove_universe_from_website_item(catalgoue_name):		
+	catalogue_doc=frappe.get_doc('Catalogue Directory Art',catalgoue_name)
+	for catalogue_row in catalogue_doc.get("items_in_universe"):
+		item_code= catalogue_row.get("item")
+		website_items=frappe.db.get_list('Website Item', filters={'item_code': item_code},fields=['name'])
+		if len(website_items)>0:
+			website_item_name=website_items[0].name
+			website_item=frappe.get_doc("Website Item",website_item_name)
+			remove_website_item_list=list({d.name for d in website_item.get("catalogue_directory_art_website_cf") if d.universe ==catalogue_doc.name})
+			found_row_to_remove=False
+			print('remove_website_item_list'*10,remove_website_item_list)
+
+			for website_item_row in list(website_item.get("catalogue_directory_art_website_cf")):
+				if website_item_row.name in remove_website_item_list:
+					print(website_item_row.name,website_item_row)
+					website_item.get("catalogue_directory_art_website_cf").remove(website_item_row)
+					found_row_to_remove=True
+					break
+			if found_row_to_remove==True:
+				website_item.save(ignore_permissions=True)
+				frappe.msgprint(_("From Website Item {0} universe {1} is removed")
+					.format(get_link_to_form("Website Item",website_item_name),catalogue_doc.name), alert=True)
+					
+		
 
 def get_ancestors_of(doctype, name, order_by="lft desc", limit=None):
 	"""Get ancestor elements of a DocType with a tree structure"""
@@ -214,10 +318,14 @@ def get_ancestors_of(doctype, name, order_by="lft desc", limit=None):
 
 
 def get_child_groups(item_group_name):
-	item_group = frappe.get_doc("'Catalogue Directory Art", item_group_name)
-	return frappe.db.sql("""select name
-		from `tabCatalogue Directory Art` where lft>=%(lft)s and rgt<=%(rgt)s
+	item_group = frappe.get_doc("Catalogue Directory Art", item_group_name)
+	return frappe.db.sql("""select name	from `tabCatalogue Directory Art` where lft>=%(lft)s and rgt<=%(rgt)s
 			and show_in_website = 1""", {"lft": item_group.lft, "rgt": item_group.rgt})
+
+def get_all_child_of_catalogue(catalogue_name):
+	catalogue = frappe.get_doc("Catalogue Directory Art", catalogue_name)
+	return frappe.db.sql("""select name,node_type,show_in_website from `tabCatalogue Directory Art` where lft>%(lft)s and rgt<%(rgt)s
+			""", {"lft": catalogue.lft, "rgt": catalogue.rgt},as_dict=1)
 
 # def get_item_for_list_in_html(context):
 # 	# add missing absolute link in files

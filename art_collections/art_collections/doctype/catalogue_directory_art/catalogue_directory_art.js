@@ -2,19 +2,19 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Catalogue Directory Art', {
-	show_in_website: function (frm) {
-		frappe.call({
-			method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.impact_on_website_item_due_to_catalogue_directory_art',
-			args: {
-				'show_in_website':frm.doc.show_in_website,
-				'catalogue_name': frm.doc.name
-			},
-			freeze: true,
-			callback: (r) => {
-				console.log(r)
-			},
-		})		
-	},	
+	// show_in_website: function (frm) {
+	// 	frappe.call({
+	// 		method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.impact_on_website_item_due_to_catalogue_directory_art',
+	// 		args: {
+	// 			'show_in_website':frm.doc.show_in_website,
+	// 			'catalogue_name': frm.doc.name
+	// 		},
+	// 		freeze: true,
+	// 		callback: (r) => {
+	// 			console.log(r)
+	// 		},
+	// 	})		
+	// },	
 	setup: function (frm) {
 		frm.set_value('is_group', 1)
 		frm.set_df_property('parent_catalogue_directory_art', 'reqd', 1)
@@ -28,7 +28,8 @@ frappe.ui.form.on('Catalogue Directory Art', {
 			return {
 				filters: [
 					['Catalogue Directory Art', 'is_group', '=', 1],
-					['Catalogue Directory Art', 'name', '!=', doc.catalogue_directory_art_name]
+					['Catalogue Directory Art', 'name', '!=', doc.catalogue_directory_art_name],
+					['Catalogue Directory Art', 'node_type', '=', 'Catalogue']
 				]
 			}
 		}
@@ -84,19 +85,19 @@ frappe.ui.form.on('Item Universe Page Art', {
 		}
 
 	},
-	before_items_in_universe_remove: function(frm, cdt, cdn) {
-		let row=locals[cdt][cdn]
-		  frappe.call({
-			  method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.del_catalogue_directory_art_item_based_on_catalogue',
-			  args: {
-				  'catalogue':frm.doc.parent_catalogue_directory_art,
-				  'universe': frm.doc.name,
-			  	  'item':row.item
-			  },
-			  freeze: true,
-			  callback: (r) => {
-				console.log(r)
-			  },
-		  })	      
-	 }	
+	// before_items_in_universe_remove: function(frm, cdt, cdn) {
+	// 	let row=locals[cdt][cdn]
+	// 	  frappe.call({
+	// 		  method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.del_catalogue_directory_art_item_based_on_catalogue',
+	// 		  args: {
+	// 			  'catalogue':frm.doc.parent_catalogue_directory_art,
+	// 			  'universe': frm.doc.name,
+	// 		  	  'item':row.item
+	// 		  },
+	// 		  freeze: true,
+	// 		  callback: (r) => {
+	// 			console.log(r)
+	// 		  },
+	// 	  })	      
+	//  }	
 });

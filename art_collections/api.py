@@ -250,49 +250,49 @@ def get_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 
 
 
-def update_flag_table_from_pricing_rule(self,method):
-	if self.item_flag_icon_art:
-		flag=self.item_flag_icon_art
-		valid_from=self.valid_from
-		valid_to=self.valid_upto
-		if self.apply_on=='Item Code' and self.items:
-			for item in self.items:
-				doc = frappe.get_doc('Item', item.item_code)
-				found=False
-				if doc.website_item_flag_icon_art:
-					for image in doc.website_item_flag_icon_art:
-						if image.flag==flag and image.reference == self.name:
-							found=True
-				if found == False:
-					row = doc.append('website_item_flag_icon_art', {})
-					row.flag=flag
-					row.valid_from=valid_from
-					row.valid_to=valid_to
-					row.reference=self.name
-					doc.save(ignore_permissions=True)		
-		elif self.apply_on=='Item Group' and self.item_groups:
-			for item_groups in self.item_groups:
-				items=frappe.db.get_list('Item', filters={'item_group': ['=', item_groups.item_group]})
-				for item in items:
-					print('---',item.name)
-					doc = frappe.get_doc('Item', item.name)
-					found=False
-					for image in doc.website_item_flag_icon_art:
-						if image.flag==flag and image.reference == self.name:
-							print('found')
-							found=True
-					if found == False:
-						print('not found')
-						row = doc.append('website_item_flag_icon_art', {})
-						row.flag=flag
-						row.valid_from=valid_from
-						row.valid_to=valid_to
-						row.reference=self.name
-						doc.save(ignore_permissions=True)					
-		else:
-			return
-	else:
-		return
+# def update_flag_table_from_pricing_rule(self,method):
+# 	if self.item_flag_icon_art:
+# 		flag=self.item_flag_icon_art
+# 		valid_from=self.valid_from
+# 		valid_to=self.valid_upto
+# 		if self.apply_on=='Item Code' and self.items:
+# 			for item in self.items:
+# 				doc = frappe.get_doc('Item', item.item_code)
+# 				found=False
+# 				if doc.website_item_flag_icon_art:
+# 					for image in doc.website_item_flag_icon_art:
+# 						if image.flag==flag and image.reference == self.name:
+# 							found=True
+# 				if found == False:
+# 					row = doc.append('website_item_flag_icon_art', {})
+# 					row.flag=flag
+# 					row.valid_from=valid_from
+# 					row.valid_to=valid_to
+# 					row.reference=self.name
+# 					doc.save(ignore_permissions=True)		
+# 		elif self.apply_on=='Item Group' and self.item_groups:
+# 			for item_groups in self.item_groups:
+# 				items=frappe.db.get_list('Item', filters={'item_group': ['=', item_groups.item_group]})
+# 				for item in items:
+# 					print('---',item.name)
+# 					doc = frappe.get_doc('Item', item.name)
+# 					found=False
+# 					for image in doc.website_item_flag_icon_art:
+# 						if image.flag==flag and image.reference == self.name:
+# 							print('found')
+# 							found=True
+# 					if found == False:
+# 						print('not found')
+# 						row = doc.append('website_item_flag_icon_art', {})
+# 						row.flag=flag
+# 						row.valid_from=valid_from
+# 						row.valid_to=valid_to
+# 						row.reference=self.name
+# 						doc.save(ignore_permissions=True)					
+# 		else:
+# 			return
+# 	else:
+# 		return
 
 
 def autoname_issue_type(self,method):

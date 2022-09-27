@@ -127,7 +127,7 @@ doc_events = {
         # "before_insert": "art_collections.item_controller.set_custom_item_name",
     },
     "Pricing Rule": {
-        "on_update": "art_collections.api.update_flag_table_from_pricing_rule"
+        # "on_update": "art_collections.api.update_flag_table_from_pricing_rule"
     },
     "Issue Type": {"autoname": "art_collections.api.autoname_issue_type"},
     "Purchase Receipt": {

@@ -99,24 +99,24 @@ def set_custom_item_name(self,method):
 # def sync_description_with_web_long_description(self):
 # 	self.web_long_description=self.description
 
-def update_flag_table(self):
-	# get new flag values from shopping cart
-	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
-	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
+# def update_flag_table(self):
+# 	# get new flag values from shopping cart
+# 	new_arrival_field=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_field_arty')
+# 	new_arrival_validity_days=frappe.db.get_single_value('Shopping Cart Settings', 'new_arrival_validity_days_arty')
 
-	if self.published_in_website==0:
-		return
+# 	if self.published_in_website==0:
+# 		return
 		
-	# check if existing
-	if self.website_item_flag_icon_art:
-		for image in self.website_item_flag_icon_art:
-			if image.flag==new_arrival_field:
-				return
-	# new flag field not found
-	row = self.append('website_item_flag_icon_art', {})
-	row.flag=new_arrival_field
-	row.valid_from=nowdate()
-	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
+# 	# check if existing
+# 	if self.website_item_flag_icon_art:
+# 		for image in self.website_item_flag_icon_art:
+# 			if image.flag==new_arrival_field:
+# 				return
+# 	# new flag field not found
+# 	row = self.append('website_item_flag_icon_art', {})
+# 	row.flag=new_arrival_field
+# 	row.valid_from=nowdate()
+# 	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
 
 
 

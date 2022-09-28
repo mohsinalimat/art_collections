@@ -245,7 +245,7 @@ def upload_photo_files(start_time):
                     row.image=file_doc.file_url 
                     row.heading=suffix_heading
                     slideshow_doc.save()
-                    rearrange_last_row_to_top(slideshow_doc.name)
+                    order_slideshow_as_per_photo_type(slideshow_doc.name)
                     # item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
@@ -266,7 +266,7 @@ def upload_photo_files(start_time):
                     row.image=file_doc.file_url 
                     row.heading=suffix_heading
                     slideshow_doc.save()
-                    rearrange_last_row_to_top(slideshow_doc.name)
+                    order_slideshow_as_per_photo_type(slideshow_doc.name)
                     # item_doc.slideshow=slideshow_doc.name
                     item_doc.save()
                     clear_cache()
@@ -317,17 +317,57 @@ def upload_photo_files(start_time):
             frappe.publish_realtime("file_upload_progress",{"progress": "100", "reload": 1}, user=frappe.session.user)
             doc.reload()
 
-def rearrange_last_row_to_top(slide_show_name):
+# def rearrange_last_row_to_top(slide_show_name):
+#     slide_show=frappe.get_doc('Website Slideshow',slide_show_name)
+#     slide_show_items=slide_show.get("slideshow_items")
+#     table_length=len(slide_show_items)
+#     if table_length>1:
+#         for row in slide_show_items:
+#             if row.idx==table_length:
+#                 row.idx=1
+#             else:
+#                 row.idx=row.idx+1
+#         slide_show.save()
+
+def order_slideshow_as_per_photo_type(slide_show_name):
     slide_show=frappe.get_doc('Website Slideshow',slide_show_name)
-    slide_show_items=slide_show.get("slideshow_items")
-    table_length=len(slide_show_items)
-    if table_length>1:
-        for row in slide_show_items:
-            if row.idx==table_length:
-                row.idx=1
-            else:
-                row.idx=row.idx+1
-        slide_show.save()
+    slide_show_items=slide_show.get("slideshow_items")    
+    headings_list = frappe.db.get_list(
+        "Art Photo Type Detail",
+        filters={"parentfield": "art_photo_types"},
+        fields=["heading"],
+        order_by="idx",
+        pluck="heading",
+    )
+    out = {}
+    
+    for heading in headings_list:
+        out[heading] = list(
+            filter(lambda x: str(x.heading).startswith(heading), slide_show_items)
+        )
+        out[heading].sort(key=lambda x: x.heading, reverse=True)
+
+    #  replung left out 
+    remaining=[]
+    new_photo_type_list=[x for d in out.values() for x in d]
+    for row in slide_show_items:
+        found=False
+        for new_photo in new_photo_type_list:
+            if row.name==new_photo.name:
+                found=True
+        if found==False:
+            remaining.append(row)
+
+
+    slide_show_items =  new_photo_type_list+ remaining
+
+    #  correct idx
+    for i, d in enumerate(slide_show_items):
+        d.idx = i + 1
+
+    slide_show_items.sort(key=lambda x: x.idx)
+
+    slide_show.save()
 
 
 def add_comment(dt,dn):

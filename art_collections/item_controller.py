@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import nowdate,add_days,flt,cstr
+from frappe.utils import nowdate,add_days,flt,cstr,date_diff
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 from frappe.utils import get_link_to_form
 
@@ -125,36 +125,51 @@ def get_item_art_dashboard_data(item_code):
 	total_in_stock=get_stock_qty_for_saleable_warehouse(item_code)[0]['saleable_qty']
 	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
-	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
-where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+# 	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+# where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+	item_availability_buffer_days = frappe.db.get_single_value('Art Collections Settings', 'item_availability_buffer_days')
+
+	expected_qty_from_po=frappe.db.sql("""SELECT
+	sum(po_item.qty)
+FROM
+	`tabPurchase Order` as po
+inner join `tabPurchase Order Item` po_item on
+	po.name = po_item.parent
+where
+	po.docstatus != 2
+	and po_item.received_qty <> po_item.stock_qty
+	and po.status in ('To Receive', 'To Receive and Bill')
+	and po_item.item_code = %s
+	and po.shipping_date_art is not NULL
+	and datediff(po.shipping_date_art, CURDATE())<%s
+group by
+	po_item.item_code""",(item_code,item_availability_buffer_days))
+
+	print('expected_qty_from_po',expected_qty_from_po,len(expected_qty_from_po))
+
 	if sold_qty_to_deliver!=None:
-		total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
+		total_virtual_stock=flt(total_in_stock+sold_qty_to_deliver)
 	else:
 		total_virtual_stock=flt(total_in_stock)
-	avg_daily_outgoing=get_average_daily_outgoing_art(item_code).average_daily_outgoing_art or 0.0
-	avg_qty_sold_per_month=flt(avg_daily_outgoing*30)
-	avg_delivery_days=flt(get_average_delivery_days_art(item_code))
-	day_remaining_with_the_stock=flt(total_in_stock/avg_daily_outgoing) if avg_daily_outgoing!=0.0 else 0.0
+
+	if len(expected_qty_from_po)>0:
+		total_virtual_stock=flt(total_in_stock+expected_qty_from_po[0][0])
+	# avg_daily_outgoing=get_average_daily_outgoing_art(item_code).average_daily_outgoing_art or 0.0
+	# avg_qty_sold_per_month=flt(avg_daily_outgoing*30)
+	# avg_delivery_days=flt(get_average_delivery_days_art(item_code))
+	# day_remaining_with_the_stock=flt(total_in_stock/avg_daily_outgoing) if avg_daily_outgoing!=0.0 else 0.0
 
 	data=frappe.render_template("""<ul>
 	<li>Total in Stock : <b>{{ total_in_stock }}</b></li>
 	<li>Qty Sold to Deliver : <b>{{ sold_qty_to_deliver | default('None')}}</b></li>
-	<li>Qty Sold Delivered : <b>{{ sold_qty_delivered | default('None')}}</b></li>
-	<li>Total Virtual Stock OR Qty available : <b>{{ total_virtual_stock }}</b></li>
-	<li>Avg. Qty sold per month : <b>{{ frappe.format(avg_qty_sold_per_month , {'fieldtype': 'Float'}) }}</b></li>
-	<li>Avg. Daily Outgoing : <b>{{ avg_daily_outgoing }}</b></li>
-	<li>Avg. Delivery Days : <b>{{ avg_delivery_days }}</b></li>	
-	<li>Days Remaining With The Stock : <b>{{ frappe.format(day_remaining_with_the_stock , {'fieldtype': 'Float'}) }}</b></li>	
+	<li>Saleable Qty : <b>{{ total_virtual_stock }}</b></li>
+	<li>Breakup Date : <b>{{breakup_date}}</b></li>	
 	</ul>
 """, dict(
 	total_in_stock = total_in_stock,
 	sold_qty_to_deliver=sold_qty_to_deliver,
-	sold_qty_delivered=sold_qty_delivered,
 	total_virtual_stock=total_virtual_stock,
-	avg_qty_sold_per_month=avg_qty_sold_per_month,
-	avg_daily_outgoing=avg_daily_outgoing,
-	avg_delivery_days=avg_delivery_days,
-	day_remaining_with_the_stock=day_remaining_with_the_stock
+	breakup_date=None
 	))
 	return	data	
 

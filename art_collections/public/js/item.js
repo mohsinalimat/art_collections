@@ -121,6 +121,19 @@ frappe.ui.form.on('Item', {
          }
       }
    },
+   onload_post_render: function (frm) {
+      if (frm.doc.__islocal == undefined && frm.doc.has_variants==0 && frm.doc.variant_of==undefined && frm.doc.is_fixed_asset==0 && frm.doc.is_stock_item==1) {
+         frappe.call({
+            method: "art_collections.item_controller.get_item_art_dashboard_data",
+            args: {
+               item_code: frm.doc.name,
+            },
+            callback: function (r) {
+               if (r.message) {
+                     frm.set_intro(r.message,false)
+                  }}})
+      }
+   },
    refresh: function (frm) {
       $('button[data-label="Duplicate"]').hide()
       $('button[data-original-title="Print"]').hide()
@@ -130,17 +143,7 @@ frappe.ui.form.on('Item', {
             frm.set_value('country_of_origin', 'China')
          }, 100);
       }
-      // if (frm.doc.__islocal == undefined && frm.doc.has_variants==0 && frm.doc.variant_of==undefined && frm.doc.is_fixed_asset==0 && frm.doc.is_stock_item==1) {
-      //    frappe.call({
-      //       method: "art_collections.item_controller.get_item_art_dashboard_data",
-      //       args: {
-      //          item_code: frm.doc.name,
-      //       },
-      //       callback: function (r) {
-      //          if (r.message) {
-      //                frm.set_intro(r.message,false)
-      //             }}})
-      // }      
+      
       if (frm.doc.__islocal == undefined && frm.doc.is_stock_item){
 			frm.add_custom_button(__("Purchase History"), function() {
 				frappe.route_options = {

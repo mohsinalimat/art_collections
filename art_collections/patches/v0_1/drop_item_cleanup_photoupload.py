@@ -19,6 +19,10 @@ def execute():
     frappe.delete_doc_if_exists("Item", "allow_insufficient_images_for_web_art")
     frappe.delete_doc_if_exists("Custom Field", "Item-allow_insufficient_images_for_web_art")       
 
+    frappe.reload_doc("website", "doctype", "website_slideshow")
+    frappe.delete_doc_if_exists("Website Slideshow", "allow_insufficient_images_for_web_art")
+    frappe.delete_doc_if_exists("Custom Field", "Website Slideshow-allow_insufficient_images_for_web_art")       
+
 
 
     

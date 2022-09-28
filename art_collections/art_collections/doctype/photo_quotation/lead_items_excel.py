@@ -15,8 +15,77 @@ from erpnext.accounts.party import get_party_details
 import re
 
 
+LEAD_ITEM_FIELDS = """
+'item_photo',
+'supplier_part_no',
+'supplier_item_description',
+'product_material1',
+'percentage1',
+'product_material2',
+'percentage2',
+'product_material3',
+'percentage3',
+'customs_tariff_number',
+'item_length',
+'item_width',
+'item_thickness',
+'packing_type',
+'racking_bag',
+'minimum_order_qty',
+'unit_price',
+'item_price',
+'item_price_valid_from',
+'pricing_rule_qty',
+'pricing_rule_price',
+'pricing_rule_valid_from',
+'inner_qty',
+'is_display_box',
+'is_special_mentions',
+'is_certificates_reqd',
+'lead_item_name',
+'item_group',
+'description',
+'uom',
+'selling_pack_qty',
+'is_disabled',
+'is_quoted',
+'is_sample_validated',
+'is_po_created',
+'designation',
+'description1',
+'description2',
+'description3',
+'other_language',
+'is_need_photo_for_packaging',
+'packaging_description_excel',
+'name',
+'photo_quotation'
+"""
+
+
 def get_lead_item_fields():
-    return [
+
+    fields = frappe.db.sql(
+        """
+			select fieldname , label , 
+			case 
+				when fieldtype = 'Attach Image' then 'text'
+				when fieldtype in ('Percent', 'Int', 'Currency') then 'numeric' 
+				when fieldtype in ('Check') then 'checkbox'
+				when fieldtype in ('Date') then 'calendar'
+			else 'text' end fieldtype 
+			from tabDocField tdf where parent = 'Lead Item' 
+			and label is not null
+			and fieldname in ({fields})
+			ORDER BY FIELD (fieldname,{fields})
+	""".format(
+            fields=LEAD_ITEM_FIELDS
+        ),
+        as_dict=True,
+        # debug=True,
+    )
+
+    return fields + [
         frappe._dict(
             {
                 "fieldname": "name",
@@ -24,22 +93,7 @@ def get_lead_item_fields():
                 "fieldtype": "text",
             }
         )
-    ] + frappe.db.sql(
-        """
-			select fieldname , label , 
-			case 
-				when fieldtype = 'Attach Image' then 'image'
-				when fieldtype in ('Percent', 'Int', 'Currency') then 'numeric' 
-				when fieldtype in ('Check') then 'checkbox'
-				when fieldtype in ('Date') then 'calendar'
-			else 'text' end fieldtype 
-			from tabDocField tdf where parent = 'Lead Item' 
-			and label is not null
-			and fieldname not in ('naming_series' ,'amended_from')
-			order by idx;
-	""",
-        as_dict=True,
-    )
+    ]
 
 
 def get_items_xlsx(docname, template="", supplier=None, filters=None):

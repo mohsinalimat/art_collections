@@ -258,7 +258,9 @@ class PhotoQuotation(Document):
 
         website_item = make_website_item(item)
         frappe.db.set_value("Website Item", website_item[0], "published", 0)
-        frappe.db.set_value("Website Item", website_item[0], "image", item.image)
+        frappe.db.set_value(
+            "Website Item", website_item[0], "website_image", item.image
+        )
 
     @frappe.whitelist()
     def delete_all_lead_items(self):

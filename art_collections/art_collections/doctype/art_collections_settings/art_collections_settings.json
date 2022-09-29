@@ -8,6 +8,7 @@
   "picker_role",
   "item_availability_buffer_days",
   "column_break_2",
+  "days_after_shipping_date",
   "use_pos_in_offline_mode",
   "barcode_domain",
   "warehouse_type_sb_section",
@@ -217,12 +218,18 @@
    "label": "Default Lead Item Warehouse",
    "options": "Warehouse",
    "reqd": 1
+  },
+  {
+   "description": "Used in Item Doctype  : Saleable qty\u201d = (\u201cTotal in stock\u201d - \u201cQty sold to deliver\u201d) + Qty in Purchase order not received where \u201cShipping date\u201d is less than x days , X is here",
+   "fieldname": "days_after_shipping_date",
+   "fieldtype": "Int",
+   "label": "Days After Shipping Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-08-26 05:38:12.292070",
+ "modified": "2022-09-29 11:58:04.483048",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

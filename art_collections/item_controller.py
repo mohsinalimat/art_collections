@@ -127,7 +127,7 @@ def get_item_art_dashboard_data(item_code):
 where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
 # 	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 # where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
-	item_availability_buffer_days = frappe.db.get_single_value('Art Collections Settings', 'item_availability_buffer_days')
+	days_after_shipping_date = frappe.db.get_single_value('Art Collections Settings', 'days_after_shipping_date')
 
 	expected_qty_from_po=frappe.db.sql("""SELECT
 	sum(po_item.qty)
@@ -143,7 +143,7 @@ where
 	and po_item.shipping_date_art is not NULL
 	and datediff(po_item.shipping_date_art, CURDATE())<%s
 group by
-	po_item.item_code""",(item_code,item_availability_buffer_days))
+	po_item.item_code""",(item_code,days_after_shipping_date))
 
 	print('expected_qty_from_po',expected_qty_from_po,len(expected_qty_from_po))
 

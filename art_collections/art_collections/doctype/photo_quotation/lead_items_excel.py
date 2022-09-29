@@ -121,8 +121,10 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
         as_list=1,
     )
 
+    photo_index = "item_photo" in fields and fields.index("item_photo") or 0
+
     excel_rows = list(data)
-    images = [d[1] for d in data]
+    images = [d[photo_index] for d in data]
 
     wb = write_xlsx(
         excel_rows,
@@ -133,7 +135,11 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
     )
 
     add_images(
-        images, workbook=wb, worksheet=SHEET_NAME, image_col="B", skip_rows=skip_rows
+        images,
+        workbook=wb,
+        worksheet=SHEET_NAME,
+        image_col=chr(65 + photo_index),
+        skip_rows=skip_rows,
     )
     wb.active = wb[SHEET_NAME]
 

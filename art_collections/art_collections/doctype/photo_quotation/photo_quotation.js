@@ -190,6 +190,11 @@ frappe.ui.form.on("Photo Quotation", {
     // XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Items');
     // XLSX.writeFile(workbook, cur_frm.doc.name + "-Lead Items.xlsx");
 
+    template = cur_frm.templatesDD.getValue();
+    if (!template) {
+      frappe.throw("Please select a template to download");
+    }
+
     open_url_post(
       "/api/method/art_collections.art_collections.doctype.photo_quotation.photo_quotation.download_lead_items_template",
       {
@@ -293,24 +298,28 @@ function make_items_grid(frm) {
     let html = `
 		<div>
 			<div id="templates"></div>
+			<button onclick="cur_frm.events.download_items()">Download Items</button>
 			<button onclick="cur_frm.events.upload_items(cur_frm)">Upload</button>
 			<button onclick="cur_frm.trigger('make_items_grid')">Reload Items</button>
 		</div>
 		`;
     $(html).appendTo(".jexcel_filter");
-    jSuites.dropdown(document.getElementById("templates"), {
-      data: [
-        { text: "Artyfetes", value: "artyfetes" },
-        { text: "Supplier Quotation", value: "supplier_quotation" },
-        { text: "Sample Request", value: "supplier_sample_request" },
-        { text: "Create Items", value: "create_lead_items" },
-      ],
-      placeholder: "Select Template to Dowmload",
-      width: "240px",
-      onchange: function (el, value) {
-        cur_frm.events.download_items(el.value);
-      },
-    });
+    cur_frm.templatesDD = jSuites.dropdown(
+      document.getElementById("templates"),
+      {
+        data: [
+          { text: "Artyfetes", value: "artyfetes" },
+          { text: "Supplier Quotation", value: "supplier_quotation" },
+          { text: "Sample Request", value: "supplier_sample_request" },
+          { text: "Create Items", value: "create_lead_items" },
+        ],
+        placeholder: "Select a template to Download",
+        width: "240px",
+        onchange: function (el, value) {
+          // cur_frm.events.download_items(el.value);
+        },
+      }
+    );
 
     $(".jexcel_filter").css("justify-content", "right");
   }

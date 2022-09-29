@@ -140,8 +140,8 @@ where
 	and po_item.received_qty <> po_item.stock_qty
 	and po.status in ('To Receive', 'To Receive and Bill')
 	and po_item.item_code = %s
-	and po.shipping_date_art is not NULL
-	and datediff(po.shipping_date_art, CURDATE())<%s
+	and po_item.shipping_date_art is not NULL
+	and datediff(po_item.shipping_date_art, CURDATE())<%s
 group by
 	po_item.item_code""",(item_code,item_availability_buffer_days))
 

@@ -207,12 +207,15 @@ doc_events = {
     "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
     },
-    "Pick List": {"validate": "art_collections.directive_controller.get_directive"},
+    "Pick List": {
+        "validate": "art_collections.directive_controller.get_directive"
+    },
     "Data Import": {
         "validate": "art_collections.controllers.item_import.start_item_import"
     },
     "Stock Entry": {
-        "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry"
+        "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry",
+        "on_submit":"art_collections.item_controller.reset_breakup_date"
     },
     "Communication": {
         "on_update": "art_collections.controllers.utils.after_insert_communication"
@@ -230,7 +233,10 @@ scheduler_events = {
         "15 00 * * *": [
             "art_collections.item_controller.allow_order_still_stock_last",
             "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art",
-        ]
+        ],
+        "0/30 * * * *": [
+			"art_collections.item_controller.update_item_art_dashboard_data",
+		],
     },
     # "daily": ["art_collections.scheduler_task_controller.daily"]
     # "hourly": [

@@ -91,6 +91,18 @@ frappe.ui.form.on('Sales Order', {
 
 	},
 	refresh: function (frm) {
+		if(frm.doc.status !== 'Closed') {
+				if(frm.doc.status !== 'On Hold') {
+					if (flt(frm.doc.per_picked, 6) < 100 && flt(frm.doc.per_delivered, 6) < 100) {
+						frm.add_custom_button(__('Pick List'), () => {
+							//  override erpnext.selling.doctype.sales_order.sales_order.create_pick_list
+							frappe.model.open_mapped_doc({
+								method: "art_collections.pick_list_controller.create_pick_list_with_update_breakup_date",
+								frm: frm
+							})
+					}
+			}
+		}
 
 		if (frm.doc.docstatus == 1) {
 			if (frm.has_perm("submit")) {

@@ -119,59 +119,107 @@ def set_custom_item_name(self,method):
 # 	row.valid_to=add_days(nowdate(), new_arrival_validity_days)
 
 
-
 @frappe.whitelist()
-def get_item_art_dashboard_data(item_code):
-	total_in_stock=get_stock_qty_for_saleable_warehouse(item_code)[0]['saleable_qty']
-	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
-where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
-# 	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+def update_item_art_dashboard_data():
+	days_after_shipping_date = frappe.db.get_single_value('Art Collections Settings', 'days_after_shipping_date') or 0
+	items_list=frappe.db.get_list('Item',filters={'has_variants': 0,'is_fixed_asset':0,'is_stock_item':1,'disabled':0},pluck='name')
+	for item_code in items_list:
+		total_in_stock=get_stock_qty_for_saleable_warehouse(item_code)[0]['saleable_qty']
+	
+		sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+		where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+
+		expected_qty_from_po=frappe.db.sql("""SELECT
+		sum(po_item.qty)
+	FROM
+		`tabPurchase Order` as po
+	inner join `tabPurchase Order Item` po_item on
+		po.name = po_item.parent
+	where
+		po.docstatus != 2
+		and po_item.received_qty <> po_item.stock_qty
+		and po.status in ('To Receive', 'To Receive and Bill')
+		and po_item.item_code = %s
+		and po_item.shipping_date_art is not NULL
+		and datediff(po_item.shipping_date_art, CURDATE())<%s
+	group by
+		po_item.item_code""",(item_code,days_after_shipping_date))
+
+		if sold_qty_to_deliver!=None:
+			total_virtual_stock=flt(total_in_stock+sold_qty_to_deliver)
+		else:
+			total_virtual_stock=flt(total_in_stock)
+
+		if len(expected_qty_from_po)>0:
+			total_virtual_stock=flt(total_in_stock+expected_qty_from_po[0][0])
+
+		if total_in_stock!=None:
+			existing_total_in_stock_cf = frappe.db.get_value('Item', item_code,'total_in_stock_cf')
+			if existing_total_in_stock_cf!=total_in_stock:
+				frappe.db.set_value('Item',item_code, 'total_in_stock_cf', total_in_stock)
+
+		if sold_qty_to_deliver!=None:
+			existing_qty_sold_to_deliver_cf=frappe.db.get_value('Item',item_code, 'qty_sold_to_deliver_cf')
+			if existing_qty_sold_to_deliver_cf!=sold_qty_to_deliver:
+				frappe.db.set_value('Item',item_code, 'qty_sold_to_deliver_cf', sold_qty_to_deliver)
+
+		if total_virtual_stock!=None:
+			existing_saleable_qty_cf=frappe.db.get_value('Item',item_code, 'saleable_qty_cf')
+			if existing_saleable_qty_cf!=total_virtual_stock:
+				frappe.db.set_value('Item',item_code, 'saleable_qty_cf', total_virtual_stock)
+
+# @frappe.whitelist()
+# def get_item_art_dashboard_data(item_code):
+# 	total_in_stock=get_stock_qty_for_saleable_warehouse(item_code)[0]['saleable_qty']
+# 	sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 # where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
-	days_after_shipping_date = frappe.db.get_single_value('Art Collections Settings', 'days_after_shipping_date')
+# # 	sold_qty_delivered=frappe.db.sql("""select sum(so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+# # where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+# 	days_after_shipping_date = frappe.db.get_single_value('Art Collections Settings', 'days_after_shipping_date')
 
-	expected_qty_from_po=frappe.db.sql("""SELECT
-	sum(po_item.qty)
-FROM
-	`tabPurchase Order` as po
-inner join `tabPurchase Order Item` po_item on
-	po.name = po_item.parent
-where
-	po.docstatus != 2
-	and po_item.received_qty <> po_item.stock_qty
-	and po.status in ('To Receive', 'To Receive and Bill')
-	and po_item.item_code = %s
-	and po_item.shipping_date_art is not NULL
-	and datediff(po_item.shipping_date_art, CURDATE())<%s
-group by
-	po_item.item_code""",(item_code,days_after_shipping_date))
+# 	expected_qty_from_po=frappe.db.sql("""SELECT
+# 	sum(po_item.qty)
+# FROM
+# 	`tabPurchase Order` as po
+# inner join `tabPurchase Order Item` po_item on
+# 	po.name = po_item.parent
+# where
+# 	po.docstatus != 2
+# 	and po_item.received_qty <> po_item.stock_qty
+# 	and po.status in ('To Receive', 'To Receive and Bill')
+# 	and po_item.item_code = %s
+# 	and po_item.shipping_date_art is not NULL
+# 	and datediff(po_item.shipping_date_art, CURDATE())<%s
+# group by
+# 	po_item.item_code""",(item_code,days_after_shipping_date))
 
-	print('expected_qty_from_po',expected_qty_from_po,len(expected_qty_from_po))
+# 	print('expected_qty_from_po',expected_qty_from_po,len(expected_qty_from_po))
 
-	if sold_qty_to_deliver!=None:
-		total_virtual_stock=flt(total_in_stock+sold_qty_to_deliver)
-	else:
-		total_virtual_stock=flt(total_in_stock)
+# 	if sold_qty_to_deliver!=None:
+# 		total_virtual_stock=flt(total_in_stock+sold_qty_to_deliver)
+# 	else:
+# 		total_virtual_stock=flt(total_in_stock)
 
-	if len(expected_qty_from_po)>0:
-		total_virtual_stock=flt(total_in_stock+expected_qty_from_po[0][0])
-	# avg_daily_outgoing=get_average_daily_outgoing_art(item_code).average_daily_outgoing_art or 0.0
-	# avg_qty_sold_per_month=flt(avg_daily_outgoing*30)
-	# avg_delivery_days=flt(get_average_delivery_days_art(item_code))
-	# day_remaining_with_the_stock=flt(total_in_stock/avg_daily_outgoing) if avg_daily_outgoing!=0.0 else 0.0
+# 	if len(expected_qty_from_po)>0:
+# 		total_virtual_stock=flt(total_in_stock+expected_qty_from_po[0][0])
+# 	# avg_daily_outgoing=get_average_daily_outgoing_art(item_code).average_daily_outgoing_art or 0.0
+# 	# avg_qty_sold_per_month=flt(avg_daily_outgoing*30)
+# 	# avg_delivery_days=flt(get_average_delivery_days_art(item_code))
+# 	# day_remaining_with_the_stock=flt(total_in_stock/avg_daily_outgoing) if avg_daily_outgoing!=0.0 else 0.0
 
-	data=frappe.render_template("""<ul>
-	<li>Total in Stock : <b>{{ total_in_stock }}</b></li>
-	<li>Qty Sold to Deliver : <b>{{ sold_qty_to_deliver | default('None')}}</b></li>
-	<li>Saleable Qty : <b>{{ total_virtual_stock }}</b></li>
-	<li>Breakup Date : <b>{{breakup_date}}</b></li>	
-	</ul>
-""", dict(
-	total_in_stock = total_in_stock,
-	sold_qty_to_deliver=sold_qty_to_deliver,
-	total_virtual_stock=total_virtual_stock,
-	breakup_date=None
-	))
-	return	data	
+# 	data=frappe.render_template("""<ul>
+# 	<li>Total in Stock : <b>{{ total_in_stock }}</b></li>
+# 	<li>Qty Sold to Deliver : <b>{{ sold_qty_to_deliver | default('None')}}</b></li>
+# 	<li>Saleable Qty : <b>{{ total_virtual_stock }}</b></li>
+# 	<li>Breakup Date : <b>{{breakup_date}}</b></li>	
+# 	</ul>
+# """, dict(
+# 	total_in_stock = total_in_stock,
+# 	sold_qty_to_deliver=sold_qty_to_deliver,
+# 	total_virtual_stock=total_virtual_stock,
+# 	breakup_date=None
+# 	))
+# 	return	data	
 
 @frappe.whitelist()
 def get_all_saleable_warehouse_list():
@@ -288,3 +336,10 @@ def set_default_warehouse_based_on_stock_entry(self,method)	:
 						frappe.msgprint(_("Item {0}: has no item default entry. Hence  warehouse not set to {1}. Please do it manually".format(item_details.item_name,frappe.bold(item.t_warehouse))), alert=True)
 
 
+def reset_breakup_date(self,method):
+	if self.purpose=="Material Receipt":
+		for d in self.get("items"):
+			breakup_date_cf=frappe.db.get_value('Item',d.item_code, 'breakup_date_cf')
+			if breakup_date_cf!=None:
+				frappe.db.set_value('Item',d.item_code, 'breakup_date_cf', None)		
+				frappe.msgprint(_("Item {0} break up date is set to blank.").format(d.item_code),alert=True)		

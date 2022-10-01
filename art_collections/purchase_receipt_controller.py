@@ -11,6 +11,13 @@ def purchase_receipt_custom_submit_logic(self,method):
 	# ID: #317 calculation of average_delivery_days_art
 	for d in self.items:
 		frappe.db.set_value('Item', d.item_code, 'average_delivery_days_art', get_average_delivery_days_art(d.item_code))
+		
+		# reset_breakup_date
+		breakup_date_cf=frappe.db.get_value('Item',d.item_code, 'breakup_date_cf')
+		if breakup_date_cf!=None:
+			frappe.db.set_value('Item',d.item_code, 'breakup_date_cf', None)		
+			frappe.msgprint(_("Item {0} break up date is set to blank.").format(d.item_code),alert=True)			
+
 
 def enable_allow_order_still_stock_last_logic(self):
 	if self.items:

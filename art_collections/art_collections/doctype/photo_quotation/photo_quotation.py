@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import now, cstr, cint, add_days, today, add_to_date
+from frappe.utils import now, cstr, cint, add_days, today, add_to_date, flt
 import json
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 from frappe.utils.data import getdate
@@ -212,7 +212,7 @@ class PhotoQuotation(Document):
 
         item.save()
 
-        if cint(source.get("unit_price")):
+        if flt(source.get("unit_price")):
             frappe.get_doc(
                 {
                     "doctype": "Item Price",

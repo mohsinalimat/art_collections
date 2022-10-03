@@ -10,4 +10,4 @@ class LeadItem(Document):
     def validate(self):
         if cint(self.is_disabled):
             self.status = "Disabled"
-        self.is_quoted = flt(self.unit_price)
+        self.is_quoted = flt(self.unit_price) > 0

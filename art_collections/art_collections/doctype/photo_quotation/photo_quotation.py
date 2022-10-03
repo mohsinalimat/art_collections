@@ -212,7 +212,7 @@ class PhotoQuotation(Document):
 
         item.save()
 
-        if flt(source.get("unit_price")):
+        if flt(source.get("unit_price")) > 0:
             frappe.get_doc(
                 {
                     "doctype": "Item Price",

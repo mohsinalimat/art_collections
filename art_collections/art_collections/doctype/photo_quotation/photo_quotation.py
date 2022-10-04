@@ -81,6 +81,7 @@ class PhotoQuotation(Document):
             ),
             (self.name,),
             as_dict=True,
+            debug=1,
         )
 
         invalid_items = []
@@ -272,7 +273,7 @@ class PhotoQuotation(Document):
     def create_purchase_order(self):
         items = frappe.db.sql(
             """
-			select ti.item_code , tli.uom , tli.selling_pack_qty 
+			select ti.item_code , tli.uom , tli.selling_pack_qty , tli.minimum_order_qty
 			from `tabLead Item` tli
 			inner join tabItem ti on ti.lead_item_cf = tli.name  
 			where is_po_created = 0 and status = 'Item Created' 
@@ -315,7 +316,7 @@ class PhotoQuotation(Document):
                     "schedule_date": getdate(),
                     "stock_uom": d.uom,
                     "uom": d.uom,
-                    "qty": 1,
+                    "qty": d.minimum_order_qty,
                 },
             )
 

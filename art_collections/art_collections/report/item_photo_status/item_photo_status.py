@@ -110,8 +110,8 @@ left outer join
 		slideshow_item.parent,
 		SUM(slideshow_item.heading REGEXP '^Détouré') detoure_count,
 		SUM(slideshow_item.heading REGEXP '^Ambiance') ambiance_count,
-		SUM(slideshow_item.heading REGEXP '^Front') fr_count,
-		SUM(slideshow_item.heading REGEXP '^back') ba_count
+		SUM(slideshow_item.heading REGEXP '^Packaged Front') fr_count,
+		SUM(slideshow_item.heading REGEXP '^Packaged back') ba_count
 	FROM
 		`tabWebsite Slideshow Item` as slideshow_item
 	group by

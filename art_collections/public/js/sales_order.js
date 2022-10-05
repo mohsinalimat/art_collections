@@ -100,10 +100,10 @@ frappe.ui.form.on('Sales Order', {
 								method: "art_collections.pick_list_controller.create_pick_list_with_update_breakup_date",
 								frm: frm
 							})
-					}
+					})
 			}
 		}
-
+	}
 		if (frm.doc.docstatus == 1) {
 			if (frm.has_perm("submit")) {
 				if (frm.doc.status === 'On Hold') {

@@ -121,7 +121,7 @@ left outer join
  on
 	slideshow_items.parent = slideshow.name
 inner join `tabItem` item on
-	item.name = slideshow_items.parent
+	item.name = slideshow.name
 left outer join `tabWebsite Item` website_item on
 	website_item.item_code = item.name
 order by

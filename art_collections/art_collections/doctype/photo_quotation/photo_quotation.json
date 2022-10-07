@@ -79,6 +79,7 @@
    "options": "Contact"
   },
   {
+   "fetch_from": "contact_person.email_id",
    "fieldname": "contact_email",
    "fieldtype": "Small Text",
    "label": "Contact Email",
@@ -102,7 +103,7 @@
    "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-08-26 06:05:20.849423",
+ "modified": "2022-10-07 07:59:23.315705",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

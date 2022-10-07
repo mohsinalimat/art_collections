@@ -26,7 +26,14 @@ def get_columns():
 			"fieldtype": "Data",
 			"label": _("Item Name"),
 			"width": 240
-		},		
+		},	
+		{
+			"fieldname": "website_item",
+			"fieldtype": "Link",
+			"options": "Website Item",
+			"label": _("Website Item"),
+			"width": 120
+		},			
 		{
 			"fieldname": "published",
 			"fieldtype": "Check",
@@ -38,9 +45,14 @@ def get_columns():
 			"fieldtype": "Link",
 			"options": "Website Slideshow",
 			"label": "Slideshow",
-			"width": 100
+			"width": 120
 		},
-
+		{
+			"fieldname": "website_slideshow_link",
+			"fieldtype": "Data",
+			"label": _("Website Slide"),
+			"width": 120
+		},
 		{
 			"fieldname": "check_allow_insuf",
 			"fieldtype": "Data",
@@ -88,10 +100,12 @@ def get_data(filters):
 	data = []
 	print(condition)
 	query="""select
-	slideshow.name as item,
+	item.name as item,
 	item.item_name as item_name,
+	website_item.name as website_item,
 	website_item.published as published,
 	slideshow.name as slideshow,
+	website_item.slideshow as website_slideshow_link, 
 	website_item.allow_insufficient_images_for_web_art,
 	IF(website_item.allow_insufficient_images_for_web_art = 1,
 	 concat("<input type='checkbox' id=", website_item.name, " onclick='toggle_allow_insufficient_images(&quot;", website_item.name, "&quot;);' class='buzz' checked/>") , 
@@ -101,8 +115,12 @@ def get_data(filters):
 	COALESCE(slideshow_items.fr_count, 0) front,
 	COALESCE(slideshow_items.ba_count, 0) back,
 	COALESCE(slideshow_items.total_count, 0) total_photo
-FROM
-	`tabWebsite Slideshow` as slideshow
+from
+	`tabItem` item
+left outer join `tabWebsite Item` website_item on
+	website_item.item_code = item.name
+left outer join `tabWebsite Slideshow` as slideshow on
+	item.name = slideshow.name
 left outer join 
  (
 	SELECT
@@ -120,12 +138,10 @@ left outer join
 		heading DESC ) as slideshow_items
  on
 	slideshow_items.parent = slideshow.name
-inner join `tabItem` item on
-	item.name = slideshow.name
-left outer join `tabWebsite Item` website_item on
-	website_item.item_code = item.name
+where
+	item.disabled = 0
 order by
-	slideshow.modified DESC
+	item.name DESC
 """
 	data = frappe.db.sql(query, as_dict=1)
 	return data

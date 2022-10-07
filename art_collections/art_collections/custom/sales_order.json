@@ -438,7 +438,7 @@
    "docstatus": 0,
    "dt": "Sales Order",
    "fetch_from": "shipping_address_name.delivery_by_appointment_art",
-   "fetch_if_empty": 1,
+   "fetch_if_empty": 0,
    "fieldname": "delivery_by_appointment_art",
    "fieldtype": "Check",
    "hidden": 0,

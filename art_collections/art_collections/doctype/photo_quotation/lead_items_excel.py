@@ -143,6 +143,26 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
     )
     wb.active = wb[SHEET_NAME]
 
+    packing_type_index = "packing_type" in fields and fields.index("packing_type")
+    if packing_type_index:
+        # Create a data-validation object with list validation
+        from openpyxl.worksheet.datavalidation import DataValidation
+        from openpyxl.utils.cell import get_column_letter
+
+        column_letter = get_column_letter(packing_type_index + 1)
+        packing_type = DataValidation(
+            type="list",
+            formula1="{}".format(
+                ",".join(frappe.get_all("Packing Type Art", pluck="name"))
+            ),
+            allow_blank=True,
+        )
+        wb[SHEET_NAME].add_data_validation(packing_type)
+        packing_type.add(
+            "{}{}:{}500".format(column_letter, skip_rows + 1, column_letter)
+        )
+        print("\n" * 5, SHEET_NAME, column_letter)
+
     # set supplier details
     if template == "lead_items_supplier_template" and supplier:
         wb[SHEET_NAME]["R1"] = re.sub(

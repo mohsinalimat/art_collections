@@ -86,6 +86,13 @@ frappe.ui.form.on("Photo Quotation", {
             frm: frm,
             folder: "Home/Attachments",
             on_success: (file_doc) => {
+              if (
+                file_doc.content_hash &&
+                file_doc.content_hash.startsWith("Duplicate photo.")
+              ) {
+                frappe.show_alert(file_doc.content_hash);
+              }
+
               file_num++;
               if (file_num == fup.uploader.files.length) {
                 frm.reload_doc();
@@ -170,7 +177,6 @@ frappe.ui.form.on("Photo Quotation", {
         reader.onload = function (e) {
           var workbook = XLSX.read(e.target.result);
           let data = get_excel_data(workbook, "Lead Items", "configuration");
-          console.log(data);
           frm.items_table.setData(data);
           frm.dirty();
         };
@@ -190,11 +196,11 @@ frappe.ui.form.on("Photo Quotation", {
     // XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Items');
     // XLSX.writeFile(workbook, cur_frm.doc.name + "-Lead Items.xlsx");
 
-    template = cur_frm.templatesDD.getValue();
-    if (!template) {
-      frappe.throw("Please select a template to download");
-    }
-
+    // template = cur_frm.templatesDD.getValue();
+    // if (!template) {
+    //   frappe.throw("Please select a template to download");
+    // }
+    template = "artyfetes";
     open_url_post(
       "/api/method/art_collections.art_collections.doctype.photo_quotation.photo_quotation.download_lead_items_template",
       {
@@ -267,7 +273,7 @@ function make_items_grid(frm) {
 
       // https://bossanova.uk/jspreadsheet/v4/docs/quick-reference
       let items_table = jspreadsheet(document.getElementById("items-table"), {
-        filters: true,
+        filters: false,
         columns: columns,
         minDimensions: [columns.length, 3],
         defaultColWidth: 100,
@@ -275,7 +281,7 @@ function make_items_grid(frm) {
         tableWidth: `${width - 30}px`,
         tableHeight: "500px",
         search: true,
-        // freezeColumns: 1,
+        freezeColumns: 1,
         allowManualInsertRow: false,
         allowManualInsertColumn: false,
         // pagination: 10,
@@ -289,6 +295,7 @@ function make_items_grid(frm) {
           frm.dirty();
         },
       });
+
       items_table.setData(r.message.data);
       setup_toolbar();
       window.items_table = frm.items_table = items_table;
@@ -304,22 +311,22 @@ function make_items_grid(frm) {
 		</div>
 		`;
     $(html).appendTo(".jexcel_filter");
-    cur_frm.templatesDD = jSuites.dropdown(
-      document.getElementById("templates"),
-      {
-        data: [
-          { text: "Artyfetes", value: "artyfetes" },
-          { text: "Supplier Quotation", value: "supplier_quotation" },
-          { text: "Sample Request", value: "supplier_sample_request" },
-          { text: "Create Items", value: "create_lead_items" },
-        ],
-        placeholder: "Select a template to Download",
-        width: "240px",
-        onchange: function (el, value) {
-          // cur_frm.events.download_items(el.value);
-        },
-      }
-    );
+    // cur_frm.templatesDD = jSuites.dropdown(
+    //   document.getElementById("templates"),
+    //   {
+    //     data: [
+    //       { text: "Artyfetes", value: "artyfetes" },
+    //       { text: "Supplier Quotation", value: "supplier_quotation" },
+    //       { text: "Sample Request", value: "supplier_sample_request" },
+    //       { text: "Create Items", value: "create_lead_items" },
+    //     ],
+    //     placeholder: "Select a template to Download",
+    //     width: "240px",
+    //     onchange: function (el, value) {
+    //       // cur_frm.events.download_items(el.value);
+    //     },
+    //   }
+    // );
 
     $(".jexcel_filter").css("justify-content", "right");
   }
@@ -340,6 +347,11 @@ function get_excel_data(workbook, data_sheet, configuration_sheet) {
   let csv = XLSX.utils.sheet_to_csv(ws);
   var data = frappe.utils.csv_to_array(csv);
 
+  // fix for frappe bug: when first col of first row is blank
+  if (csv.startsWith(",")) {
+    data[0].unshift("");
+  }
+
   // get columns in grid, and reshape excel as per grid columns
   let grid_columns = items_table.getConfig().columns.map((t) => t.fieldname);
   let grid_data = items_table.getData();
@@ -348,13 +360,14 @@ function get_excel_data(workbook, data_sheet, configuration_sheet) {
     item = [],
     idx = -1;
   for (const row of data) {
-    item = grid_data.filter((t) => t[0] === row[0]);
-    if (item.length) {
-      item = item[0];
-    } else {
-      // initialize blank array
-      item = Array.from({ length: grid_columns.length }, (v, i) => null);
-    }
+    // item = grid_data.filter((t) => t.at(-1) === row.at(-1));
+    // if (item.length) {
+    //   item = item[0];
+    // } else {
+    //   // initialize blank array
+    //   item = Array.from({ length: grid_columns.length }, (v, i) => null);
+    // }
+    item = Array.from({ length: grid_columns.length }, (v, i) => null);
 
     grid_columns.forEach((col, i) => {
       idx = excel_columns.indexOf(col);
@@ -362,6 +375,7 @@ function get_excel_data(workbook, data_sheet, configuration_sheet) {
         item[i] = row[idx];
       }
     });
+
     values.push(item);
   }
   return values;

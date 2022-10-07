@@ -81,7 +81,7 @@ class PhotoQuotation(Document):
             ),
             (self.name,),
             as_dict=True,
-            debug=1,
+            # debug=1,
         )
 
         invalid_items = []
@@ -185,7 +185,7 @@ class PhotoQuotation(Document):
             {
                 "supplier": supplier,
                 "supplier_part_no": source.get("supplier_part_no"),
-                # "supplier_item_description":"supplier_item_description"
+                "supplier_item_description": "supplier_item_description",
             },
         )
 
@@ -398,6 +398,16 @@ def import_lead_item_photos():
     ret.save(ignore_permissions=True)
 
     doc.db_set("item_photo", ret.get("file_url"))
+
+    duplicate_count = frappe.db.sql(
+        """
+       select count(*) from tabFile tf where content_hash = %s and name <> %s""",
+        (ret.content_hash, ret.name),
+    )
+    if duplicate_count and cint(duplicate_count[0][0]):
+        ret.content_hash = _("Duplicate photo. {0} is already used.").format(
+            frappe.local.uploaded_filename
+        )
 
     return ret
 

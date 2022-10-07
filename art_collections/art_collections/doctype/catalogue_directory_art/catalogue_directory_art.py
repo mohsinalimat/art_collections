@@ -38,25 +38,26 @@ class CatalogueDirectoryArt(NestedSet):
 				self.parent_catalogue_directory_art = _('Catalogues')
 		# self.make_route()
 		self.set_title()
-		if self.node_type=="Catalogue":
-			catalogue_list=get_all_child_of_catalogue(self.name)
-			if len(catalogue_list)>0:
-				for catalogue in catalogue_list:
-					frappe.db.set_value('Catalogue Directory Art', catalogue.name, 'show_in_website', self.show_in_website)
-					if catalogue.node_type=="Universe" and self.show_in_website==1:
-						add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
-						add_universe_to_website_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)	
-					elif catalogue.node_type=="Universe" and self.show_in_website==0:
-						add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
-						remove_universe_from_website_item(catalgoue_name=catalogue.name)
-											
+		if self.get("__islocal")==None:
+			if self.node_type=="Catalogue":
+				catalogue_list=get_all_child_of_catalogue(self.name)
+				if len(catalogue_list)>0:
+					for catalogue in catalogue_list:
+						frappe.db.set_value('Catalogue Directory Art', catalogue.name, 'show_in_website', self.show_in_website)
+						if catalogue.node_type=="Universe" and self.show_in_website==1:
+							add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+							add_universe_to_website_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)	
+						elif catalogue.node_type=="Universe" and self.show_in_website==0:
+							add_universe_to_item(catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+							remove_universe_from_website_item(catalgoue_name=catalogue.name)
+												
 
-		if self.node_type=="Universe" and self.show_in_website==1:
-			add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
-			add_universe_to_website_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
-		elif self.node_type=="Universe" and self.show_in_website==0:
-			add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
-			remove_universe_from_website_item(catalgoue_name=self.name)
+			if self.node_type=="Universe" and self.show_in_website==1:
+				add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+				add_universe_to_website_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+			elif self.node_type=="Universe" and self.show_in_website==0:
+				add_universe_to_item(catalgoue_name=self.name,show_in_website=self.show_in_website)
+				remove_universe_from_website_item(catalgoue_name=self.name)
 			
 
 		# self.set_universe_catalogue_in_item_description()

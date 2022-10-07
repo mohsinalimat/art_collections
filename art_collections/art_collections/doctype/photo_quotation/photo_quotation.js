@@ -2,6 +2,18 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Photo Quotation", {
+  setup: function (frm) {
+    frm.set_query("contact_person", () => {
+      return {
+        query: "frappe.contacts.doctype.contact.contact.contact_query",
+        filters: {
+          link_doctype: "Supplier",
+          link_name: frm.doc.supplier,
+        },
+      };
+    });
+  },
+
   refresh: function (frm) {
     make_items_grid(frm);
     if (!frm.is_new()) {

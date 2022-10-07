@@ -44,7 +44,7 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
+   "is_query_report": 1,
    "label": "Item Photo Status",
    "link_to": "Item Photo Status",
    "link_type": "Report",
@@ -428,7 +428,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-08-24 03:16:27.128539",
+ "modified": "2022-10-07 08:11:16.119543",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections",

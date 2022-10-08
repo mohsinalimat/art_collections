@@ -81,7 +81,6 @@ class PhotoQuotation(Document):
             ),
             (self.name,),
             as_dict=True,
-            # debug=1,
         )
 
         invalid_items = []
@@ -185,7 +184,9 @@ class PhotoQuotation(Document):
             {
                 "supplier": supplier,
                 "supplier_part_no": source.get("supplier_part_no"),
-                "supplier_item_description": "supplier_item_description",
+                "supplier_part_description_art": source.get(
+                    "supplier_item_description"
+                ),
             },
         )
 
@@ -466,5 +467,5 @@ LEAD_ITEM_MANDATORY_FIELDS = [
 
 
 def make_items():
-    doc = frappe.get_doc("Photo Quotation", "PQ5")
+    doc = frappe.get_doc("Photo Quotation", "PQ17")
     doc.create_items()

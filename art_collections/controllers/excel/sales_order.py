@@ -62,6 +62,7 @@ def _make_excel_attachment(doctype, docname):
         left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
                and tprd.parent = tso.name and tprd.item_code = i.item_code 
         left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
+        and tpr.is_volume_price_cf = 1
             and tpr.selling = 1 and exists (
                 select 1 from `tabPricing Rule Item Code` x 
                 where x.parent = tpr.name and x.uom = tsoi.stock_uom)   

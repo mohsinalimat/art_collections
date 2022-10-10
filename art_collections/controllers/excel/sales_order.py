@@ -179,6 +179,7 @@ def _make_excel_attachment(doctype, docname):
         _("Item Name"),
         _("Barcode"),
         _("HSCode"),
+        _("Weight per unit (kg)"),
         _("Length (cm)"),
         _("Width (cm)"),
         _("Thickness (cm)"),

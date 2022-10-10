@@ -253,6 +253,7 @@ class PhotoQuotation(Document):
                     "rate_or_discount": "Rate",
                     "rate": source.get("pricing_rule_price"),
                     "valid_from": source.get("pricing_rule_valid_from"),
+                    "is_volume_price_cf": 1,
                 }
             )
             rule.append("items", {"item_code": item.item_code, "uom": "Selling Pack"})

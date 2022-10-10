@@ -59,15 +59,12 @@ def _make_excel_attachment(doctype, docname):
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
             and tppd.uom = tsoi.stock_uom
-        left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Sales Order' 
-               and tprd.parent = tso.name and tprd.item_code = i.item_code 
-        left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
-        and tpr.is_volume_price_cf = 1
+        left outer join `tabPricing Rule` tpr on tpr.is_volume_price_cf = 1
             and tpr.selling = 1 and exists (
                 select 1 from `tabPricing Rule Item Code` x 
-                where x.parent = tpr.name and x.uom = tsoi.stock_uom)   
+                where x.parent = tpr.name and x.uom = tsoi.stock_uom and x.item_code = i.item_code)   
         left outer join `tabItem Price` tip 
-        on tip.item_code = tsoi.item_code and tip.uom = tsoi.stock_uom 
+        on tip.item_code = tsoi.item_code and COALESCE(tip.uom,tsoi.stock_uom) = tsoi.stock_uom 
         and tip.price_list = (
             select value from tabSingles ts
             where doctype = 'Selling Settings' 

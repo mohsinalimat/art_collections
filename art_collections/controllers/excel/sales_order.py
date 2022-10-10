@@ -96,6 +96,7 @@ def _make_excel_attachment(doctype, docname):
         _("Qté totale"),
         _("Prix unité ({})").format(currency),
         _("Amount ({})").format(currency),
+        _("Price List Rate ({})").format(currency),
         _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo Link"),

@@ -488,7 +488,7 @@ def del_catalogue_directory_art_item_based_on_catalogue(catalogue,universe,item)
 						frappe.msgprint(_("Website item {0} : from 'Catalogue Directory Art Website' : row {1} with catalogue {2} and universe {3} is removed")
 		.format(get_link_to_form("Website Item",website_item.name),catalogue_directory_art_website.idx,catalogue_directory_art_website.catalogue,catalogue_directory_art_website.universe), alert=True)
 			if found_catalogue_item==False:
-				frappe.msgprint(_("There is no corresponding entry in 'Catalogue Directory Art' website item {0} of universe.").format(item.item), alert=True)
+				frappe.msgprint(_("There is no corresponding entry in 'Catalogue Directory Art' website item {0} of universe.").format(item), alert=True)
 
 		else:
-			frappe.msgprint(_("There is no website item for item {0} of universe.").format(item.item), alert=True)			
+			frappe.msgprint(_("There is no website item for item {0} of universe.").format(item), alert=True)			

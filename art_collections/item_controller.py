@@ -15,7 +15,7 @@ def item_autoname(self, method):
 def item_custom_validation(self,method):
 	set_uom_quantity_of_inner_in_outer(self)
 	set_weight_for_stock_uom_of_packing_dimensions(self)
-	sync_catalogue_directory_universe_details(self)
+	# sync_catalogue_directory_universe_details(self)
 	# set_custom_item_name(self)
 	# fix : shopping_cart
 	# sync_description_with_web_long_description(self)

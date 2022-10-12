@@ -85,19 +85,19 @@ frappe.ui.form.on('Item Universe Page Art', {
 		}
 
 	},
-	// before_items_in_universe_remove: function(frm, cdt, cdn) {
-	// 	let row=locals[cdt][cdn]
-	// 	  frappe.call({
-	// 		  method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.del_catalogue_directory_art_item_based_on_catalogue',
-	// 		  args: {
-	// 			  'catalogue':frm.doc.parent_catalogue_directory_art,
-	// 			  'universe': frm.doc.name,
-	// 		  	  'item':row.item
-	// 		  },
-	// 		  freeze: true,
-	// 		  callback: (r) => {
-	// 			console.log(r)
-	// 		  },
-	// 	  })	      
-	//  }	
+	before_items_in_universe_remove: function(frm, cdt, cdn) {
+		let row=locals[cdt][cdn]
+		  frappe.call({
+			  method: 'art_collections.art_collections.doctype.catalogue_directory_art.catalogue_directory_art.del_catalogue_directory_art_item_based_on_catalogue',
+			  args: {
+				  'catalogue':frm.doc.parent_catalogue_directory_art,
+				  'universe': frm.doc.name,
+			  	  'item':row.item
+			  },
+			  freeze: true,
+			  callback: (r) => {
+				frm.save()
+			  },
+		  })	      
+	 }	
 });

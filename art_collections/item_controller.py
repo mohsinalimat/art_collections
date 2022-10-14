@@ -146,12 +146,12 @@ def update_item_art_dashboard_data():
 		po_item.item_code""",(item_code,days_after_shipping_date))
 
 		if sold_qty_to_deliver!=None:
-			total_virtual_stock=flt(total_in_stock+sold_qty_to_deliver)
+			total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
 		else:
 			total_virtual_stock=flt(total_in_stock)
 
 		if len(expected_qty_from_po)>0:
-			total_virtual_stock=flt(total_in_stock+expected_qty_from_po[0][0])
+			total_virtual_stock=flt(total_virtual_stock+expected_qty_from_po[0][0])
 
 		if total_in_stock!=None:
 			existing_total_in_stock_cf = frappe.db.get_value('Item', item_code,'total_in_stock_cf')

@@ -145,6 +145,20 @@ def update_item_art_dashboard_data():
 	group by
 		po_item.item_code""",(item_code,days_after_shipping_date))
 
+		total_expected_qty_from_po_wo_shipping_date=frappe.db.sql("""SELECT
+		sum(po_item.qty)
+	FROM
+		`tabPurchase Order` as po
+	inner join `tabPurchase Order Item` po_item on
+		po.name = po_item.parent
+	where
+		po.docstatus != 2
+		and po_item.received_qty <> po_item.stock_qty
+		and po.status in ('To Receive', 'To Receive and Bill')
+		and po_item.item_code = %s
+	group by
+		po_item.item_code""",(item_code))
+
 		if sold_qty_to_deliver!=None:
 			total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
 		else:
@@ -152,6 +166,9 @@ def update_item_art_dashboard_data():
 
 		if len(expected_qty_from_po)>0:
 			total_virtual_stock=flt(total_virtual_stock+expected_qty_from_po[0][0])
+
+		if len(total_expected_qty_from_po_wo_shipping_date)>0:
+			frappe.db.set_value('Item',item_code, 'total_qty_in_purchase_order_cf', flt(total_expected_qty_from_po_wo_shipping_date[0][0]))
 
 		if total_in_stock!=None:
 			existing_total_in_stock_cf = frappe.db.get_value('Item', item_code,'total_in_stock_cf')

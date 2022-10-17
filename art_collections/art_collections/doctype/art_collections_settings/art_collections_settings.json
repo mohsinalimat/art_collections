@@ -223,13 +223,13 @@
    "description": "Used in Item Doctype  : Saleable qty\u201d = (\u201cTotal in stock\u201d - \u201cQty sold to deliver\u201d) + Qty in Purchase order not received where \u201cShipping date\u201d is less than x days , X is here",
    "fieldname": "days_after_shipping_date",
    "fieldtype": "Int",
-   "label": "Days After Shipping Date"
+   "label": "Days Left to Shipping Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-09-29 11:58:04.483048",
+ "modified": "2022-10-17 12:35:28.679808",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

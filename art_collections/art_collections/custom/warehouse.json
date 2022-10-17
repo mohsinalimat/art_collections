@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Warehouse",
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2022-10-17 12:20:49.404285",
+   "default_value": null,
+   "doc_type": "Warehouse",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "warehouse_type",
+   "idx": 0,
+   "modified": "2022-10-17 12:20:49.404285",
+   "modified_by": "Administrator",
+   "name": "Warehouse-warehouse_type-mandatory_depends_on",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "mandatory_depends_on",
+   "property_type": "Data",
+   "row_name": null,
+   "value": "eval:(!doc.is_group);"
+  }
+ ],
+ "sync_on_migrate": 1
+}

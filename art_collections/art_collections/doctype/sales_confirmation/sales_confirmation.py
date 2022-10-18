@@ -1,6 +1,8 @@
 # Copyright (c) 2022, GreyCube Technologies and contributors
 # For license information, please see license.txt
 
+from distutils.log import debug
+from numpy import column_stack
 import frappe
 from frappe import _
 from frappe.utils import cstr, cint, today, now_datetime, getdate, format_date
@@ -13,7 +15,10 @@ import re
 from erpnext.accounts.party import get_party_details
 from frappe.utils.data import format_date
 from openpyxl.styles.alignment import Alignment
-from art_collections.item_controller import get_qty_of_inner_cartoon,get_qty_of_outer_cartoon
+from art_collections.item_controller import (
+    get_qty_of_inner_cartoon,
+    get_qty_of_outer_cartoon,
+)
 
 FIELDS_TO_VALIDATE_WITH_PO = [
     "item_code",
@@ -280,9 +285,10 @@ def get_items_xlsx(docname, supplier=None):
     data = frappe.db.sql(
         """
 		select
-            item_code , supplier_part_no , image , barcode ,  supplier_item_description_ar ,
-            item_name , packing_type_art , qty_in_selling_pack_art , qty_per_inner , qty_per_outer , qty ,
-            rate , 0 grand_total , total_outer_cartons_art , cbm_per_outer_art , total_cbm , customs_tariff_number 
+            item_code , supplier_part_no , image , barcode , supplier_item_description_ar ,
+            item_name , packing_type_art , qty_in_selling_pack_art , qty_per_inner , qty_per_outer , 
+            qty , rate , qty * rate grand_total , total_outer_cartons_art , 
+            cbm_per_outer_art , total_cbm , customs_tariff_number 
             from `tabSales Confirmation Detail` tscd 
             where parent = %s
         """,
@@ -291,9 +297,28 @@ def get_items_xlsx(docname, supplier=None):
     )
 
     columns = [_(frappe.unscrub(cstr(c[0]))) for c in frappe.db.get_description()]
+    column_names = [
+        "Your item number",
+        "Our item number",
+        "Picture",
+        "Gencode ",
+        "English description",
+        "French description",
+        "Packaging",
+        "Qty in packaging",
+        "Qty per inner",
+        "Qty per outer ",
+        "Qty ordered",
+        "Unit price (in $)",
+        "Amount (in $)",
+        "Total of cartons",
+        "Each CBM",
+        "Total CBM",
+        "HS CODE",
+    ]
 
-    excel_rows = [columns] + list(data)
-    images = [""] + [d[1] for d in data]
+    excel_rows = [column_names] + list(data)
+    images = [""] + [d[2] for d in data]
 
     file_path, skip_rows = None, 5
 

@@ -4,13 +4,18 @@ from frappe import _
 from frappe.utils import nowdate,add_days,flt,cstr,date_diff
 from art_collections.api import get_average_daily_outgoing_art,get_average_delivery_days_art
 from frappe.utils import get_link_to_form
-
+from art_collections.art_collections.doctype.photo_quotation.photo_quotation import make_barcode
 
 
 def item_autoname(self, method):
-    if self.get("lead_item_cf"):
-        self.name = self.name.split("-")[-1]
-        self.item_name = self.item_name or self.item_code
+	if self.get("lead_item_cf"):
+		self.name = self.name.split("-")[-1]
+		self.item_name = self.item_name or self.item_code
+
+	if self.get("no_barcode_cf")==0:
+		barcode_row=self.append("barcodes",{})	
+		barcode_row.barcode=make_barcode(self.name.lstrip('ART-ITEM-'))
+		barcode_row.barcode_type='EAN'
 
 def item_custom_validation(self,method):
 	set_uom_quantity_of_inner_in_outer(self)
@@ -280,12 +285,12 @@ def get_stock_qty_for_saleable_warehouse(item_code):
 @frappe.whitelist()
 def allow_order_still_stock_last():
 		in_stock_item_list=frappe.db.get_list('Item', filters={
-    'is_purchase_item': ['=', 0],
-    'is_sales_item': ['=', 1],
-    'is_stock_item': ['=', 1],
-    'has_variants': ['=', 0],
-    'disabled': ['=', 0]
-    })
+	'is_purchase_item': ['=', 0],
+	'is_sales_item': ['=', 1],
+	'is_stock_item': ['=', 1],
+	'has_variants': ['=', 0],
+	'disabled': ['=', 0]
+	})
 		if len(in_stock_item_list)>0:
 			for item in in_stock_item_list:
 				total_saleable_qty=get_stock_qty_for_saleable_warehouse(item.name)

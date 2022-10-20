@@ -4,6 +4,10 @@ frappe.ui.form.on('Supplier', {
             frm.trigger('set_actual_delivery_delay_days_art')
         }
     },
+    refresh: function(frm) {
+        frm.remove_custom_button('Pricing Rule', 'Create');
+  
+    },
     set_actual_delivery_delay_days_art: function (frm) {
         frappe.call({
             method: "art_collections.api.get_actual_delivery_delay_days_art",

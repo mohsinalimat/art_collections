@@ -50,17 +50,25 @@ where role.role = %(picker_role)s
 
 @frappe.whitelist()
 def update_item_breakup_date(self):
-		items,item_count_map = aggregate_item_qty(self)
-		from_warehouses = None
-		if self.parent_warehouse:
-			from_warehouses = get_descendants_of("Warehouse", self.parent_warehouse)
+	items,item_count_map = aggregate_item_qty(self)
+	from_warehouses = None
+	if self.parent_warehouse:
+		from_warehouses = get_descendants_of("Warehouse", self.parent_warehouse)
 
+	is_any_item_out_of_stock=False
 
-		for item_doc in items:
-			item_code = item_doc.item_code
-			get_available_item_locations(
-					item_code, from_warehouses, item_count_map.get(item_code), self.company
-				),
+	for item_doc in items:
+		item_code = item_doc.item_code
+		output=get_available_item_locations(
+				item_code, from_warehouses, item_count_map.get(item_code), self.company
+			)
+		if output==True:
+			is_any_item_out_of_stock=True
+	
+	if is_any_item_out_of_stock==True:
+		# send email
+		return True
+	return False
 
 
 def get_available_item_locations(item_code, from_warehouses, required_qty, company):
@@ -96,8 +104,9 @@ def get_available_item_locations(item_code, from_warehouses, required_qty, compa
 			),
 			alert=True
 		)
+		return True
 
-	return	
+	return	None
 
 def aggregate_item_qty(self):
 	locations = self.get("locations")
@@ -179,6 +188,161 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 	)
 
 	doc.purpose = "Delivery"
-	update_item_breakup_date(doc)
+	# set up breakup date
+	send_out_of_stock_email=update_item_breakup_date(doc)
 	doc.set_item_locations()
+
+	# remove non saleable warehouse items
+	for item in doc.get("locations"):
+		if item.warehouse:
+			item_warehouse_type = frappe.db.get_value('Warehouse', item.warehouse, 'warehouse_type')
+			if item_warehouse_type:
+				saleable_warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'saleable_warehouse_type'""", as_dict=1)
+				if len(saleable_warehouse_type) >0:
+					saleable_warehouse_type_list = [d.warehouse_type for d in saleable_warehouse_type]
+					print(item_warehouse_type , saleable_warehouse_type_list)
+					if item_warehouse_type not in saleable_warehouse_type_list:
+						frappe.msgprint(_("Item {0} is dropped as warehouse {1} has warehouse type {2} which is not part of saleable warehouse type.").format(item.item_code,item.warehouse,item_warehouse_type), alert=True)  
+						doc.locations.remove(item)	
+			else:
+				frappe.msgprint(_("Item {0} is dropped as warehouse {1} has no warehouse type defined.").format(item.item_code,item.warehouse), alert=True)  
+				doc.locations.remove(item)								
+	doc.save(ignore_permissions=True)
+	if send_out_of_stock_email==True:
+		#  send out email, based on calling of breakup date
+		make__and_send_so_email_for_out_of_stock_items('Sales Order',source_name,doc.name)
+		frappe.msgprint(_("Please send out of stock email for pick list {0}.").format(doc.name), alert=True) 
 	return doc
+
+def make__and_send_so_email_for_out_of_stock_items(doctype, docname,picklist_name):
+	import io
+	import openpyxl
+	from frappe.utils import cint, get_site_url, get_url, cstr
+	from art_collections.controllers.excel import write_xlsx, attach_file, add_images
+	from openpyxl.drawing.image import Image
+	from io import BytesIO		
+
+	currency = frappe.db.get_value(doctype, docname, "currency")
+
+	data = frappe.db.sql(
+		"""
+		select 
+			i.item_code , 
+			i.item_name ,
+			tib.barcode,
+			i.customs_tariff_number ,
+			tsoi.weight_per_unit ,
+			tppd.`length` , 
+			tppd.width , 
+			tppd.thickness , 
+			tsoi.qty, 
+			tsoi.uom ,
+			tsoi.base_net_rate ,     
+			tsoi.stock_uom ,
+			tsoi.stock_uom_rate ,
+			tsoi.conversion_factor , 
+			tsoi.stock_qty , 
+			tsoi.base_amount ,
+			tip.price_list_rate , 
+			tpr.min_qty  pricing_rule_min_qty , 
+			tpr.rate pricing_rule_rate ,
+			i.is_existing_product_cf ,
+			tsoi.total_saleable_qty_cf ,
+			case when i.image is null then ''
+				when SUBSTR(i.image,1,4) = 'http' then i.image
+				else concat('{}',i.image) end image ,
+			i.image image_url
+		from `tabSales Order` tso 
+		inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name
+		inner join tabItem i on i.name = tsoi.item_code
+		left outer join `tabItem Barcode` tib on tib.parent = i.name 
+			and tib.idx  = (
+				select min(idx) from `tabItem Barcode` tib2
+				where parent = i.name
+			)
+		left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
+			and tppd.uom = tsoi.stock_uom
+		left outer join `tabPricing Rule` tpr on tpr.is_volume_price_cf = 1
+			and tpr.selling = 1 and exists (
+				select 1 from `tabPricing Rule Item Code` x 
+				where x.parent = tpr.name and x.uom = tsoi.stock_uom and x.item_code = i.item_code)   
+		left outer join `tabItem Price` tip 
+		on tip.item_code = tsoi.item_code and COALESCE(tip.uom,tsoi.stock_uom) = tsoi.stock_uom 
+		and tip.price_list = (
+			select value from tabSingles ts
+			where doctype = 'Selling Settings' 
+			and field = 'selling_price_list'
+		)
+		where tso.name = %s
+	""".format(
+			get_url()
+		),
+		(docname,),
+		as_dict=True,
+		# debug=True,
+	)
+
+	columns = [
+		_("Item Code"),
+		_("Item Name"),
+		_("Barcode"),
+		_("HSCode"),
+		_("Weight per unit (kg)"),
+		_("Length in cm (of stock_uom)"),
+		_("Width in cm (of stock_uom)"),
+		_("Thickness in cm (of stock_uom)"),
+		_("Qté Inner (SPCB)"),
+		_("UOM"),
+		_("Prix Inner ({})").format(currency),
+		_("Stock UOM"),
+		_("Qté colisage (UV)"),
+		_("Qté totale"),
+		_("Prix unité ({})").format(currency),
+		_("Amount ({})").format(currency),
+		_("Price List Rate ({})").format(currency),
+		_("Pricing rule > Min Qty*"),
+		_("Pricing rule > Rate*	"),
+		_("Photo Link"),
+		_("Photo"),
+	]
+
+	fields = [
+		"item_code",
+		"item_name",
+		"barcode",
+		"customs_tariff_number",
+		"weight_per_unit",
+		"length",
+		"width",
+		"thickness",
+		"qty",
+		"uom",
+		"base_net_rate",
+		"stock_uom",
+		"conversion_factor",
+		"stock_qty",
+		"stock_uom_rate",
+		"base_amount",
+		"price_list_rate",
+		"pricing_rule_min_qty",
+		"pricing_rule_rate",
+		"image",
+	]
+
+	wb = openpyxl.Workbook()
+	excel_rows, images = [columns], [""]
+	for d in data:
+		if d.total_saleable_qty_cf < d.stock_qty:
+			excel_rows.append([d.get(f) for f in fields])
+			images.append(d.get("image_url"))
+	write_xlsx(excel_rows, "Out of Stock Items", wb, [20] * len(excel_rows[0]), index=1)
+	add_images(images, workbook=wb, worksheet="Out of Stock Items", image_col="T")
+
+	out = io.BytesIO()
+	wb.save(out)
+	attach_file(
+		out.getvalue(),
+		doctype='Pick List',
+		docname=picklist_name,
+		show_email_dialog=1,
+	)

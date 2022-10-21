@@ -135,6 +135,9 @@ frappe.ui.form.on('Item', {
    //    }
    // },
    refresh: function (frm) {
+      if (frm.is_new()==undefined) {
+         frm.set_df_property('no_barcode_cf', 'read_only', 1)
+      }
       $('button[data-label="Duplicate"]').hide()
       $('button[data-original-title="Print"]').hide()
       

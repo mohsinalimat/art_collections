@@ -1,28 +1,10 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
-from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations_for_serial_and_batched_item,get_available_item_locations_for_serialized_item,get_available_item_locations_for_batched_item,get_available_item_locations_for_other_item
 from frappe.utils import today,flt, getdate
 from collections import OrderedDict
 from frappe.utils.nestedset import get_descendants_of
 from frappe.model.mapper import get_mapped_doc
-
-# @frappe.whitelist()
-# def get_user_with_picker_role(doctype, txt, searchfield, start, page_length, filters, as_dict):
-# 	valid_user_list=[]
-# 	picker_role=frappe.db.get_value('Art Collections Settings', 'Art Collections Settings', 'picker_role')
-# 	user_lists = frappe.db.get_list('User')
-# 	for user in user_lists:
-# 		user = frappe.get_doc('User', user.name)
-# 		if picker_role:
-# 			user_roles=user.get("roles")
-# 			for user_role in user_roles:
-# 				if user_role.role==picker_role:
-# 					valid_user_list.append( (user.name,))
-# 		else:
-# 			valid_user_list.append( (user.name,))
-# 	return valid_user_list
-
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
@@ -49,96 +31,138 @@ where role.role = %(picker_role)s
 
 
 @frappe.whitelist()
-def update_item_breakup_date(self):
-	items,item_count_map = aggregate_item_qty(self)
-	from_warehouses = None
-	if self.parent_warehouse:
-		from_warehouses = get_descendants_of("Warehouse", self.parent_warehouse)
-
-	is_any_item_out_of_stock=False
-
-	for item_doc in items:
-		item_code = item_doc.item_code
-		output=get_available_item_locations(
-				item_code, from_warehouses, item_count_map.get(item_code), self.company
-			)
-		if output==True:
-			is_any_item_out_of_stock=True
-	
-	if is_any_item_out_of_stock==True:
-		# send email
-		return True
-	return False
-
-
-def get_available_item_locations(item_code, from_warehouses, required_qty, company):
-	locations = []
-	has_serial_no = frappe.get_cached_value("Item", item_code, "has_serial_no")
-	has_batch_no = frappe.get_cached_value("Item", item_code, "has_batch_no")
-
-	if has_batch_no and has_serial_no:
-		locations = get_available_item_locations_for_serial_and_batched_item(
-			item_code, from_warehouses, required_qty, company
-		)
-	elif has_serial_no:
-		locations = get_available_item_locations_for_serialized_item(
-			item_code, from_warehouses, required_qty, company
-		)
-	elif has_batch_no:
-		locations = get_available_item_locations_for_batched_item(
-			item_code, from_warehouses, required_qty, company
-		)
-	else:
-		locations = get_available_item_locations_for_other_item(
-			item_code, from_warehouses, required_qty, company
-		)
-
-	total_qty_available = sum(location.get("qty") for location in locations)
-
-	remaining_qty = required_qty - total_qty_available
-	if remaining_qty > 0 :
-		frappe.db.set_value('Item',item_code, 'breakup_date_cf', today())
-		frappe.msgprint(
-			_("Item {0} remaining qty is {1} and hence break up date is set to {2}.").format(
-				item_code,remaining_qty, today()
-			),
-			alert=True
-		)
-		return True
-
-	return	None
-
-def aggregate_item_qty(self):
-	locations = self.get("locations")
-	item_count_map = {}
-	# aggregate qty for same item
-	item_map = OrderedDict()
-	for item in locations:
-		if not item.item_code:
-			frappe.throw("Row #{0}: Item Code is Mandatory".format(item.idx))
-		item_code = item.item_code
-		reference = item.sales_order_item or item.material_request_item
-		key = (item_code, item.uom, reference)
-
-		# item.idx = None
-		# item.name = None
-
-		if item_map.get(key):
-			item_map[key].qty += item.qty
-			item_map[key].stock_qty += item.stock_qty
-		else:
-			item_map[key] = item
-
-		# maintain count of each item (useful to limit get query)
-		item_count_map.setdefault(item_code, 0)
-		item_count_map[item_code] += item.stock_qty
-
-	return item_map.values(),item_count_map
-
-@frappe.whitelist()
 def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 	from erpnext.stock.doctype.packed_item.packed_item import is_product_bundle
+	from frappe.utils import cint, floor, flt, today
+	from erpnext.stock.doctype.pick_list.pick_list import ( 
+	get_items_with_location_and_quantity,
+	get_available_item_locations_for_serial_and_batched_item,
+	get_available_item_locations_for_serialized_item,
+	get_available_item_locations_for_batched_item,
+	get_available_item_locations_for_other_item
+	)
 
+	def get_available_item_locations(
+		item_code, from_warehouses, required_qty, company, ignore_validation=False
+	):
+		# global send_out_of_stock_email
+		locations = []
+		has_serial_no = frappe.get_cached_value("Item", item_code, "has_serial_no")
+		has_batch_no = frappe.get_cached_value("Item", item_code, "has_batch_no")
+
+		if has_batch_no and has_serial_no:
+			locations = get_available_item_locations_for_serial_and_batched_item(
+				item_code, from_warehouses, required_qty, company
+			)
+		elif has_serial_no:
+			locations = get_available_item_locations_for_serialized_item(
+				item_code, from_warehouses, required_qty, company
+			)
+		elif has_batch_no:
+			locations = get_available_item_locations_for_batched_item(
+				item_code, from_warehouses, required_qty, company
+			)
+		else:
+			locations = get_available_item_locations_for_other_item(
+				item_code, from_warehouses, required_qty, company
+			)
+
+
+		total_qty_available = sum(location.get("qty") for location in locations)
+
+		remaining_qty = required_qty - total_qty_available
+
+		if remaining_qty > 0 and not ignore_validation:
+			# set break up date
+			frappe.db.set_value('Item',item_code, 'breakup_date_cf', today())
+			
+			# send_out_of_stock_email=True
+			frappe.msgprint(
+				_("Item {0} remaining qty is {1} and hence break up date is set to {2}.").format(
+					item_code,remaining_qty, today()
+				),
+				alert=True
+			)			
+			frappe.msgprint(
+				_("{0} units of Item {1} is not available.").format(
+					remaining_qty, frappe.get_desk_link("Item", item_code)
+				),
+				title=_("Insufficient Stock"),
+			)
+
+		return locations	
+
+	#  no change
+	def aggregate_item_qty(self):
+		locations = self.get("locations")
+		self.item_count_map = {}
+		# aggregate qty for same item
+		item_map = OrderedDict()
+		for item in locations:
+			if not item.item_code:
+				frappe.throw("Row #{0}: Item Code is Mandatory".format(item.idx))
+			item_code = item.item_code
+			reference = item.sales_order_item or item.material_request_item
+			key = (item_code, item.uom, reference)
+
+			item.idx = None
+			item.name = None
+
+			if item_map.get(key):
+				item_map[key].qty += item.qty
+				item_map[key].stock_qty += item.stock_qty
+			else:
+				item_map[key] = item
+
+			# maintain count of each item (useful to limit get query)
+			self.item_count_map.setdefault(item_code, 0)
+			self.item_count_map[item_code] += item.stock_qty
+
+		return item_map.values()	
+
+	@frappe.whitelist()
+	def set_item_locations(self, save=False):
+		items = aggregate_item_qty(self)
+		self.item_location_map = frappe._dict()
+
+		from_warehouses = None
+		if self.parent_warehouse:
+			from_warehouses = get_descendants_of("Warehouse", self.parent_warehouse)
+		
+		#  pass a list of saleable warehouse only
+		saleable_warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'saleable_warehouse_type'""", as_dict=1)
+		if len(saleable_warehouse_type) >0:
+					saleable_warehouse_type_list = [d.warehouse_type for d in saleable_warehouse_type]	
+					from_warehouses = [x.get("name") for x in frappe.get_all("Warehouse", filters={"company": self.company, "warehouse_type" : ["in",saleable_warehouse_type_list]}, fields=["name"])]	
+		
+		# Create replica before resetting, to handle empty table on update after submit.
+		locations_replica = self.get("locations")
+
+		# reset
+		self.delete_key("locations")
+		for item_doc in items:
+			item_code = item_doc.item_code
+
+			self.item_location_map.setdefault(
+				item_code,
+				get_available_item_locations(
+					item_code, from_warehouses, self.item_count_map.get(item_code), self.company
+				),
+			)
+
+			locations = get_items_with_location_and_quantity(
+				item_doc, self.item_location_map, self.docstatus
+			)
+
+			item_doc.idx = None
+			item_doc.name = None
+
+			for row in locations:
+				location = item_doc.as_dict()
+				location.update(row)
+				self.append("locations", location)
+
+	# no change
 	def update_item_quantity(source, target, source_parent) -> None:
 		picked_qty = flt(source.picked_qty) / (flt(source.conversion_factor) or 1)
 		qty_to_be_picked = flt(source.qty) - max(picked_qty, flt(source.delivered_qty))
@@ -146,6 +170,7 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 		target.qty = qty_to_be_picked
 		target.stock_qty = qty_to_be_picked * flt(source.conversion_factor)
 
+	# no change
 	def update_packed_item_qty(source, target, source_parent) -> None:
 		qty = flt(source.qty)
 		for item in source_parent.items:
@@ -155,6 +180,7 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 				target.qty = target.stock_qty = qty * pending_percent
 				return
 
+	# no change
 	def should_pick_order_item(item) -> bool:
 		return (
 			abs(item.delivered_qty) < abs(item.qty)
@@ -188,30 +214,16 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 	)
 
 	doc.purpose = "Delivery"
-	# set up breakup date
-	send_out_of_stock_email=update_item_breakup_date(doc)
-	doc.set_item_locations()
 
-	# remove non saleable warehouse items
-	for item in doc.get("locations"):
-		if item.warehouse:
-			item_warehouse_type = frappe.db.get_value('Warehouse', item.warehouse, 'warehouse_type')
-			if item_warehouse_type:
-				saleable_warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'saleable_warehouse_type'""", as_dict=1)
-				if len(saleable_warehouse_type) >0:
-					saleable_warehouse_type_list = [d.warehouse_type for d in saleable_warehouse_type]
-					print(item_warehouse_type , saleable_warehouse_type_list)
-					if item_warehouse_type not in saleable_warehouse_type_list:
-						frappe.msgprint(_("Item {0} is dropped as warehouse {1} has warehouse type {2} which is not part of saleable warehouse type.").format(item.item_code,item.warehouse,item_warehouse_type), alert=True)  
-						doc.locations.remove(item)	
-			else:
-				frappe.msgprint(_("Item {0} is dropped as warehouse {1} has no warehouse type defined.").format(item.item_code,item.warehouse), alert=True)  
-				doc.locations.remove(item)								
-	doc.save(ignore_permissions=True)
-	if send_out_of_stock_email==True:
-		#  send out email, based on calling of breakup date
-		make__and_send_so_email_for_out_of_stock_items('Sales Order',source_name,doc.name)
-		frappe.msgprint(_("Please send out of stock email for pick list {0}.").format(doc.name), alert=True) 
+	set_item_locations(doc)
+	# doc.save(ignore_permissions=True)
+	# print('send_out_of_stock_email',send_out_of_stock_email)
+	# if send_out_of_stock_email==True:
+	# 	#  send out email, based on calling of breakup date
+	# 	make__and_send_so_email_for_out_of_stock_items('Sales Order',source_name,doc.name)
+	# 	frappe.msgprint(_("Please send out of stock email for pick list {0}.").format(doc.name), alert=True) 
+
+
 	return doc
 
 def make__and_send_so_email_for_out_of_stock_items(doctype, docname,picklist_name):

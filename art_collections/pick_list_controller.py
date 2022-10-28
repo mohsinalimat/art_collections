@@ -41,11 +41,11 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 	get_available_item_locations_for_batched_item,
 	get_available_item_locations_for_other_item
 	)
-
+	global send_out_of_stock_email
+	send_out_of_stock_email=False
 	def get_available_item_locations(
 		item_code, from_warehouses, required_qty, company, ignore_validation=False
 	):
-		# global send_out_of_stock_email
 		locations = []
 		has_serial_no = frappe.get_cached_value("Item", item_code, "has_serial_no")
 		has_batch_no = frappe.get_cached_value("Item", item_code, "has_batch_no")
@@ -75,19 +75,22 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 		if remaining_qty > 0 and not ignore_validation:
 			# set break up date
 			frappe.db.set_value('Item',item_code, 'breakup_date_cf', today())
-			
-			# send_out_of_stock_email=True
+			global send_out_of_stock_email
+			send_out_of_stock_email=True
 			frappe.msgprint(
-				_("Item {0} remaining qty is {1} and hence break up date is set to {2}.").format(
+				_("<b>Break up date: </b><br>Item {0} remaining qty is {1} and hence break up date is set to {2}.").format(
 					item_code,remaining_qty, today()
 				),
+				indicator="green",
 				alert=True
 			)			
 			frappe.msgprint(
-				_("{0} units of Item {1} is not available.").format(
+				_("<b>Insufficient Stock: </b><br>{0} units of Item {1} is not available.").format(
 					remaining_qty, frappe.get_desk_link("Item", item_code)
 				),
 				title=_("Insufficient Stock"),
+				indicator="red",
+				alert=True
 			)
 
 		return locations	
@@ -216,12 +219,11 @@ def create_pick_list_with_update_breakup_date(source_name, target_doc=None):
 	doc.purpose = "Delivery"
 
 	set_item_locations(doc)
-	# doc.save(ignore_permissions=True)
-	# print('send_out_of_stock_email',send_out_of_stock_email)
-	# if send_out_of_stock_email==True:
-	# 	#  send out email, based on calling of breakup date
-	# 	make__and_send_so_email_for_out_of_stock_items('Sales Order',source_name,doc.name)
-	# 	frappe.msgprint(_("Please send out of stock email for pick list {0}.").format(doc.name), alert=True) 
+	doc.save(ignore_permissions=True)
+	if send_out_of_stock_email==True:
+		#  send out email, based on calling of breakup date
+		make__and_send_so_email_for_out_of_stock_items('Sales Order',source_name,doc.name)
+		frappe.msgprint(_("<b>Email:</b><br>Please send out of stock email for pick list {0}.").format(doc.name),indicator="orange", alert=True) 
 
 
 	return doc

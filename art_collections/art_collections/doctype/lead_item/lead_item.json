@@ -56,6 +56,7 @@
   "packaging_description_excel",
   "photo_quotation",
   "is_abandoned",
+  "is_item_created",
   "is_po_created",
   "test_report"
  ],
@@ -346,6 +347,12 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Item Group"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_item_created",
+   "fieldtype": "Check",
+   "label": "Is Item Created ?"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -356,7 +363,7 @@
    "link_fieldname": "lead_item_cf"
   }
  ],
- "modified": "2022-08-29 09:10:28.844627",
+ "modified": "2022-10-31 04:35:17.299974",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Lead Item",

@@ -21,6 +21,12 @@ from erpnext.e_commerce.doctype.website_item.website_item import (
     make_website_item,
 )
 
+PQ_PERC_MAP = {
+    "Sample Validated": 33,
+    "Item Created": 66,
+    "PO Created": 100,
+}
+
 
 class PhotoQuotation(Document):
     def validate(self):
@@ -29,6 +35,7 @@ class PhotoQuotation(Document):
             {"photo_quotation": self.name, "is_disabled": 0, "is_sample_validated": 1},
         ):
             self.status = "Sample Validated"
+            self.status = PQ_PERC_MAP["Sample Validated"]
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):
@@ -105,9 +112,11 @@ class PhotoQuotation(Document):
             source = frappe.get_doc("Lead Item", d.name)
             self.make_item(source, self.supplier)
             source.db_set("status", "Item Created")
+            source.db_set("is_item_created", 1)
 
         if len(items):
             self.db_set("status", "Item Created")
+            self.db_set("pq_perc", PQ_PERC_MAP["Item Created"])
 
         return len(items)
 
@@ -219,6 +228,7 @@ class PhotoQuotation(Document):
                 {
                     "doctype": "Item Price",
                     "item_code": item.item_code,
+                    "uom": item.stock_uom,
                     "valid_from": source.get("valid_from"),
                     "price_list_rate": source.get("unit_price"),
                     "price_list": frappe.db.get_single_value(
@@ -232,6 +242,7 @@ class PhotoQuotation(Document):
                 {
                     "doctype": "Item Price",
                     "item_code": item.item_code,
+                    "uom": item.stock_uom,
                     "price_list_rate": source.get("item_price"),
                     "valid_from": source.get("item_price_valid_from"),
                     "price_list": frappe.db.get_single_value(
@@ -324,6 +335,7 @@ class PhotoQuotation(Document):
 
         po.save()
         self.db_set("status", "PO Created")
+        self.db_set("pq_perc", PQ_PERC_MAP["PO Created"])
         return po.name
 
     @frappe.whitelist()

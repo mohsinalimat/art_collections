@@ -17,6 +17,8 @@ import os
 def on_submit_purchase_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
 
+    make_supplier_email_attachments(doc.name)
+
     # set is_po_created 1 in lead items connected to PO Items
     frappe.db.sql(
         """

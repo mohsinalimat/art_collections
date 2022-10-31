@@ -54,12 +54,10 @@ def _make_excel_attachment(doctype, docname):
             )
         left outer join `tabProduct Packing Dimensions` tppd on tppd.parent = i.name 
             and tppd.uom = tqi.stock_uom
-        left outer join `tabPricing Rule Detail` tprd on tprd.parenttype = 'Quotation' 
-               and tprd.parent = tq.name and tprd.item_code = i.item_code
-        left outer join `tabPricing Rule` tpr on tpr.name = tprd.pricing_rule 
-               and tpr.selling = 1 and exists (
-                   select 1 from `tabPricing Rule Item Code` x 
-                   where x.parent = tpr.name and x.uom = tqi.stock_uom)    
+        left outer join `tabPricing Rule` tpr on tpr.is_volume_price_cf = 1
+            and tpr.selling = 1 and exists (
+                select 1 from `tabPricing Rule Item Code` x 
+                where x.parent = tpr.name and x.uom = tqi.stock_uom and x.item_code = i.item_code) 
         left outer join `tabItem Price` tip 
         on tip.item_code = tqi.item_code and tip.uom = tqi.stock_uom 
         and tip.price_list = (
@@ -92,6 +90,8 @@ def _make_excel_attachment(doctype, docname):
         _("Qté totale"),
         _("Prix unité ({})").format(currency),
         _("Amount ({})").format(currency),
+        _("Price List Rate ({})").format(currency),
+        _("Pricing rule > Min Qty*"),
         _("Pricing rule > Rate*	"),
         _("Photo"),
     ]
@@ -114,6 +114,8 @@ def _make_excel_attachment(doctype, docname):
         "stock_uom_rate",
         "base_amount",
         "price_list_rate",
+        "pricing_rule_min_qty",
+        "pricing_rule_rate",
         "image",
     ]
 
@@ -125,7 +127,7 @@ def _make_excel_attachment(doctype, docname):
         images.append(d.get("image_url"))
 
     write_xlsx(excel_rows, "Quotation Items", wb, [20] * len(columns))
-    add_images(images, workbook=wb, worksheet="Quotation Items")
+    add_images(images, workbook=wb, worksheet="Quotation Items", image_col="T")
 
     # make attachment
     out = io.BytesIO()

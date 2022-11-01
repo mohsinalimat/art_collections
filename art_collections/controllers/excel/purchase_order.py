@@ -17,7 +17,7 @@ import os
 def on_submit_purchase_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
 
-    make_supplier_email_attachments(doc.name)
+    make_supplier_email_attachments(doc.name, show_email_dialog=0)
 
     # set is_po_created 1 in lead items connected to PO Items
     frappe.db.sql(
@@ -158,7 +158,7 @@ def supplier_email_callback(docname):
 
 
 @frappe.whitelist()
-def make_supplier_email_attachments(po_name):
+def make_supplier_email_attachments(po_name, show_email_dialog=1):
     """
     1. item details excel same as Item Import template used in Data Import for items
     2. Packaging Description.
@@ -267,7 +267,7 @@ def make_supplier_email_attachments(po_name):
         doctype="Purchase Order",
         docname=po_name,
         file_name="Purchase Order {} {}.pdf".format(po_name, frappe.utils.today()),
-        show_email_dialog=1,
+        show_email_dialog=show_email_dialog,
         callback="supplier_email_callback",
     )
 

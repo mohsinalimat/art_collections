@@ -35,7 +35,7 @@ class PhotoQuotation(Document):
             {"photo_quotation": self.name, "is_disabled": 0, "is_sample_validated": 1},
         ):
             self.status = "Sample Validated"
-            self.status = PQ_PERC_MAP["Sample Validated"]
+            self.pq_perc = PQ_PERC_MAP["Sample Validated"]
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):

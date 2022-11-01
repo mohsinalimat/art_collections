@@ -97,7 +97,8 @@
    "fieldname": "pq_perc",
    "fieldtype": "Percent",
    "in_list_view": 1,
-   "label": "PQ Percentage Progress"
+   "label": "PQ Progress",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -111,7 +112,7 @@
    "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-10-31 06:22:59.884776",
+ "modified": "2022-11-01 04:51:27.717434",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

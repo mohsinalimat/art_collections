@@ -199,9 +199,11 @@ class PhotoQuotation(Document):
             },
         )
 
-        item.append(
-            "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.name)}
-        )
+        # barcode is already created in item autoname. create only if not present
+        if not [bc for bc in (item.barcodes or []) if bc.barcode_type == "EAN"]:
+            item.append(
+                "barcodes", {"barcode_type": "EAN", "barcode": make_barcode(item.name)}
+            )
 
         default_warehouse = frappe.db.get_single_value(
             "Art Collections Settings", "default_lead_item_warehouse"

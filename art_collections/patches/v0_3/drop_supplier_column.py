@@ -5,11 +5,15 @@ def execute():
 
     frappe.reload_doc("buying", "doctype", "supplier")
     frappe.delete_doc_if_exists("Supplier", "default_terms_and_conditions_art")
-    frappe.delete_doc_if_exists("Custom Field", "Supplier-default_terms_and_conditions_art")     
+    frappe.delete_doc_if_exists("Custom Field", "Supplier-default_terms_and_conditions_art")   
+
+    frappe.reload_doc("buying", "doctype", "supplier")
+    frappe.delete_doc_if_exists("Supplier", "is_product_supplier")
+    frappe.delete_doc_if_exists("Custom Field", "Supplier-is_product_supplier")       
     
-#     frappe.reload_doc("buying", "doctype", "supplier")
-#     frappe.delete_doc_if_exists("Supplier", "subledger_account")
-#     frappe.delete_doc_if_exists("Custom Field", "Supplier-subledger_account")  
+    frappe.reload_doc("buying", "doctype", "supplier")
+    frappe.delete_doc_if_exists("Supplier", "subledger_account")
+    frappe.delete_doc_if_exists("Custom Field", "Supplier-subledger_account")  
 
 #     frappe.reload_doc("buying", "doctype", "supplier")
 #     frappe.delete_doc_if_exists("Customer", "naf")

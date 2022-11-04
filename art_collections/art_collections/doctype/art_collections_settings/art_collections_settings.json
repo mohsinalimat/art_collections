@@ -15,6 +15,9 @@
   "saleable_warehouse_type",
   "damage_warehouse_type",
   "reserved_warehouse_type",
+  "saleable_warehouse_group",
+  "reserved_warehouse_group",
+  "damage_warehouse_group",
   "cb_wh",
   "default_lead_item_warehouse",
   "default_email_template_sb_section",
@@ -224,12 +227,33 @@
    "fieldname": "days_after_shipping_date",
    "fieldtype": "Int",
    "label": "Days Left to Shipping Date"
+  },
+  {
+   "fieldname": "saleable_warehouse_group",
+   "fieldtype": "Link",
+   "label": "Saleable Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reserved_warehouse_group",
+   "fieldtype": "Link",
+   "label": "Reserved Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "damage_warehouse_group",
+   "fieldtype": "Link",
+   "label": "Damage Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-10-17 12:35:28.679808",
+ "modified": "2022-11-04 05:03:11.510164",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

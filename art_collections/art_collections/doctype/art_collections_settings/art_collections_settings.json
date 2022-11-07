@@ -12,9 +12,6 @@
   "use_pos_in_offline_mode",
   "barcode_domain",
   "warehouse_type_sb_section",
-  "saleable_warehouse_type",
-  "damage_warehouse_type",
-  "reserved_warehouse_type",
   "saleable_warehouse_group",
   "reserved_warehouse_group",
   "damage_warehouse_group",
@@ -61,25 +58,7 @@
   {
    "fieldname": "warehouse_type_sb_section",
    "fieldtype": "Section Break",
-   "label": "Warehouse Type"
-  },
-  {
-   "fieldname": "saleable_warehouse_type",
-   "fieldtype": "Table MultiSelect",
-   "label": "Saleable Warehouse Type",
-   "options": "Art Warehouse Types"
-  },
-  {
-   "fieldname": "damage_warehouse_type",
-   "fieldtype": "Table MultiSelect",
-   "label": "Damage Warehouse Type",
-   "options": "Art Warehouse Types"
-  },
-  {
-   "fieldname": "reserved_warehouse_type",
-   "fieldtype": "Table MultiSelect",
-   "label": "Reserved Warehouse Type",
-   "options": "Art Warehouse Types"
+   "label": "Warehouse Group Type"
   },
   {
    "fieldname": "default_email_template_sb_section",
@@ -231,21 +210,21 @@
   {
    "fieldname": "saleable_warehouse_group",
    "fieldtype": "Link",
-   "label": "Saleable Warehouse",
+   "label": "Saleable Warehouse Group",
    "options": "Warehouse",
    "reqd": 1
   },
   {
    "fieldname": "reserved_warehouse_group",
    "fieldtype": "Link",
-   "label": "Reserved Warehouse",
+   "label": "Reserved Warehouse Group",
    "options": "Warehouse",
    "reqd": 1
   },
   {
    "fieldname": "damage_warehouse_group",
    "fieldtype": "Link",
-   "label": "Damage Warehouse",
+   "label": "Damage Warehouse Group",
    "options": "Warehouse",
    "reqd": 1
   }
@@ -253,7 +232,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-11-04 05:03:11.510164",
+ "modified": "2022-11-07 11:57:13.936316",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Art Collections Settings",

@@ -35,23 +35,31 @@ class PhotoQuotation(Document):
         for d in frappe.db.sql(
             """
                 select 
+                    sum(if(status in ('Sample Validated','Item Created'),1,0)) sample_validated_progress  ,
                     sum(if(status='Item Created',1,0)) item_created_progress  , 
-                    sum(if(status='PO Created',1,0)) po_created_progress  , 
-                    sum(if(status='Sample Validated',1,0)) sample_validated_progress  , 
+                    sum(if(status='PO Created',1,0)) po_created_progress  ,  
                     count(*) total_count
                     from `tabLead Item` tl 
                 where photo_quotation = %s
                 """,
             (self.name),
             as_dict=True,
+            debug=True,
         ):
+            print(d)
             for f in [
-                "item_created_progress"
-                "po_created_progress"
-                "sample_validated_progress"
+                "item_created_progress",
+                "po_created_progress",
+                "sample_validated_progress",
             ]:
-                if d.total_count and d.get(f):
+                if d.total_count:
                     self.set(f, 100 * d.get(f, 0) / d.total_count)
+                    print(
+                        d.total_count,
+                        f,
+                        d.get(f),
+                        100 * d.get(f, 0) / d.total_count,
+                    )
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):

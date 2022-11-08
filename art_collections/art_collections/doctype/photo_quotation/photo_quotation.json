@@ -16,7 +16,9 @@
   "cb_1",
   "pq_date",
   "required_by_date",
-  "pq_perc",
+  "sample_validated_progress",
+  "item_created_progress",
+  "po_created_progress",
   "lead_items_sb_section",
   "items_html"
  ],
@@ -93,12 +95,19 @@
    "label": "Sample Requested"
   },
   {
-   "default": "0",
-   "fieldname": "pq_perc",
+   "fieldname": "sample_validated_progress",
    "fieldtype": "Percent",
-   "in_list_view": 1,
-   "label": "PQ Progress",
-   "read_only": 1
+   "label": "Sample Validated Progress %"
+  },
+  {
+   "fieldname": "item_created_progress",
+   "fieldtype": "Percent",
+   "label": "Item Created Progress %"
+  },
+  {
+   "fieldname": "po_created_progress",
+   "fieldtype": "Percent",
+   "label": "PO Created Progress %"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -112,7 +121,7 @@
    "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-11-01 04:51:27.717434",
+ "modified": "2022-11-08 10:56:10.650853",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

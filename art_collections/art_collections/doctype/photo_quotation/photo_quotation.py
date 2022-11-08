@@ -44,7 +44,6 @@ class PhotoQuotation(Document):
                 """,
             (self.name),
             as_dict=True,
-            debug=True,
         ):
             print(d)
             for f in [
@@ -54,12 +53,6 @@ class PhotoQuotation(Document):
             ]:
                 if d.total_count:
                     self.set(f, 100 * d.get(f, 0) / d.total_count)
-                    print(
-                        d.total_count,
-                        f,
-                        d.get(f),
-                        100 * d.get(f, 0) / d.total_count,
-                    )
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):

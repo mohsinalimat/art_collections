@@ -132,6 +132,7 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
         file_path=template_file_path,
         column_widths=[20] * len(fields),
         skip_rows=skip_rows,
+        write_0=1,
     )
 
     add_images(

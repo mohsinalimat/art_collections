@@ -177,7 +177,6 @@ def make_supplier_email_attachments(po_name, show_email_dialog=1):
         )
         kwargs = {"filter_sql": filter_sql, "doctype": "Item", "as_dict": True}
         data = get_records(**kwargs)
-        print([d for d in data[0].keys()])
 
     template_file_path = os.path.join(
         os.path.dirname(__file__),
@@ -215,11 +214,11 @@ def make_supplier_email_attachments(po_name, show_email_dialog=1):
     data = frappe.db.sql(
         """
         select 
-        ti.customer_code , ti.item_code , ti.excel_designation_cf ,
+        tpoi.supplier_part_no , ti.item_code , ti.excel_designation_cf ,
         ti.description_1_cf , ti.description_2_cf , ti.description_3_cf , 
-        other_language_cf , tib.barcode , nb_inner_in_outer_art , 
+        other_language_cf , tib.barcode , ti.qty_in_selling_pack_art ,
         ti.description 
-        from tabItem ti 
+            from tabItem ti 
         inner join `tabPurchase Order Item` tpoi on tpoi.item_code = ti.item_code and tpoi.parent = %s
         left outer join `tabItem Barcode` tib on tib.parent = ti.name  and tib.barcode_type = 'EAN'
     """,

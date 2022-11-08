@@ -170,7 +170,7 @@ frappe.ui.form.on("Photo Quotation", {
 
   before_save: function (frm) {
     let data = frm.items_table.getData();
-    console.log(data);
+    // console.log(data);
     return frm.call({
       method: "update_lead_items",
       doc: frm.doc,

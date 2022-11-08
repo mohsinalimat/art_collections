@@ -21,12 +21,6 @@ from erpnext.e_commerce.doctype.website_item.website_item import (
     make_website_item,
 )
 
-PQ_PERC_MAP = {
-    "Sample Validated": 33,
-    "Item Created": 66,
-    "PO Created": 100,
-}
-
 
 class PhotoQuotation(Document):
     def validate(self):
@@ -35,7 +29,29 @@ class PhotoQuotation(Document):
             {"photo_quotation": self.name, "is_disabled": 0, "is_sample_validated": 1},
         ):
             self.status = "Sample Validated"
-            self.pq_perc = PQ_PERC_MAP["Sample Validated"]
+        self.set_progress()
+
+    def set_progress(self):
+        for d in frappe.db.sql(
+            """
+                select 
+                    sum(if(status='Item Created',1,0)) item_created_progress  , 
+                    sum(if(status='PO Created',1,0)) po_created_progress  , 
+                    sum(if(status='Sample Validated',1,0)) sample_validated_progress  , 
+                    count(*) total_count
+                    from `tabLead Item` tl 
+                where photo_quotation = %s
+                """,
+            (self.name),
+            as_dict=True,
+        ):
+            for f in [
+                "item_created_progress"
+                "po_created_progress"
+                "sample_validated_progress"
+            ]:
+                if d.total_count and d.get(f):
+                    self.set(f, 100 * d.get(f, 0) / d.total_count)
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):
@@ -116,13 +132,14 @@ class PhotoQuotation(Document):
 
         if len(items):
             self.db_set("status", "Item Created")
-            self.db_set("pq_perc", PQ_PERC_MAP["Item Created"])
+            self.set_progress()
 
         return len(items)
 
     def make_item(self, source, supplier):
         def postprocess(source, target, source_parent):
             target.naming_series = None
+            target.sales_uom = "Inner Carton"
 
         FIELD_MAP = {
             "lead_item_name": "item_name",
@@ -153,7 +170,6 @@ class PhotoQuotation(Document):
             "minimum_order_qty": "min_order_qty",
         }
 
-        uom = frappe.db.get_single_value("Art Collections Settings", "inner_carton_uom")
         target_doc = {}
         item = get_mapped_doc(
             "Lead Item",
@@ -288,7 +304,8 @@ class PhotoQuotation(Document):
     def create_purchase_order(self):
         items = frappe.db.sql(
             """
-			select ti.item_code , tli.uom , tli.selling_pack_qty , tli.minimum_order_qty
+			select ti.item_code , tli.uom , tli.selling_pack_qty , tli.minimum_order_qty ,
+            tli.name lead_item
 			from `tabLead Item` tli
 			inner join tabItem ti on ti.lead_item_cf = tli.name  
 			where is_po_created = 0 and status = 'Item Created' 
@@ -316,6 +333,7 @@ class PhotoQuotation(Document):
                     "transaction_date": today(),
                     "photo_quotation_cf": self.name,
                     "currency": supplier_currency,
+                    "schedule_date": self.required_by_date,
                 }
             )
 
@@ -332,12 +350,13 @@ class PhotoQuotation(Document):
                     "stock_uom": d.uom,
                     "uom": d.uom,
                     "qty": d.minimum_order_qty,
+                    "lead_item_cf": d.lead_item,
                 },
             )
 
         po.save()
         self.db_set("status", "PO Created")
-        self.db_set("pq_perc", PQ_PERC_MAP["PO Created"])
+        self.set_progress()
         return po.name
 
     @frappe.whitelist()

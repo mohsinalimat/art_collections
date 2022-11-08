@@ -22,7 +22,14 @@ ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
 
 
 def write_xlsx(
-    data, sheet_name, wb=None, column_widths=None, file_path=None, skip_rows=0, index=0
+    data,
+    sheet_name,
+    wb=None,
+    column_widths=None,
+    file_path=None,
+    skip_rows=0,
+    index=0,
+    write_0=0,
 ):
     # from xlsx utils with changes
     column_widths = column_widths or []
@@ -55,7 +62,7 @@ def write_xlsx(
                 # Remove illegal characters from the string
                 value = re.sub(ILLEGAL_CHARACTERS_RE, "", value)
 
-            if value:
+            if value or write_0 and value == 0:
                 if isinstance(value, str) and value.startswith("http"):
                     _ = ws.cell(
                         column=col + 1,
@@ -96,7 +103,7 @@ def add_images(data, workbook, worksheet="", image_col="S", skip_rows=0):
     for row, image_url in enumerate(data):
         if image_url:
             _filename, extension = os.path.splitext(image_url)
-            if extension in [".png", ".jpg", ".jpeg"]:
+            if extension.lower() in [".png", ".jpg", ".jpeg"]:
                 try:
                     content = None
 

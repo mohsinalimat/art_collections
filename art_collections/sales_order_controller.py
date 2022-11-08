@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import frappe
 import datetime
 from frappe import _
-from frappe.utils import get_link_to_form, flt,get_date_str, nowdate
+from frappe.utils import get_link_to_form, flt, get_date_str, nowdate
 from art_collections.item_controller import get_qty_of_inner_cartoon
 
 
@@ -27,25 +27,69 @@ def sales_order_custom_validation(self, method):
     # validate_inner_qty_and_send_notification(self)
     # update_total_saleable_qty(self)
     get_directive(self, method)
+    move_sales_order_discontinued_items(self)
+
+
+def move_sales_order_discontinued_items(doc):
+    # move items with is_sales_item = 0 to custom table Sales Order Discountinued Items CT
+
+    items_to_move = frappe.db.sql(
+        """
+        select name from tabItem 
+        where is_sales_item = 0 and name in ({})
+    """.format(
+            ",".join(["%s" * len(doc.items)])
+        ),
+        tuple([d.item_code for d in doc.items]),
+    )
+    if items_to_move:
+        items_to_move = [d[0] for d in items_to_move]
+        for d in doc.items:
+            if d.item_code in items_to_move:
+                doc.append(
+                    "discontinued_sales_item_ct",
+                    {
+                        "item_code": d.item_code,
+                        "item_name": d.item_name,
+                        "qty": d.qty,
+                        "description": d.description,
+                    },
+                )
+        doc.items = [d for d in doc.items if not d.item_code in items_to_move]
+
 
 def update_status_based_on_needs_confirmation_art(self, method=None):
-    if self.needs_confirmation_art==1:
-        reason=_('Reason for hold: ')+_('Order Needs Confirmation')+_(' and Order Expiry Date is ')+get_date_str(self.order_expiry_date_ar)
-        add_comment(reference_doctype=self.doctype,
-        reference_name=self.name,content=reason,comment_email=frappe.session.user,comment_by=get_user_fullname(frappe.session["user"]))
-        update_status('On Hold',self.name)
+    if self.needs_confirmation_art == 1:
+        reason = (
+            _("Reason for hold: ")
+            + _("Order Needs Confirmation")
+            + _(" and Order Expiry Date is ")
+            + get_date_str(self.order_expiry_date_ar)
+        )
+        add_comment(
+            reference_doctype=self.doctype,
+            reference_name=self.name,
+            content=reason,
+            comment_email=frappe.session.user,
+            comment_by=get_user_fullname(frappe.session["user"]),
+        )
+        update_status("On Hold", self.name)
+
 
 @frappe.whitelist()
 def update_so_status_to_closed_based_on_order_expiry_date_art():
-    so_list=frappe.db.get_list('Sales Order', fields=['name'], filters={
-        'order_expiry_date_ar':[ '<=',nowdate()],
-        'status':'On Hold',
-        'docstatus':1
-    })
-    if len(so_list)>0:
-        for so in so_list: 
-            update_status('Closed',so.name)
-
+    so_list = frappe.db.get_list(
+        "Sales Order",
+        fields=["name"],
+        filters={
+            "order_expiry_date_ar": ["<=", nowdate()],
+            "status": "On Hold",
+            "docstatus": 1,
+        },
+    )
+    if len(so_list) > 0:
+        for so in so_list:
+            update_status("Closed", so.name)
 
 
 # def update_total_saleable_qty(self, method=None):
@@ -325,15 +369,18 @@ def get_shipping_rule(country):
         """select sr.name from `tabShipping Rule` sr inner join `tabShipping Rule Country` sr_country 
     on sr.name=sr_country.parent where sr.disabled=0 and sr_country.country=%s order by sr.creation DESC  limit 1""",
         country,
-        as_dict=1
+        as_dict=1,
     )
+
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_contact_filtered_by_customer(doctype, txt, searchfield, start, page_len, filters):
-    customer=filters.get("customer")
+def get_contact_filtered_by_customer(
+    doctype, txt, searchfield, start, page_len, filters
+):
+    customer = filters.get("customer")
     return frappe.db.sql(
         """SELECT contact.name from `tabContact` as contact inner join `tabDynamic Link` as link on link.parent=contact.name 
 WHERE link.parenttype ='Contact' and link.link_doctype ='Customer' and link.link_name =%s""",
-			(customer),
-		)
+        (customer),
+    )

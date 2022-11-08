@@ -129,7 +129,8 @@ def update_item_art_dashboard_data():
 	days_after_shipping_date = frappe.db.get_single_value('Art Collections Settings', 'days_after_shipping_date') or 0
 	items_list=frappe.db.get_list('Item',filters={'has_variants': 0,'is_fixed_asset':0,'is_stock_item':1,'disabled':0},pluck='name')
 	for item_code in items_list:
-		total_in_stock=get_stock_qty_for_saleable_warehouse(item_code)[0]['saleable_qty']
+		#  new change done for warehouse group
+		total_in_stock=get_total_salable_qty_for_saleable_group(item_code)[0]['saleable_qty']
 	
 		sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 		where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
@@ -243,44 +244,44 @@ def update_item_art_dashboard_data():
 # 	))
 # 	return	data	
 
-@frappe.whitelist()
-def get_all_saleable_warehouse_list():
-	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')""", as_dict=1)
-	if len(warehouse_type) <1:
-		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
-		return
-	warehouse_type = [d.warehouse_type for d in warehouse_type]
-	return warehouse_type
+# @frappe.whitelist()
+# def get_all_saleable_warehouse_list():
+# 	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')""", as_dict=1)
+# 	if len(warehouse_type) <1:
+# 		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
+# 		return
+# 	warehouse_type = [d.warehouse_type for d in warehouse_type]
+# 	return warehouse_type
 
-@frappe.whitelist()
-def get_saleable_warehouse_list():
-	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'saleable_warehouse_type'""", as_dict=1)
-	if len(warehouse_type) <1:
-		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
-		return
-	warehouse_type = [d.warehouse_type for d in warehouse_type]
-	return warehouse_type
+# @frappe.whitelist()
+# def get_saleable_warehouse_list():
+# 	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'saleable_warehouse_type'""", as_dict=1)
+# 	if len(warehouse_type) <1:
+# 		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
+# 		return
+# 	warehouse_type = [d.warehouse_type for d in warehouse_type]
+# 	return warehouse_type
 
-@frappe.whitelist()
-def get_reserved_warehouse_list():
-	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'reserved_warehouse_type'""", as_dict=1)
-	if len(warehouse_type) <1:
-		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
-		return
-	warehouse_type = [d.warehouse_type for d in warehouse_type]
-	return warehouse_type
+# @frappe.whitelist()
+# def get_reserved_warehouse_list():
+# 	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  = 'reserved_warehouse_type'""", as_dict=1)
+# 	if len(warehouse_type) <1:
+# 		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
+# 		return
+# 	warehouse_type = [d.warehouse_type for d in warehouse_type]
+# 	return warehouse_type
 
-@frappe.whitelist()
-def get_stock_qty_for_saleable_warehouse(item_code):
-	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')""", as_dict=1)
-	if len(warehouse_type) <1:
-		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
-		return
-	warehouse_type = [d.warehouse_type for d in warehouse_type]
-	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
-	where WH.warehouse_type in ({warehouse_type}) and B.item_code = '{item_code}' """
-	.format(item_code=item_code,warehouse_type=(', '.join(['%s'] * len(warehouse_type)))),tuple(warehouse_type),as_dict=1)
-	return total_in_stock 	
+# @frappe.whitelist()
+# def get_stock_qty_for_saleable_warehouse(item_code):
+# 	warehouse_type=frappe.db.sql("""select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')""", as_dict=1)
+# 	if len(warehouse_type) <1:
+# 		frappe.throw(_('Saleable warehouse are not defined in Art Collections Settings'))
+# 		return
+# 	warehouse_type = [d.warehouse_type for d in warehouse_type]
+# 	total_in_stock=frappe.db.sql("""select COALESCE(sum(B.actual_qty),0) as saleable_qty from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
+# 	where WH.warehouse_type in ({warehouse_type}) and B.item_code = '{item_code}' """
+# 	.format(item_code=item_code,warehouse_type=(', '.join(['%s'] * len(warehouse_type)))),tuple(warehouse_type),as_dict=1)
+# 	return total_in_stock 	
 
 @frappe.whitelist()
 def allow_order_still_stock_last():
@@ -293,9 +294,9 @@ def allow_order_still_stock_last():
 	})
 		if len(in_stock_item_list)>0:
 			for item in in_stock_item_list:
-				total_saleable_qty=get_stock_qty_for_saleable_warehouse(item.name)
-				if len(total_saleable_qty)>0:
-					if total_saleable_qty[0].saleable_qty==0:
+				saleable_qty_cf=frappe.db.get_value('Item', item.name, 'saleable_qty_cf')
+				if saleable_qty_cf:
+					if saleable_qty_cf==0:
 						eligible_item=frappe.get_doc('Item',item.name)
 						eligible_item.is_sales_item=0
 						eligible_item.save(ignore_permissions=True)
@@ -364,4 +365,22 @@ def reset_breakup_date(self,method):
 			breakup_date_cf=frappe.db.get_value('Item',d.item_code, 'breakup_date_cf')
 			if breakup_date_cf!=None:
 				frappe.db.set_value('Item',d.item_code, 'breakup_date_cf', None)		
-				frappe.msgprint(_("Item {0} break up date is set to blank.").format(d.item_code),alert=True)		
+				frappe.msgprint(_("Item {0} break up date is set to blank.").format(d.item_code),alert=True)	
+
+@frappe.whitelist()
+def get_total_salable_qty_for_saleable_group(item_code):
+	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
+	saleable_warehouse_group = frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_group')
+	if saleable_warehouse_group:
+		warehouse_list=get_child_warehouses(saleable_warehouse_group)
+		result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
+		.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
+		return result			
+
+@frappe.whitelist()
+def get_total_salable_qty_based_on_set_warehouse(item_code,set_warehouse):
+	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
+	warehouse_list=get_child_warehouses(set_warehouse)
+	result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
+	.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
+	return result			

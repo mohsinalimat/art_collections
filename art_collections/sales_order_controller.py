@@ -3,7 +3,6 @@ import frappe
 import datetime
 from frappe import _
 from frappe.utils import get_link_to_form, flt,get_date_str, nowdate
-from art_collections.item_controller import get_stock_qty_for_saleable_warehouse
 from art_collections.item_controller import get_qty_of_inner_cartoon
 
 
@@ -26,7 +25,7 @@ def sales_order_custom_validation(self, method):
     # validate_minimum_order_amount_as_per_customer_group(self)
     valiate_payment_terms_and_credit_limit_for_customer(self)
     # validate_inner_qty_and_send_notification(self)
-    update_total_saleable_qty(self)
+    # update_total_saleable_qty(self)
     get_directive(self, method)
 
 def update_status_based_on_needs_confirmation_art(self, method=None):
@@ -49,11 +48,11 @@ def update_so_status_to_closed_based_on_order_expiry_date_art():
 
 
 
-def update_total_saleable_qty(self, method=None):
-    for item in self.get("items"):
-        total_saleable_qty = get_stock_qty_for_saleable_warehouse(item.item_code)
-        if len(total_saleable_qty) > 0:
-            item.total_saleable_qty_cf = total_saleable_qty[0].saleable_qty
+# def update_total_saleable_qty(self, method=None):
+#     for item in self.get("items"):
+#         total_saleable_qty = frappe.db.get_value('Item',item.item_code, 'saleable_qty_cf')
+#         if len(total_saleable_qty) > 0:
+#             item.total_saleable_qty_cf = total_saleable_qty[0].saleable_qty
 
 
 def validate_inner_qty_and_send_notification(self):

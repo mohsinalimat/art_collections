@@ -131,14 +131,7 @@ group by item_code
 col_sold_qty_to_deliver as (select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver,item_code from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 where so.status in ("To Deliver and Bill","To Deliver") group by so_item.item_code 
 ),
-col_o as (select B.item_code,
-COALESCE(sum(B.actual_qty),0) as total_saleable_stock 
-from tabBin B inner join tabWarehouse WH on B.warehouse = WH.name 
-where WH.warehouse_type in (
-select DISTINCT(warehouse_type) as warehouse_type  from `tabArt Warehouse Types`  
-where parent = 'Art Collections Settings' and parentfield  in ('reserved_warehouse_type','saleable_warehouse_type')
-)
-group by B.item_code
+col_o as (SELECT item_code,COALESCE(saleable_qty_cf,0) as total_saleable_stock FROM `tabItem`
 ),
 col_p as (SELECT item_code,(reserved_qty+reserved_qty_for_production+reserved_qty_for_sub_contract) as qty_sold_to_be_delivered FROM `tabBin`
 group by item_code

@@ -17,7 +17,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 app_include_css = [
-    "/assets/css/pos_list.min.css",
+    # "/assets/css/pos_list.min.css",
     "/assets/art_collections/css/lib/jexcel.css",
     "/assets/art_collections/css/lib/jsuites.css",
 ]

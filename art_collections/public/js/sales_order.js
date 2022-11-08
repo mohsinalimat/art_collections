@@ -1,5 +1,17 @@
 frappe.ui.form.on('Sales Order', {
-
+	onload_post_render: function (frm) {
+		frappe.db.get_single_value('Art Collections Settings', 'damage_warehouse_group')
+		.then(damage_warehouse_group => {
+			frm.set_query('set_warehouse', () => {
+				return {
+					filters: {
+						is_group:1,
+						name: ['not in', [damage_warehouse_group]]
+					}
+				}
+			})			
+		})
+	},
 	setup: function (frm) {
 		frm.set_query('delivery_contact_art', () => {
 			return {

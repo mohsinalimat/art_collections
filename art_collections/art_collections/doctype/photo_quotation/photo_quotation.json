@@ -97,17 +97,23 @@
   {
    "fieldname": "sample_validated_progress",
    "fieldtype": "Percent",
-   "label": "Sample Validated Progress %"
+   "in_list_view": 1,
+   "label": "Sample Validated %",
+   "read_only": 1
   },
   {
    "fieldname": "item_created_progress",
    "fieldtype": "Percent",
-   "label": "Item Created Progress %"
+   "in_list_view": 1,
+   "label": "Item Created %",
+   "read_only": 1
   },
   {
    "fieldname": "po_created_progress",
    "fieldtype": "Percent",
-   "label": "PO Created Progress %"
+   "in_list_view": 1,
+   "label": "PO Created %",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -121,7 +127,7 @@
    "link_fieldname": "photo_quotation"
   }
  ],
- "modified": "2022-11-08 10:56:10.650853",
+ "modified": "2022-11-09 05:14:18.512348",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Photo Quotation",

@@ -45,12 +45,18 @@ def write_xlsx(
     ws = wb.get_sheet_by_name(sheet_name)
 
     if not file_path:
-        for i, column_width in enumerate(column_widths):
-            if column_width:
-                ws.column_dimensions[get_column_letter(i + 1)].width = column_width
 
-        row1 = ws.row_dimensions[1]
-        row1.font = Font(name="Calibri", bold=True)
+        def _set_header():
+            # set column widths
+            for i, column_width in enumerate(column_widths):
+                ws.column_dimensions[get_column_letter(i + 1)].width = (
+                    column_width or 15
+                )
+            # set row style
+            row1 = ws.row_dimensions[1]
+            row1.font = Font(name="Calibri", bold=True)
+
+        _set_header()
 
     for idx, row in enumerate(data):
         clean_row = []

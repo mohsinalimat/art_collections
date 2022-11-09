@@ -130,7 +130,7 @@ def update_item_art_dashboard_data():
 	items_list=frappe.db.get_list('Item',filters={'has_variants': 0,'is_fixed_asset':0,'is_stock_item':1,'disabled':0},pluck='name')
 	for item_code in items_list:
 		#  new change done for warehouse group
-		total_in_stock=get_total_salable_qty_for_saleable_group(item_code)[0]['saleable_qty']
+		total_in_stock=get_total_salable_qty_for_warehouse_group_other_than_damage_or_reserved(item_code)[0]['saleable_qty']
 	
 		sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
 		where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
@@ -368,19 +368,26 @@ def reset_breakup_date(self,method):
 				frappe.msgprint(_("Item {0} break up date is set to blank.").format(d.item_code),alert=True)	
 
 @frappe.whitelist()
-def get_total_salable_qty_for_saleable_group(item_code):
-	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
-	saleable_warehouse_group = frappe.db.get_single_value('Art Collections Settings', 'saleable_warehouse_group')
-	if saleable_warehouse_group:
-		warehouse_list=get_child_warehouses(saleable_warehouse_group)
-		result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
-		.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
+def get_total_salable_qty_for_warehouse_group_other_than_damage_or_reserved(item_code):
+	from frappe.utils.nestedset import get_descendants_of
+	reserved_warehouse_group = frappe.db.get_single_value('Art Collections Settings', 'reserved_warehouse_group')
+	damage_warehouse_group = frappe.db.get_single_value('Art Collections Settings', 'damage_warehouse_group')
+
+	reserved_warehouse_list = get_descendants_of("Warehouse", reserved_warehouse_group, ignore_permissions=True, order_by="lft")
+	damage_warehouse_list = get_descendants_of("Warehouse", damage_warehouse_group, ignore_permissions=True, order_by="lft")
+	ignore_warehouse_list = reserved_warehouse_list + damage_warehouse_list
+	if ignore_warehouse_list:
+		result = frappe.db.sql("""SELECT  COALESCE(sum(bin.actual_qty),0) as saleable_qty from `tabBin` as bin
+		inner join `tabWarehouse` as warehouse on warehouse.name=bin.warehouse
+		where bin.item_code = '{item_code}' and bin.warehouse not in ({warehouses})  and warehouse.is_group=0
+		group by bin.item_code """
+		.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(ignore_warehouse_list))),tuple(ignore_warehouse_list),as_dict=1,debug=1)
 		return result			
 
-@frappe.whitelist()
-def get_total_salable_qty_based_on_set_warehouse(item_code,set_warehouse):
-	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
-	warehouse_list=get_child_warehouses(set_warehouse)
-	result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
-	.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
-	return result			
+# @frappe.whitelist()
+# def get_total_salable_qty_based_on_set_warehouse(item_code,set_warehouse):
+# 	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
+# 	warehouse_list=get_child_warehouses(set_warehouse)
+# 	result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
+# 	.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
+# 	return result			

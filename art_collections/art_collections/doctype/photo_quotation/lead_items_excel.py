@@ -171,12 +171,19 @@ def add_data_validation(wb, SHEET_NAME, packing_type_index, skip_rows):
     from openpyxl.utils.cell import get_column_letter
 
     column_letter = get_column_letter(packing_type_index + 1)
-    values = ",".join(frappe.get_all("Packing Type Art", pluck="name"))
-    data_validation = DataValidation(
-        type="list",
-        allow_blank=True,
-        formula1='"{}"'.format(values),
-    )
+    names = frappe.get_all("Packing Type Art", pluck="name")
+
+    # option 1: add values as range reference, create sheet and add list of values
+    sheet = wb.create_sheet("PackingType")
+    for i in range(len(names)):
+        sheet.cell(column=1, row=i + 1, value=names[i])
+    formula1 = "=PackingType!$A$1:$A${}".format(len(names) + 1)
+
+    # option 2: add values as comma seperated string.
+    # formula1='"{}"'.format(",".join(names)),
+
+    data_validation = DataValidation(type="list", allow_blank=True, formula1=formula1)
+
     cell_range = "{}{}:{}1500".format(column_letter, skip_rows + 1, column_letter)
     data_validation.ranges.add(cell_range)
     wb[SHEET_NAME].add_data_validation(data_validation)

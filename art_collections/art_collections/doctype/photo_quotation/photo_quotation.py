@@ -35,31 +35,24 @@ class PhotoQuotation(Document):
         for d in frappe.db.sql(
             """
                 select 
-                    sum(if(status in ('Sample Validated','Item Created'),1,0)) sample_validated_progress  ,
-                    sum(if(status='Item Created',1,0)) item_created_progress  , 
-                    sum(if(status='PO Created',1,0)) po_created_progress  ,  
-                    count(*) total_count
-                    from `tabLead Item` tl 
-                where photo_quotation = %s
+                	100 * round(sum(is_po_created)/count(*),2) po_created_progress ,
+                    100 * round(sum(is_sample_validated)/count(*),2) sample_validated_progress  ,
+                    100 * round(sum(is_item_created)/count(*),2) item_created_progress   
+                   from `tabLead Item` tl 
+                   where tl.photo_quotation = %s
                 """,
             (self.name),
             as_dict=True,
         ):
-            print(d)
-            for f in [
-                "item_created_progress",
-                "po_created_progress",
-                "sample_validated_progress",
-            ]:
-                if d.total_count:
-                    self.set(f, 100 * d.get(f, 0) / d.total_count)
+            self.update(d)
 
     @frappe.whitelist()
     def get_lead_items(self, conditions=None):
         columns = get_lead_item_fields()
 
         data = frappe.db.sql(
-            """select {} from `tabLead Item` where photo_quotation = %s {}""".format(
+            """select {} , if(is_item_created,'',name)
+             from `tabLead Item` where photo_quotation = %s {}""".format(
                 ", ".join([d.fieldname for d in columns]),
                 conditions and " and %s" % conditions or "",
             ),
@@ -302,6 +295,11 @@ class PhotoQuotation(Document):
         frappe.db.commit()
 
     @frappe.whitelist()
+    def delete_lead_item(self, docname):
+        frappe.get_doc("Lead Item", docname).delete()
+        frappe.db.commit()
+
+    @frappe.whitelist()
     def create_purchase_order(self):
         items = frappe.db.sql(
             """
@@ -352,6 +350,7 @@ class PhotoQuotation(Document):
                     "uom": d.uom,
                     "qty": d.minimum_order_qty,
                     "lead_item_cf": d.lead_item,
+                    "delivery_date": self.required_by_date,
                 },
             )
 

@@ -1,6 +1,22 @@
 // Copyright (c) 2022, GreyCube Technologies and contributors
 // For license information, please see license.txt
 
+frappe.delete_lead_item = function (li_name) {
+  frappe.dom.freeze(__("Deleting Lead Items {0}", [li_name]));
+  return cur_frm
+    .call({
+      method: "delete_lead_item",
+      doc: cur_frm.doc,
+      args: {
+        docname: li_name,
+      },
+    })
+    .then((r) => {
+      cur_frm.reload_doc();
+      frappe.dom.unfreeze();
+    });
+};
+
 frappe.ui.form.on("Photo Quotation", {
   setup: function (frm) {
     frm.set_query("contact_person", () => {
@@ -274,18 +290,32 @@ function make_items_grid(frm) {
       args: {},
     })
     .then((r) => {
+      console.log(r.message.columns);
+
       let columns = r.message.columns.map((t) => {
         return {
           title: t.label,
           type: t.fieldtype,
           fieldname: t.fieldname,
-          readOnly: ["photo_quotation", "name"].includes(t.fieldname),
+          readOnly: [
+            "photo_quotation",
+            "name",
+            "is_item_created",
+            "is_po_created",
+          ].includes(t.fieldname),
         };
+      });
+
+      columns.push({
+        fieldname: "delete_lead_item",
+        fieldtype: "html",
+        title: "Delete Item",
+        readOnly: 1,
       });
 
       // https://bossanova.uk/jspreadsheet/v4/docs/quick-reference
       let items_table = jspreadsheet(document.getElementById("items-table"), {
-        filters: false,
+        filters: true,
         columns: columns,
         minDimensions: [columns.length, 3],
         defaultColWidth: 100,
@@ -301,6 +331,9 @@ function make_items_grid(frm) {
           if (col == 0 && val) {
             cell.innerHTML =
               '<img src="' + val + '" style="width:40px;height:40px">';
+          } else if (col == columns.length - 1) {
+            if (val)
+              cell.innerHTML = `<button onclick='frappe.delete_lead_item("${val}");'>Delete</button>`;
           }
         },
         onafterchanges: function (instance) {

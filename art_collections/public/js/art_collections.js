@@ -1,18 +1,21 @@
 
 $(document).ready(function () {
+    
+
     frappe.realtime.on("show_email_dialog", function (args) {
         if (cur_frm) {
-            let frm = cur_frm;
-            if (args && args.doctype == frm.doctype && args.docname == frm.docname) {
-                cur_frm.reload_doc().then(() => {
-                    setTimeout(() => {
-                        // timeout so attachments are visible in popup
-                        frappe.show_email_dialog(frm, args);
-                    }, 500);
-                });
-            }
+        let frm = cur_frm;
+        if (args && args.doctype == frm.doctype && args.docname == frm.docname) {
+            frappe.run_serially([
+            () => frappe.timeout(0.8),
+            () => frm.reload_doc(),
+            () => frappe.timeout(0.8),
+            () => frappe.show_email_dialog(frm, args),
+            ]);
+        }
         }
     });
+    
 });
 
 

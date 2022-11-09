@@ -12,21 +12,28 @@ import os, io
 from openpyxl import load_workbook
 from frappe.utils.xlsxutils import read_xlsx_file_from_attached_file
 from frappe.utils.xlsxutils import make_xlsx
+from frappe.utils.csvutils import read_csv_content
 
 
 @frappe.whitelist()
 def import_items(docname, file_url, delivery_date):
-
     file_url, upload_data = get_import_template(docname, file_url, delivery_date)
 
     if not file_url:
         frappe.msgprint("Items import was not successful.")
         return
 
-    importer = Importer(
-        "Sales Order", file_path=os.path.abspath(file_url), import_type=UPDATE
-    )
-    import_log = importer.import_data()
+    # return
+
+    import_log = None
+
+    try:
+        importer = Importer(
+            "Sales Order", file_path=os.path.abspath(file_url), import_type=UPDATE
+        )
+        import_log = importer.import_data()
+    except Exception:
+        pass
 
     if import_log and import_log[0].get("success"):
         frappe.msgprint(_("Items imported successfully."))
@@ -45,8 +52,7 @@ def get_import_template(docname, file_url, delivery_date):
     upload_data, import_template = [], []
 
     import_file = frappe.get_doc("File", {"file_url": file_url})
-    file_path = os.path.abspath(import_file.get_full_path())
-
+    # file_path = os.path.abspath(import_file.get_full_path())
     # with open(file_path, "r") as csvfile:
     #     upload_data = read_csv_content(csvfile.read())
 
@@ -84,21 +90,50 @@ def get_import_template(docname, file_url, delivery_date):
         make_error_file(docname, warnings, upload_data)
         return "", upload_data
 
-    HEADER = "ID,ID (Items),Item Code (Items),UOM (Items),Quantity (Items),Delivery Date (Items)"
+    import_template = []
 
-    # modify file to add delivery date and SO#
-    import_template.append(HEADER.split(","))
+    HEADER = [
+        "ID",
+        "ID (Items)",
+        "Item Code (Items)",
+        "UOM (Items)",
+        "Quantity (Items)",
+        "Delivery Date (Items)",
+        "ID (Sales Order Discountinued Items)",
+        "Item Code (Sales Order Discountinued Items)",
+        "Item Name (Sales Order Discountinued Items)",
+        "Quantity (Sales Order Discountinued Items)",
+        "Description (Sales Order Discountinued Items)",
+    ]
 
-    # first row has SO name
-    import_template.append(["%s" % docname, ""] + upload_data[1])
-    for d in upload_data[2:]:
-        import_template.append(["", ""] + d)
+    for d in frappe.db.sql(
+        """
+        select ti.item_code , ti.item_name, ti.description , ti.is_sales_item
+        from tabItem ti where name in ({})
+    """.format(
+            ",".join(["%s"] * len(upload_data))
+        ),
+        tuple([d[0] for d in upload_data]),
+        as_dict=True,
+    ):
+        line = [x for x in upload_data if frappe.utils.cstr(x[0]) == d.item_code]
+        if line:
+            line = line[0]
+            if frappe.utils.cint(d.is_sales_item):
+                import_template.append(
+                    ["", ""] + line[0:3] + [line[3] or delivery_date] + [""] * 5
+                )
+            else:
+                import_template.append(
+                    [""] * 6 + ["", line[0], d.item_name, line[2], d.description]
+                )
 
-    for d in import_template[1:]:
-        if not d[-1]:
-            d[-1] = delivery_date
+    if not import_template:
+        frappe.throw("No valid Items to import.")
 
-    # print(import_template)
+    import_template = [HEADER] + import_template
+
+    import_template[1][0] = docname
 
     f = frappe.get_doc(
         doctype="File",
@@ -135,7 +170,7 @@ def make_error_file(docname, warnings, upload_data):
     upload_data = [HEADER.split(",") + [ERROR_HEADER]] + upload_data[1:]
 
     for idx, err in errors:
-        upload_data[idx] = upload_data[idx] + [err]
+        upload_data[idx - 1] = upload_data[idx - 1] + [err]
 
     xlsx = make_xlsx(upload_data, "Errors")
 

@@ -27,35 +27,6 @@ def sales_order_custom_validation(self, method):
     # validate_inner_qty_and_send_notification(self)
     # update_total_saleable_qty(self)
     get_directive(self, method)
-    move_sales_order_discontinued_items(self)
-
-
-def move_sales_order_discontinued_items(doc):
-    # move items with is_sales_item = 0 to custom table Sales Order Discountinued Items CT
-
-    items_to_move = frappe.db.sql(
-        """
-        select name from tabItem 
-        where is_sales_item = 0 and name in ({})
-    """.format(
-            ",".join(["%s" * len(doc.items)])
-        ),
-        tuple([d.item_code for d in doc.items]),
-    )
-    if items_to_move:
-        items_to_move = [d[0] for d in items_to_move]
-        for d in doc.items:
-            if d.item_code in items_to_move:
-                doc.append(
-                    "discontinued_sales_item_ct",
-                    {
-                        "item_code": d.item_code,
-                        "item_name": d.item_name,
-                        "qty": d.qty,
-                        "description": d.description,
-                    },
-                )
-        doc.items = [d for d in doc.items if not d.item_code in items_to_move]
 
 
 def update_status_based_on_needs_confirmation_art(self, method=None):

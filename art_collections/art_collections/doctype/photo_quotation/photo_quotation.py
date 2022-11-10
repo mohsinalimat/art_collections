@@ -323,36 +323,43 @@ class PhotoQuotation(Document):
         if po_name:
             po = frappe.get_doc("Purchase Order", po_name)
         else:
-            supplier_currency = frappe.db.get_value(
-                "Supplier", self.supplier, "default_currency"
-            )
             po = frappe.get_doc(
                 {
                     "doctype": "Purchase Order",
-                    "supplier": self.supplier,
-                    "transaction_date": today(),
-                    "photo_quotation_cf": self.name,
-                    "currency": supplier_currency,
-                    "schedule_date": self.required_by_date,
                 }
             )
 
+        supplier_currency = frappe.db.get_value(
+            "Supplier", self.supplier, "default_currency"
+        )
+
+        po.update(
+            {
+                "supplier": self.supplier,
+                "transaction_date": today(),
+                "photo_quotation_cf": self.name,
+                "currency": supplier_currency,
+                "schedule_date": self.required_by_date,
+            }
+        )
+
         for d in items:
-            if list(
+            item = list(
                 filter(lambda x: x.item_code == d.item_code, po.get("items") or [])
-            ):
-                continue
-            po.append(
-                "items",
+            )
+            if item:
+                item = item[0]
+            else:
+                item = po.append("items", {})
+            item.update(
                 {
                     "item_code": d.item_code,
-                    "schedule_date": getdate(),
                     "stock_uom": d.uom,
                     "uom": d.uom,
                     "qty": d.minimum_order_qty,
                     "lead_item_cf": d.lead_item,
-                    "delivery_date": self.required_by_date,
-                },
+                    "schedule_date": self.required_by_date,
+                }
             )
 
         po.save()

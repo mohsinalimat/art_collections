@@ -290,7 +290,7 @@ function make_items_grid(frm) {
       args: {},
     })
     .then((r) => {
-      console.log(r.message.columns);
+      // console.log(r.message.columns);
 
       let columns = r.message.columns.map((t) => {
         return {

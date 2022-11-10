@@ -65,11 +65,12 @@ class PhotoQuotation(Document):
     def update_lead_items(self, items=[]):
         meta = frappe.get_meta("Lead Item")
         fields = [d.fieldname for d in get_lead_item_fields()]
+        idx_name = fields.index("name")
         for d in items:
-            if not d[-1]:
+            if not d[idx_name]:
                 continue
             doc = frappe.get_doc(
-                "Lead Item", {"name": d[-1], "photo_quotation": self.name}
+                "Lead Item", {"name": d[idx_name], "photo_quotation": self.name}
             )
             for idx, f in enumerate(fields):
                 value = d[idx]

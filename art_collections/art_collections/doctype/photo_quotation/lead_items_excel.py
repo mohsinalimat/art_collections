@@ -13,6 +13,8 @@ import os
 from openpyxl import load_workbook
 from erpnext.accounts.party import get_party_details
 import re
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.utils.cell import get_column_letter
 
 
 LEAD_ITEM_FIELDS = """
@@ -144,9 +146,21 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
     )
     wb.active = wb[SHEET_NAME]
 
-    packing_type_index = "packing_type" in fields and fields.index("packing_type")
-    if packing_type_index:
-        add_data_validation(wb, SHEET_NAME, packing_type_index, skip_rows)
+    def _get_column_range(fieldname):
+        if fieldname in fields:
+            col = get_column_letter(fields.index(fieldname) + 1)
+            return "{}{}:{}{}".format(col, skip_rows + 1, col, len(excel_rows))
+
+    cell_range = _get_column_range("packing_type")
+    if cell_range:
+        data_list = frappe.get_all("Packing Type Art", pluck="name")
+        add_data_validation(wb, SHEET_NAME, data_list, cell_range)
+
+    data_list = frappe.get_all("Matiere", pluck="name")
+    for field in ["product_material1", "product_material2", "product_material3"]:
+        cell_range = _get_column_range(field)
+        if cell_range:
+            add_data_validation(wb, SHEET_NAME, data_list, cell_range)
 
     # set supplier details
     if template == "lead_items_supplier_template" and supplier:
@@ -165,26 +179,24 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
     return out.getvalue()
 
 
-def add_data_validation(wb, SHEET_NAME, packing_type_index, skip_rows):
+def add_data_validation(wb, SHEET_NAME, data_list, cell_range):
     # Create a data-validation object with list validation
-    from openpyxl.worksheet.datavalidation import DataValidation
-    from openpyxl.utils.cell import get_column_letter
 
-    column_letter = get_column_letter(packing_type_index + 1)
-    names = frappe.get_all("Packing Type Art", pluck="name")
+    list_sheet_name = frappe.generate_hash("", 6)
+
+    sheet = wb.create_sheet(list_sheet_name)
+    sheet.sheet_state = "hidden"
+    for i in range(len(data_list)):
+        sheet.cell(column=1, row=i + 1, value=data_list[i])
 
     # option 1: add values as range reference, create sheet and add list of values
-    sheet = wb.create_sheet("PackingType")
-    for i in range(len(names)):
-        sheet.cell(column=1, row=i + 1, value=names[i])
-    formula1 = "=PackingType!$A$1:$A${}".format(len(names) + 1)
+    formula1 = "={}!$A$1:$A${}".format(list_sheet_name, len(data_list) + 1)
 
     # option 2: add values as comma seperated string.
-    # formula1='"{}"'.format(",".join(names)),
+    # formula1='"{}"'.format(",".join(data_list)),
 
     data_validation = DataValidation(type="list", allow_blank=True, formula1=formula1)
 
-    cell_range = "{}{}:{}1500".format(column_letter, skip_rows + 1, column_letter)
     data_validation.ranges.add(cell_range)
     wb[SHEET_NAME].add_data_validation(data_validation)
 

@@ -60,7 +60,7 @@ doctype_js = {
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 
 doctype_list_js = {"Sales Order": "public/js/sales_order_list.js"}
-treeviews=['Catalogue Directory Art']
+treeviews = ["Catalogue Directory Art"]
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -207,15 +207,13 @@ doc_events = {
     "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
     },
-    "Pick List": {
-        "validate": "art_collections.directive_controller.get_directive"
-    },
+    "Pick List": {"validate": "art_collections.directive_controller.get_directive"},
     "Data Import": {
         "validate": "art_collections.controllers.item_import.start_item_import"
     },
     "Stock Entry": {
         "validate": "art_collections.item_controller.set_default_warehouse_based_on_stock_entry",
-        "on_submit":"art_collections.item_controller.reset_breakup_date"
+        "on_submit": "art_collections.item_controller.reset_breakup_date",
     },
     "Communication": {
         "on_update": "art_collections.controllers.utils.after_insert_communication"
@@ -235,8 +233,8 @@ scheduler_events = {
             "art_collections.sales_order_controller.update_so_status_to_closed_based_on_order_expiry_date_art",
         ],
         "0/30 * * * *": [
-			"art_collections.item_controller.update_item_art_dashboard_data",
-		],
+            "art_collections.item_controller.update_item_art_dashboard_data",
+        ],
     },
     # "daily": ["art_collections.scheduler_task_controller.daily"]
     # "hourly": [
@@ -313,3 +311,19 @@ jenv = {
     ],
     "filters": [],
 }
+
+override_doctype_class = {
+    "Pick List": "art_collections.pick_list_controller.CustomPickList"
+}
+
+
+# Override non-class methods.
+from art_collections.pick_list_controller import (
+    get_available_item_locations_for_other_item,
+)
+
+from erpnext.stock.doctype.pick_list import pick_list
+
+pick_list.get_available_item_locations_for_other_item = (
+    get_available_item_locations_for_other_item
+)

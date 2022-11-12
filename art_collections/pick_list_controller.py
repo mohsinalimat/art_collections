@@ -14,9 +14,9 @@ class CustomPickList(PickList):
     def set_item_locations(self, save=False):
         # set flag for use in get_available_item_locations_for_other_item to sort by priority
         for d in self.locations or []:
-            frappe.flags.is_commercial_operation_cf = frappe.db.get_value(
-                "Sales Order", d.sales_order, "is_commercial_operation_cf"
-            )
+            if d.get("sales_order"):
+                frappe.flags.pick_list_sales_order = d.sales_order
+                break
         super(CustomPickList, self).set_item_locations(save)
 
 
@@ -38,7 +38,16 @@ def get_available_item_locations_for_other_item(
             "tw.name in ({})".format(",".join(["'%s'"] * len(from_warehouses)))
         ]
 
-    if frappe.flags.is_commercial_operation_cf:
+    sales_order = frappe.flags.pick_list_sales_order
+    is_commercial_operation_cf = sales_order and frappe.db.get_value(
+        "Sales Order", sales_order, "is_commercial_operation_cf"
+    )
+
+    if not sales_order:
+        # order by creation , as per erpnext original fn
+        order_by = "creation"
+    # custom ordering priority_wise
+    elif is_commercial_operation_cf:
         # commercial: order by -ve first then +ve
         order_by = "if(tw.picklist_priority_cf < 0, -10000 * tw.picklist_priority_cf,tw.picklist_priority_cf) DESC"
     else:

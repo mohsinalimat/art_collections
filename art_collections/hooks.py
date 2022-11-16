@@ -207,7 +207,13 @@ doc_events = {
     "Purchase Invoice": {
         "validate": "art_collections.directive_controller.get_directive"
     },
-    "Pick List": {"validate": "art_collections.directive_controller.get_directive"},
+    "Pick List": {
+        "validate": [
+            "art_collections.directive_controller.get_directive",
+            "art_collections.pick_list_controller.validate_pick_list",
+        ],
+        "on_update": ["art_collections.pick_list_controller.on_update_pick_list"],
+    },
     "Data Import": {
         "validate": "art_collections.controllers.item_import.start_item_import"
     },

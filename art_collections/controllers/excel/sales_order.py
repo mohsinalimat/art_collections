@@ -16,9 +16,7 @@ def on_submit_sales_order(doc, method=None):
     _make_excel_attachment(doc.doctype, doc.name)
 
 
-@frappe.whitelist()
-def _make_excel_attachment(doctype, docname):
-
+def get_excel_data(doctype, docname):
     currency = frappe.db.get_value(doctype, docname, "currency")
 
     data = frappe.db.sql(
@@ -48,7 +46,8 @@ def _make_excel_attachment(doctype, docname):
             case when i.image is null then ''
                 when SUBSTR(i.image,1,4) = 'http' then i.image
                 else concat('{}',i.image) end image ,
-            i.image image_url
+            i.image image_url ,
+            i.saleable_qty_cf
         from `tabSales Order` tso 
         inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name
         inner join tabItem i on i.name = tsoi.item_code
@@ -76,7 +75,7 @@ def _make_excel_attachment(doctype, docname):
         ),
         (docname,),
         as_dict=True,
-        # debug=True,
+        debug=True,
     )
 
     columns = [
@@ -125,6 +124,15 @@ def _make_excel_attachment(doctype, docname):
         "pricing_rule_rate",
         "image",
     ]
+    currency = frappe.db.get_value(doctype, docname, "currency")
+
+    return data, columns, fields, currency
+
+
+@frappe.whitelist()
+def _make_excel_attachment(doctype, docname):
+
+    data, columns, fields, currency = get_excel_data(doctype, docname)
 
     wb = openpyxl.Workbook()
     excel_rows, images = [columns], [""]

@@ -2,19 +2,21 @@
 // For license information, please see license.txt
 
 frappe.delete_lead_item = function (li_name) {
-  frappe.dom.freeze(__("Deleting Lead Items {0}", [li_name]));
-  return cur_frm
-    .call({
-      method: "delete_lead_item",
-      doc: cur_frm.doc,
-      args: {
-        docname: li_name,
-      },
-    })
-    .then((r) => {
-      cur_frm.reload_doc();
-      frappe.dom.unfreeze();
-    });
+  frappe.confirm(__("Delete Lead Item {}?", [li_name]), function () {
+    frappe.dom.freeze(__("Deleting Lead Items {0}", [li_name]));
+    return cur_frm
+      .call({
+        method: "delete_lead_item",
+        doc: cur_frm.doc,
+        args: {
+          docname: li_name,
+        },
+      })
+      .then((r) => {
+        cur_frm.reload_doc();
+        frappe.dom.unfreeze();
+      });
+  });
 };
 
 frappe.ui.form.on("Photo Quotation", {
@@ -136,17 +138,24 @@ frappe.ui.form.on("Photo Quotation", {
     frm.add_custom_button(
       __("Delete all Lead Items"),
       function () {
-        frappe.dom.freeze(__("Deleting Lead Items for {0}", [frm.doc.name]));
-        return frm
-          .call({
-            method: "delete_all_lead_items",
-            doc: frm.doc,
-            args: {},
-          })
-          .then((r) => {
-            frm.reload_doc();
-            frappe.dom.unfreeze();
-          });
+        frappe.confirm(
+          __("Delete all lead items for this Photo Quotation?"),
+          () => {
+            frappe.dom.freeze(
+              __("Deleting Lead Items for {0}", [frm.doc.name])
+            );
+            return frm
+              .call({
+                method: "delete_all_lead_items",
+                doc: frm.doc,
+                args: {},
+              })
+              .then((r) => {
+                frm.reload_doc();
+                frappe.dom.unfreeze();
+              });
+          }
+        );
       },
       __("Tools")
     );

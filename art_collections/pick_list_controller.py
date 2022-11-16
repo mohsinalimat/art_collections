@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
-import frappe
-from frappe import throw, _
-import math
-from collections import OrderedDict
-from frappe.utils.nestedset import get_descendants_of
-from frappe.model.mapper import get_mapped_doc
 
+import math
+import frappe
+from frappe.utils import cint, now
 from erpnext.stock.doctype.pick_list.pick_list import PickList
+from frappe import _, throw
+from openpyxl import Workbook, load_workbook
+import openpyxl
+import io
+from art_collections.controllers.excel import add_images, attach_file, write_xlsx
 
 
 class CustomPickList(PickList):
@@ -108,3 +110,59 @@ where role.role = %(picker_role)s
         as_dict=as_dict,
     )
     return valid_user_list
+
+
+def validate_pick_list(doc, name):
+    if doc.is_new():
+        doc.flags.create_insufficient_items_excel = 1
+
+
+def on_update_pick_list(doc, name):
+    if cint(doc.flags.create_insufficient_items_excel):
+        create_insufficient_items(doc.name)
+
+
+@frappe.whitelist()
+def create_insufficient_items(docname):
+    """make excel with items where Qty to pick as per Stock UOM  >  item doctype. saleable_qty_cf
+    Qty to pick as per Stock UOM  = from  SO item : Qty as per Stock UOM - Picked Qty (in Stock UOM)
+    """
+    from art_collections.controllers.excel.sales_order import get_excel_data
+
+    so_name = frappe.db.get_value("Pick List Item", {"parent": docname}, "sales_order")
+
+    data, columns, fields, currency = get_excel_data("Sales Order", so_name)
+
+    if not data:
+        frappe.msgprint("Insuffucient Items excel not created.")
+
+    excel_rows, images = [columns], [""]
+    for d in data:
+        if d.saleable_qty_cf < d.stock_qty:
+            excel_rows.append([d.get(f) for f in fields])
+            images.append(d.get("image_url"))
+
+    wb = openpyxl.Workbook()
+    write_xlsx(
+        excel_rows, "Insufficient Items", wb, [20] * len(excel_rows[0]), write_0=1
+    )
+    add_images(images, workbook=wb, worksheet="Insufficient Items", image_col="U")
+
+    def _get_file_name():
+        return "Insufficient_Items_SO_{}_{}.xlsx".format(
+            docname,
+            now()[:16].replace(" ", "-").replace(":", ""),
+        )
+
+    # make attachment
+    out = io.BytesIO()
+    wb.save(out)
+    attach_file(
+        out.getvalue(),
+        doctype="Pick List",
+        file_name=_get_file_name(),
+        docname=docname,
+        show_email_dialog=0,
+    )
+
+    return

@@ -318,19 +318,6 @@ jenv = {
     "filters": [],
 }
 
-# Commenting this part as it causes-> TypeError: cannot pickle ‘module’ object
-# override_doctype_class = {
-#     "Pick List": "art_collections.pick_list_controller.CustomPickList"
-# }
-
-
-# # Override non-class methods.
-# from art_collections.pick_list_controller import (
-#     get_available_item_locations_for_other_item,
-# )
-
-# from erpnext.stock.doctype.pick_list import pick_list
-
-# pick_list.get_available_item_locations_for_other_item = (
-#     get_available_item_locations_for_other_item
-# )
+override_doctype_class = {
+    "Pick List": "art_collections.pick_list_controller.CustomPickList"
+}

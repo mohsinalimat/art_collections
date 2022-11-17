@@ -9,9 +9,16 @@ from openpyxl import Workbook, load_workbook
 import openpyxl
 import io
 from art_collections.controllers.excel import add_images, attach_file, write_xlsx
+from erpnext.stock.doctype.pick_list import pick_list
 
 
 class CustomPickList(PickList):
+    def __init__(self, *args, **kwargs):
+        super(CustomPickList, self).__init__(*args, **kwargs)
+        pick_list.get_available_item_locations_for_other_item = (
+            get_available_item_locations_for_other_item
+        )
+
     @frappe.whitelist()
     def set_item_locations(self, save=False):
         # set flag for use in get_available_item_locations_for_other_item to sort by priority
@@ -29,6 +36,7 @@ def get_available_item_locations_for_other_item(
     Override erpnext pick_list fn to implement priority in warehouse locations.
     Handles only non serial, non batch items
     """
+
     conditions = [
         "tw.company = %s",
         "item_code = %s",

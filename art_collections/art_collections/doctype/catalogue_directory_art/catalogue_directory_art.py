@@ -39,29 +39,48 @@ class CatalogueDirectoryArt(NestedSet):
 		# self.make_route()
 		self.set_title()
 		if self.get("__islocal")==None:
+			if self.disabled==1 and self.show_in_website==1:
+				frappe.throw(_("{0} is <b>disabled</b> as well as has <b>show in website</b> true. Please correct it to procced.".format(self.name)))
 			if self.node_type=="Catalogue":
 				catalogue_list=get_all_child_of_catalogue(self.name)
 				if len(catalogue_list)>0:
 					for catalogue in catalogue_list:
 						frappe.db.set_value('Catalogue Directory Art', catalogue.name, 'show_in_website', self.show_in_website)
-						if catalogue.node_type=="Universe" and self.show_in_website==1:
+						frappe.db.set_value('Catalogue Directory Art', catalogue.name, 'disabled', self.disabled)
+						# Item doctype
+						if catalogue.node_type=="Universe" and self.show_in_website==1 and self.disabled==0:
 							add_universe_to_item(doc=None,catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+						elif catalogue.node_type=="Universe" and self.show_in_website==0 and self.disabled==0:
+							add_universe_to_item(doc=None,catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
+						elif catalogue.node_type=="Universe" and self.show_in_website==0 and self.disabled==1:
+							remove_universe_from_item(doc=None,catalgoue_name=catalogue.name)
+
+						# website item doctype
+						if catalogue.node_type=="Universe" and self.show_in_website==1:
 							add_universe_to_website_item(doc=None,catalgoue_name=catalogue.name,show_in_website=self.show_in_website)	
 						elif catalogue.node_type=="Universe" and self.show_in_website==0:
-							add_universe_to_item(doc=None,catalgoue_name=catalogue.name,show_in_website=self.show_in_website)
 							remove_universe_from_website_item(doc=None,catalgoue_name=catalogue.name)
 				return
 
 			if self.node_type=="Universe":									
 				if self.parent_catalogue_directory_art:
 					parent_show_in_website=frappe.db.get_value('Catalogue Directory Art', self.parent_catalogue_directory_art, 'show_in_website')
+					parent_disabled=frappe.db.get_value('Catalogue Directory Art', self.parent_catalogue_directory_art, 'disabled')
 					self.show_in_website=parent_show_in_website
+					self.disabled=parent_disabled
 
-			if self.node_type=="Universe" and self.show_in_website==1:
+			# Item doctype
+			if self.node_type=="Universe" and self.show_in_website==1 and self.disabled==0:
 				add_universe_to_item(doc=self,catalgoue_name=None,show_in_website=self.show_in_website)
+			elif self.node_type=="Universe" and self.show_in_website==0 and self.disabled==0:
+				add_universe_to_item(doc=self,catalgoue_name=None,show_in_website=self.show_in_website)
+			elif catalogue.node_type=="Universe" and self.show_in_website==0 and self.disabled==1:
+				remove_universe_from_item(doc=None,catalgoue_name=catalogue.name)				
+
+			# website item doctype
+			if self.node_type=="Universe" and self.show_in_website==1:
 				add_universe_to_website_item(doc=self,catalgoue_name=None,show_in_website=self.show_in_website)
 			elif self.node_type=="Universe" and self.show_in_website==0:
-				add_universe_to_item(doc=self,catalgoue_name=None,show_in_website=self.show_in_website)
 				remove_universe_from_website_item(doc=self,catalgoue_name=None)
 			
 
@@ -138,6 +157,26 @@ class CatalogueDirectoryArt(NestedSet):
 	# 		context.update(get_slideshow(self))
 
 	# 	return context
+
+def remove_universe_from_item(doc,catalgoue_name):
+	if doc:
+		catalogue_doc=doc
+	if 	catalgoue_name:
+		catalogue_doc=frappe.get_doc('Catalogue Directory Art',catalgoue_name)
+	for catalogue_row in catalogue_doc.get("items_in_universe"):
+		item_code= catalogue_row.get("item")
+		if item_code:
+			item=frappe.get_doc("Item",item_code)
+			found_in_item=False
+			for item_row in item.get("catalogue_directory_art_item_detail_cf"):
+				if item_row.universe==catalogue_doc.name:
+					item.get("catalogue_directory_art_item_detail_cf").remove(item_row)
+					found_in_item=True	
+					break
+			if found_in_item==True:
+				item.save(ignore_permissions=True)
+				frappe.msgprint(_("From Item {0} universe {1} is removed")
+					.format(get_link_to_form("Item",item.name),catalogue_doc.name), alert=True)					
 
 def add_universe_to_item(doc,catalgoue_name,show_in_website):
 	if doc:

@@ -147,11 +147,15 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
     wb.active = wb[SHEET_NAME]
 
     def _get_column_range(fieldname):
+        if not excel_rows:
+            return ""
+
         if fieldname in fields:
             col = get_column_letter(fields.index(fieldname) + 1)
             return "{}{}:{}{}".format(col, skip_rows + 1, col, len(excel_rows))
 
     cell_range = _get_column_range("packing_type")
+
     if cell_range:
         data_list = frappe.get_all("Packing Type Art", pluck="name")
         add_data_validation(wb, SHEET_NAME, data_list, cell_range)
@@ -196,7 +200,6 @@ def add_data_validation(wb, SHEET_NAME, data_list, cell_range):
     # formula1='"{}"'.format(",".join(data_list)),
 
     data_validation = DataValidation(type="list", allow_blank=True, formula1=formula1)
-
     data_validation.ranges.add(cell_range)
     wb[SHEET_NAME].add_data_validation(data_validation)
 

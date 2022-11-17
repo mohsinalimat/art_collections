@@ -130,10 +130,18 @@ def update_item_art_dashboard_data():
 	items_list=frappe.db.get_list('Item',filters={'has_variants': 0,'is_fixed_asset':0,'is_stock_item':1,'disabled':0},pluck='name')
 	for item_code in items_list:
 		#  new change done for warehouse group
-		total_in_stock=get_total_salable_qty_for_warehouse_group_other_than_damage_or_reserved(item_code)[0]['saleable_qty']
+		total_virtual_stock=None
+		total_in_stock=None
+		total_salable_qty_for_warehouse_group_other_than_damage_or_reserved=get_total_salable_qty_for_warehouse_group_other_than_damage_or_reserved(item_code)
+		if total_salable_qty_for_warehouse_group_other_than_damage_or_reserved and len(total_salable_qty_for_warehouse_group_other_than_damage_or_reserved)>0:
+			total_in_stock=total_salable_qty_for_warehouse_group_other_than_damage_or_reserved[0]['saleable_qty']
 	
-		sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
-		where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))[0][0]
+		sold_qty_to_deliver=None
+		result_sold_qty_to_deliver=frappe.db.sql("""select sum(so_item.stock_qty-so_item.delivered_qty) as sold_qty_to_deliver from `tabSales Order` so inner join `tabSales Order Item` so_item on so_item.parent =so.name 
+		where so.status in ("To Deliver and Bill","To Deliver") and so_item.item_code =%s """,(item_code))
+		if result_sold_qty_to_deliver and len(result_sold_qty_to_deliver)>0:
+			sold_qty_to_deliver=result_sold_qty_to_deliver[0][0]
+
 
 		expected_qty_from_po=frappe.db.sql("""SELECT
 		sum(po_item.qty)
@@ -165,26 +173,27 @@ def update_item_art_dashboard_data():
 	group by
 		po_item.item_code""",(item_code))
 
-		if sold_qty_to_deliver!=None:
-			total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
-		else:
-			total_virtual_stock=flt(total_in_stock)
-
-		if len(expected_qty_from_po)>0:
-			total_virtual_stock=flt(total_virtual_stock+expected_qty_from_po[0][0])
-
 		if len(total_expected_qty_from_po_wo_shipping_date)>0:
 			frappe.db.set_value('Item',item_code, 'total_qty_in_purchase_order_cf', flt(total_expected_qty_from_po_wo_shipping_date[0][0]))
+
+		if sold_qty_to_deliver!=None:
+			existing_qty_sold_to_deliver_cf=frappe.db.get_value('Item',item_code, 'qty_sold_to_deliver_cf')
+			if existing_qty_sold_to_deliver_cf!=sold_qty_to_deliver:
+				frappe.db.set_value('Item',item_code, 'qty_sold_to_deliver_cf', sold_qty_to_deliver)
 
 		if total_in_stock!=None:
 			existing_total_in_stock_cf = frappe.db.get_value('Item', item_code,'total_in_stock_cf')
 			if existing_total_in_stock_cf!=total_in_stock:
 				frappe.db.set_value('Item',item_code, 'total_in_stock_cf', total_in_stock)
 
-		if sold_qty_to_deliver!=None:
-			existing_qty_sold_to_deliver_cf=frappe.db.get_value('Item',item_code, 'qty_sold_to_deliver_cf')
-			if existing_qty_sold_to_deliver_cf!=sold_qty_to_deliver:
-				frappe.db.set_value('Item',item_code, 'qty_sold_to_deliver_cf', sold_qty_to_deliver)
+
+		if total_in_stock!=None and sold_qty_to_deliver!=None:
+			total_virtual_stock=flt(total_in_stock-sold_qty_to_deliver)
+		elif total_in_stock!=None:
+			total_virtual_stock=flt(total_in_stock)
+
+		if len(expected_qty_from_po)>0 and total_virtual_stock!=None:
+			total_virtual_stock=flt(total_virtual_stock+expected_qty_from_po[0][0])
 
 		if total_virtual_stock!=None:
 			existing_saleable_qty_cf=frappe.db.get_value('Item',item_code, 'saleable_qty_cf')

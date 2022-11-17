@@ -15,7 +15,7 @@ frappe.treeview_settings["Catalogue Directory Art"] = {
 		{fieldtype:'Int', fieldname:'universe_page_range_end', label:__('Universe Page End #'),
 		depends_on: "eval:doc.node_type=='Universe'"},								
 		{fieldtype:'Select', fieldname:'catalogue_type', label:__('Catalogue Type'),
-		options: "\nPermanant\nFestif\nNo\u00ebl",depends_on:"eval:doc.node_type=='Catalogue'" },
+		options: "\Permanent\nFestif\nNo\u00ebl",depends_on:"eval:doc.node_type=='Catalogue'" },
 		{fieldtype:'Check', fieldname:'show_in_website', label:__('Show In Website'),
 			depends_on: "eval:in_list(['Catalogue','Root'], doc.node_type)",default:0},
 		{fieldtype:'Int', fieldname:'year', label:__('Year'),

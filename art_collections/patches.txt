@@ -7,3 +7,4 @@ art_collections.patches.v0_1.art_trim_once_0_1
 art_collections.patches.v0_1.drop_item_cleanup_photoupload
 art_collections.patches.v0_1.drop_website_item_copy_catalogue_item_cf
 art_collections.patches.v0_3.drop_supplier_column
+art_collections.patches.v0_3.rename_catalogue_type

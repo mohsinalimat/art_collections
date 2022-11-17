@@ -152,7 +152,9 @@ def get_items_xlsx(docname, template="", supplier=None, filters=None):
 
         if fieldname in fields:
             col = get_column_letter(fields.index(fieldname) + 1)
-            return "{}{}:{}{}".format(col, skip_rows + 1, col, len(excel_rows))
+            return "{}{}:{}{}".format(
+                col, skip_rows + 1, col, skip_rows + 1 + len(excel_rows)
+            )
 
     cell_range = _get_column_range("packing_type")
 

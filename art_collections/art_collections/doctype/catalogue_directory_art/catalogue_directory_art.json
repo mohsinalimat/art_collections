@@ -113,7 +113,7 @@
    "fieldname": "catalogue_type",
    "fieldtype": "Select",
    "label": "Catalogue Type",
-   "options": "\nPermanant\nFestif\nNo\u00ebl"
+   "options": "\nHome\nPermanent\nFestif\nNo\u00ebl"
   },
   {
    "fieldname": "catalogue_directory_art_name",
@@ -181,7 +181,7 @@
  "is_published_field": "show_in_website",
  "is_tree": 1,
  "links": [],
- "modified": "2022-09-20 14:42:32.022974",
+ "modified": "2022-11-17 06:46:12.410171",
  "modified_by": "Administrator",
  "module": "Art Collections",
  "name": "Catalogue Directory Art",

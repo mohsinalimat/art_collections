@@ -83,17 +83,9 @@ and SI.docstatus =1
 group by SI_item.item_code  
 order by SUM(SI_item.net_amount) DESC 
 ),
-col_m as (SELECT item_code,
- if((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)>actual_qty,
-((projected_qty + reserved_qty + reserved_qty_for_production + reserved_qty_for_sub_contract)-actual_qty),0)
-as total_po_qty_to_be_received
-FROM `tabBin`
-group by item_code 
-),
+col_m as (SELECT item_code,COALESCE(total_qty_in_purchase_order_cf,0) as total_po_qty_to_be_received FROM `tabItem`),
 col_o as (SELECT item_code,COALESCE(saleable_qty_cf,0) as total_saleable_stock FROM `tabItem`),
-col_p as (SELECT item_code,(reserved_qty+reserved_qty_for_production+reserved_qty_for_sub_contract) as qty_sold_to_be_delivered FROM `tabBin`
-group by item_code
-),
+col_p as (SELECT item_code,COALESCE(qty_sold_to_deliver_cf,0) as qty_sold_to_be_delivered FROM `tabItem`),
 col_s as (SELECT  PR_item.item_code ,TIMESTAMPDIFF(MONTH,PR.posting_date,NOW())  as months_since_first_purchase_receipt,
 ROW_NUMBER() over (PARTITION by PR_item.item_code order by PR.posting_date desc ) as rn
 FROM  `tabPurchase Receipt` as PR

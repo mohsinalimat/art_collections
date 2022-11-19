@@ -23,7 +23,6 @@ item.name,
 item.item_code ,
 item.item_name,  
 ucd.conversion_factor as inner_conversion_factor,
-price.price_list_rate,
 barcode.barcode ,
 GROUP_CONCAT(DISTINCT universe_catalogue.name) as universe_title,
 item.disabled,
@@ -34,10 +33,6 @@ item.availability_date_art
 from `tabItem` as item
 left outer join `tabUOM Conversion Detail` ucd
 on ucd.parent = item.name and ucd.uom = (select value from `tabSingles` where doctype='Art Collections Settings' and field='inner_carton_uom')
-left outer join `tabItem Price` price 
-on price.item_code=item.name and price.price_list =(
-select value from `tabSingles` where doctype='Selling Settings' and field='selling_price_list')
-and %(to_date)s between ifnull(price.valid_from, '2000-01-01') and ifnull(price.valid_upto, '2500-12-31')
 left outer join `tabPricing Rule Item Code` tpric  
 on tpric.item_code=item.name 
 left outer join `tabItem Barcode` barcode  
@@ -48,6 +43,20 @@ left outer join `tabCatalogue Directory Art` universe_catalogue
 on universe_catalogue.name=universe_item.parent
 and universe_catalogue.node_type='Universe'
 group by item.name 
+),
+col_price_selling as (SELECT  tip.price_list_rate,tip.item_code,
+ROW_NUMBER() over (PARTITION by tip.item_code order by tip.valid_from DESC   ) as rn
+from `tabItem Price` tip 
+where tip.price_list =(select value from `tabSingles` where doctype='Selling Settings' and field='selling_price_list')
+and %(to_date)s between ifnull(tip.valid_from, '2000-01-01') and ifnull(tip.valid_upto, '2500-12-31')
+group by tip.item_code 
+),
+col_price_buying as (SELECT  tip.price_list_rate,tip.item_code,
+ROW_NUMBER() over (PARTITION by tip.item_code order by tip.valid_from DESC   ) as rn
+from `tabItem Price` tip 
+where tip.price_list =(select value from `tabSingles` where doctype='Buying Settings' and field='buying_price_list')
+and %(to_date)s between ifnull(tip.valid_from, '2000-01-01') and ifnull(tip.valid_upto, '2500-12-31')
+group by tip.item_code 
 ),
 customer_revenue as 
 (
@@ -144,7 +153,9 @@ and (SI.posting_date BETWEEN %(month_start_date)s and %(month_end_date)s)
 group by SI_item.item_code )
 SELECT 
 col_supplier.supplier,fn.item_code,fn.item_name,col_catalogue_type.catalogue_type,fn.universe_title,fn.disabled,fn.is_stock_item,fn.is_sales_item,fn.is_purchase_item,fn.inner_conversion_factor,
-fn.price_list_rate,col_e.price_rule_rate,
+col_price_selling.price_list_rate,
+col_price_buying.price_list_rate as last_purchase_rate,
+col_e.price_rule_rate,
 col_e.min_qty,fn.barcode,
 CONCAT(col_j.notion_ca,' ',col_k.notion_qty) as best_amt_qty,
 col_i.qty_sold_in_financial_year,
@@ -177,6 +188,8 @@ left outer join col_p on col_p.item_code =fn.name
 left outer join col_s on col_s.item_code =fn.name and col_s.rn=1
 left outer join col_u_last_month on col_u_last_month.item_code =fn.name
 left outer join col_e on col_e.item_code =fn.name and col_e.rn=1
+left outer join col_price_selling on col_price_selling.item_code =fn.name and col_price_selling.rn=1
+left outer join col_price_buying on col_price_buying.item_code =fn.name and col_price_buying.rn=1
 left outer join col_sold_qty_to_deliver on col_sold_qty_to_deliver.item_code=fn.name 
 left outer join item_customer_pair on item_customer_pair.item_code=fn.name
 left outer join col_supplier on col_supplier.item_code=fn.name
@@ -195,134 +208,141 @@ left outer join col_catalogue_type on col_catalogue_type.item=fn.name
 def get_columns(filters):
     columns = [
         {
-            "label": _("Item Code"),
+            "label": _("Code article"),
             "fieldtype": "Link",
             "fieldname": "item_code",
             "options": "Item",
             "width": 220
         },
         {
-            "label": _("Inner Conversion"),
+            "label": _("Colisage (Inner)"),
             "fieldtype": "Int",
             "fieldname": "inner_conversion_factor",
             "width": 50
         },		
         {
-            "label": _("Selling Price"),
+            "label": _("Prix vente"),
             "fieldtype": "Currency",
             "fieldname": "price_list_rate",
             "options": "currency",
             "width": 120
         },	
         {
-            "label": _("Large Package"),
+            "label": _("Qty gros colisage"),
             "fieldtype": "Float",
             "fieldname": "min_qty",
             "width": 120
         },			
         {
-            "label": _("Large Package Rate"),
+            "label": _("Prix gros colisage"),
             "fieldtype": "Currency",
             "fieldname": "price_rule_rate",
             "options": "currency",
             "width": 120
         },	
         {
-            "label": _("Barcode"),
+            "label": _("Dernier prix d'achat"),
+            "fieldtype": "Currency",
+            "fieldname": "last_purchase_rate",
+            "options": "currency",
+            "width": 120
+        },	        
+        {
+            "label": _("Code barres"),
             "fieldname": "barcode",
             "width": 200
         },		
         {
-            "label": _("Catalogue Type"),
+            "label": _("Catalogue (type)"),
             "fieldname": "catalogue_type",
             "width": 200
         },	
         {
-            "label": _("Universe Title"),
+            "label": _("Univers"),
             "fieldname": "universe_title",
             "width": 200
         },	
         {
-            "label": _("Desabled"),
+            "label": _("Désactivé"),
             "fieldtype": "Int",
             "fieldname": "disabled",
             "width": 50
         },      
         {
-            "label": _("Maintain Stock"),
+            "label": _("Maintenir stock"),
             "fieldtype": "Int",
             "fieldname": "is_stock_item",
             "width": 50
         },          	
         {
-            "label": _("Is Sales Item"),
+            "label": _("A la vente"),
             "fieldtype": "Int",
             "fieldname": "is_sales_item",
             "width": 50
         },        
         {
-            "label": _("Is Purchase Item"),
+            "label": _("A l'achat"),
             "fieldtype": "Int",
             "fieldname": "is_purchase_item",
             "width": 50
         },		
         {
-            "label": _("Months Of Stock With Supply"),
+            "label": _("Nbr mois Couverture avec appro"),
             "fieldtype": "Float",
             "fieldname": "avec_appro",
             "width": 120
         },			
         {
-            "label": _("Qty Sold in FY"),
+            "label": _("CA depuis janvier"),
             "fieldtype": "Float",
             "fieldname": "qty_sold_in_financial_year",
             "width": 120
         },		
         {
-            "label": _("Qty Sold in 12 months"),
+            "label": _("CA depuis 12 mois"),
             "fieldtype": "Float",
             "fieldname": "qty_sold_in_last_12_months",
             "width": 120
         },		
         {
-            "label": _("Avg Qty sold per month"),
+            "label": _("Qté vente moyenne par mois"),
             "fieldtype": "Float",
             "fieldname": "avg_qty_sold_per_month",
             "width": 140
         },		
         {
-            "label": _("Total Saleable Stock"),
+            "label": _("Saleable Stock"),
             "fieldtype": "Float",
             "fieldname": "total_saleable_stock",
             "width": 140
         },		
         {
-            "label": _("Total PO Qty to be received"),
+            "label": _("Total appro"),
             "fieldtype": "Float",
             "fieldname": "po_to_delivered",
             "width": 120
         },			
         {
-            "label": _("Qty Sold to be delivered"),
+            "label": _("Résa client"),
             "fieldtype": "Float",
             "fieldname": "qty_sold_to_be_delivered",
             "width": 140
         },	
         {
-            "label": _("Stock Disposable"),
+            "label": _("Stock disponible"),
             "fieldtype": "Float",
             "fieldname": "stock_disposable",
             "width": 140
         },	
         {
-            "label": _("Disposable plus PO to receive"),
+            "label": _("Stock disponible avec appro"),
             "fieldtype": "Float",
             "fieldname": "stock_disposable_plus_po_to_delivered",
             "width": 120
         },		
 
         {
-            "label": _("Months of Stock Coverage"),
+            "label": _("Nbr mois Couverture"),
             "fieldtype": "Float",
             "fieldname": "nbr_mois",
             "width": 140
@@ -333,31 +353,31 @@ def get_columns(filters):
             "width": 200
         },						
         {
-            "label": _("Availability Date"),
+            "label": _("Date prochaine appro"),
             "fieldtype": "Date",
             "fieldname": "availability_date_art",
             "width": 140
         },		
         {
-            "label": _("Revenue for 12 months"),
+            "label": _("CA  depuis12 mois"),
             "fieldtype": "Currency",
             "fieldname": "revenue_for_last_12_months",
             "options": "currency",
             "width": 120
         },											
         {
-            "label": _("Supplier"),
+            "label": _("Fournisseur"),
             "fieldname": "supplier",
             "width": 200
         },
         {
-            "label": _("Order Forecast"),
+            "label": _("Proposition réassort"),
             "fieldtype": "Float",
             "fieldname": "commander",
             "width": 120
         },	
-	        {
-            "label": _("Best Customer"),
+	    {
+            "label": _("Meilleurs clients"),
             "fieldname": "best_customer",
             "width": 200
         }

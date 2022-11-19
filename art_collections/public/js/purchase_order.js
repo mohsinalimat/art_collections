@@ -104,7 +104,7 @@ frappe.ui.form.on('Purchase Order', {
 
 
 		if (frm.doc.photo_quotation_cf) {
-			frappe.add_dashboard_connection( frm, "Photo Quotation", "Related", 1, 0, [frm.doc.photo_quotation_cf], null, 1 );
+			frappe.add_dashboard_connection( frm, "Photo Quotation", "Related", 1, 1, [frm.doc.photo_quotation_cf], null, 1 );
 		}
 
 		$('div').find('.document-link[data-doctype="Art Shipment"]').remove();

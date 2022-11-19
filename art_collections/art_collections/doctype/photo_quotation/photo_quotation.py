@@ -303,7 +303,7 @@ class PhotoQuotation(Document):
             as_dict=True,
         ):
             if not d.item_code:
-                frappe.delete_doc("Lead Item", d[0])
+                frappe.delete_doc("Lead Item", d.lead_item)
             else:
                 items_not_deleted.append(d.lead_item)
 

@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import now, cstr, cint, add_days, today, add_to_date, flt
+from frappe.utils import now, cstr, cint, add_days, today, now_datetime, flt
 import json
 from art_collections.controllers.excel import write_xlsx, attach_file, add_images
 from frappe.utils.data import getdate
@@ -291,13 +291,38 @@ class PhotoQuotation(Document):
 
     @frappe.whitelist()
     def delete_all_lead_items(self):
-        for d in frappe.db.get_all("Lead Item", {"photo_quotation": self.name}):
-            frappe.delete_doc("Lead Item", d.name)
+        items_not_deleted = []
+        for d in frappe.db.sql(
+            """
+			select tli.name lead_item, ti.name item_code
+            from `tabLead Item` tli 
+            left outer join tabItem ti on ti.lead_item_cf  = tli.name
+            where tli.photo_quotation = %s
+        """,
+            (self.name,),
+            as_dict=True,
+        ):
+            if not d.item_code:
+                frappe.delete_doc("Lead Item", d[0])
+            else:
+                items_not_deleted.append(d.lead_item)
+
         frappe.db.commit()
+        if items_not_deleted:
+            frappe.msgprint(
+                _("Skipped {} lead items that have Item created.").format(
+                    len(items_not_deleted)
+                ),
+                title="Lead Items deleted",
+            )
 
     @frappe.whitelist()
     def delete_lead_item(self, docname):
-        frappe.get_doc("Lead Item", docname).delete()
+        for d in frappe.db.get_all(
+            "Lead Item",
+            {"photo_quotation": self.name, "is_item_created": 0, "name": docname},
+        ):
+            frappe.delete_doc("Lead Item", d.name)
         frappe.db.commit()
 
     @frappe.whitelist()
@@ -381,13 +406,16 @@ class PhotoQuotation(Document):
             callback = "supplier_sample_request_email_callback"
 
         email_template = None
+        prefix = ""
 
         if template == "lead_items_supplier_template":
             if filters == "supplier_quotation":
+                prefix = "Quotation"
                 email_template = frappe.db.get_single_value(
                     "Art Collections Settings", "photo_quotation_supplier_quotation"
                 )
             elif filters == "supplier_sample_request":
+                prefix = "Sample"
                 email_template = frappe.db.get_single_value(
                     "Art Collections Settings",
                     "photo_quotation_supplier_sample_request",
@@ -398,18 +426,16 @@ class PhotoQuotation(Document):
             content,
             doctype=self.doctype,
             docname=self.name,
-            file_name=get_file_name(self.name, template),
+            file_name=get_file_name(self.name, prefix),
             email_template=email_template,
             show_email_dialog=1,
             callback=callback,
         )
 
 
-def get_file_name(name, template):
-    return "{}-{}-{}.xlsx".format(
-        name,
-        frappe.unscrub(template),
-        now()[:16].replace(" ", "-").replace(":", ""),
+def get_file_name(name, prefix=""):
+    return "-".join(
+        [name, "Lead Items", prefix, now_datetime().strftime("%Y-%m-%d-%H%M"), ".xlsx"]
     )
 
 

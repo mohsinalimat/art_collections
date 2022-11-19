@@ -399,4 +399,16 @@ def get_total_salable_qty_for_warehouse_group_other_than_damage_or_reserved(item
 # 	warehouse_list=get_child_warehouses(set_warehouse)
 # 	result = frappe.db.sql("""SELECT  COALESCE(sum(actual_qty),0) as saleable_qty from `tabBin` where item_code = '{item_code}' and warehouse in ({warehouses})  group by item_code """
 # 	.format(item_code=item_code,warehouses=' ,'.join(['%s']*len(warehouse_list))),tuple(warehouse_list),as_dict=1,debug=1)
-# 	return result			
+# 	return result		
+
+@frappe.whitelist()
+def get_linked_photo_quotation(name):
+    for d in frappe.db.sql("""
+        select tpq.name 
+        from tabItem ti
+        inner join `tabLead Item` tli on tli.name = ti.lead_item_cf 
+        inner join `tabPhoto Quotation` tpq on tpq.name = tli.photo_quotation 
+        where ti.name = %s
+        limit 1
+    """,(name,)):
+        return d[0]

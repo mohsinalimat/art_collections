@@ -23,6 +23,32 @@ frappe.ui.form.on('Purchase Order', {
 	},
 	refresh: function (frm) {
 
+
+		frm.add_custom_button(
+			__("Upload PO Items"),
+			function () {
+			  // read excel
+			  new frappe.ui.FileUploader({
+				as_dataurl: true,
+				allow_multiple: false,
+				on_success(file) {
+				  var reader = new FileReader();
+				  reader.onload = function (e) {
+					var workbook = XLSX.read(e.target.result);
+					// get data from Lead Items
+					let ws = workbook.Sheets[workbook.SheetNames[0]];
+					set_sheet_range(ws, 1, 2);
+					let csv = XLSX.utils.sheet_to_csv(ws);
+					var data = frappe.utils.csv_to_array(csv);
+					frm.events.upload_po_items(frm, data);
+				  };
+				  reader.readAsArrayBuffer(file.file_obj);
+				},
+			  });
+			},
+			__("Tools")
+		  );
+
 		frm.add_custom_button(
 			__("Email Supplier"),
 			function () {
@@ -77,6 +103,10 @@ frappe.ui.form.on('Purchase Order', {
 		);
 
 
+		if (frm.doc.photo_quotation_cf) {
+			frappe.add_dashboard_connection( frm, "Photo Quotation", "Related", 1, 0, [frm.doc.photo_quotation_cf], null, 1 );
+		}
+
 		$('div').find('.document-link[data-doctype="Art Shipment"]').remove();
 		if (frm.is_new() == undefined) {
 			frappe.call('art_collections.purchase_order_controller.get_connected_shipment', {
@@ -116,7 +146,23 @@ frappe.ui.form.on('Purchase Order', {
 				},
 			});
 		});
-	}
+	},
+
+	upload_po_items: function (frm, items) {
+		let promises = [];
+		for (const d of items) {
+		  let item = frm.add_child("items", {
+			qty: d[0][1],
+			schedule_date: frappe.datetime.get_today(),
+		  });
+		  promises.push(
+			frappe.model.set_value(item.doctype, item.name, "item_code", d[0])
+		  );
+		}
+		Promise.all(promises).then(() => {
+		  frm.refresh_field("items");
+		});
+	  },
 
 });
 
@@ -133,3 +179,18 @@ frappe.ui.form.on("Purchase Order Item", {
 	}
 
 });
+
+
+function set_sheet_range(ws, skip_rows, column_count) {
+	let ref = XLSX.utils.decode_range(ws["!ref"]);
+	let max_row = skip_rows;
+	while (true) {
+	  var nextCell = ws[XLSX.utils.encode_cell({ r: max_row, c: 1 })];
+	  if (typeof nextCell === "undefined" || nextCell == "") break;
+	  max_row++;
+	}
+	ref.s.r = skip_rows;
+	ref.e.r = max_row - 1;
+	ref.e.c = column_count;
+	ws["!ref"] = XLSX.utils.encode_range(ref);
+  }

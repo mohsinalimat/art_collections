@@ -139,31 +139,6 @@ frappe.ui.form.on("Photo Quotation", {
     );
 
     frm.add_custom_button(
-      __("Delete all Lead Items"),
-      function () {
-        frappe.confirm(
-          __("Are you sure you want to delete all lead items ?"),
-          () => {
-            frappe.dom.freeze(
-              __("Deleting Lead Items for {0}", [frm.doc.name])
-            );
-            return frm
-              .call({
-                method: "delete_all_lead_items",
-                doc: frm.doc,
-                args: {},
-              })
-              .then((r) => {
-                frm.reload_doc();
-                frappe.dom.unfreeze();
-              });
-          }
-        );
-      },
-      __("Tools")
-    );
-
-    frm.add_custom_button(
       __("Email Supplier for Quotation"),
       function () {
         return frm.call({
@@ -191,6 +166,31 @@ frappe.ui.form.on("Photo Quotation", {
             filters: "supplier_sample_request",
           },
         });
+      },
+      __("Tools")
+    );
+
+    frm.add_custom_button(
+      __("Delete all Lead Items"),
+      function () {
+        frappe.confirm(
+          __("Are you sure you want to delete all lead items ?"),
+          () => {
+            frappe.dom.freeze(
+              __("Deleting Lead Items for {0}", [frm.doc.name])
+            );
+            return frm
+              .call({
+                method: "delete_all_lead_items",
+                doc: frm.doc,
+                args: {},
+              })
+              .then((r) => {
+                frm.reload_doc();
+                frappe.dom.unfreeze();
+              });
+          }
+        );
       },
       __("Tools")
     );

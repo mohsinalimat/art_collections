@@ -156,6 +156,17 @@ frappe.ui.form.on('Item', {
 			}, __("View"));         
       }
 
+      // set photo quotation link in connections
+      frappe.call({
+         method:'art_collections.item_controller.get_linked_photo_quotation',
+         args:{'name':frm.doc.name},
+         callback: function(r){
+
+            frappe.add_dashboard_connection( frm, "Photo Quotation", "Buy", 1, 0, [r.message], null, 1 );
+
+         }
+      })
+
    },
    is_existing_product_cf: function (frm) {
       if (frm.doc.is_existing_product_cf==1) {

@@ -301,3 +301,57 @@ $.extend(frappe.meta, {
 
     }
 });
+
+
+frappe.add_dashboard_connection = function (
+    frm,
+    doctype,
+    group,
+    open_count,
+    count,
+    names,
+    onclick,
+    hidden
+  ) {
+    if (
+      frm.dashboard.transactions_area.find(
+        `.document-link[data-doctype="${doctype}"]`
+      ).length > 0
+    ) {
+      frm.dashboard.set_badge_count(doctype, open_count, count, names);
+      return;
+    }
+  
+    let $group = frm.dashboard.transactions_area
+      .find(`.form-link-title:contains('${group}')`)
+      .get(0);
+  
+    let $link_template = $(`
+    <div class="document-link" data-doctype="${doctype}">
+      <div class="document-link-badge" data-doctype="${doctype}">
+        <span class="count hidden"></span> <a class="badge-link">${doctype}</a>
+      </div>
+      <span class="open-notification" title="Open ${doctype}">0</span>
+      <button ${
+        hidden ? "hidden" : ""
+      } class="btn btn-new btn-secondary btn-xs icon-btn" data-doctype="${doctype}">
+        <svg class="icon icon-sm"><use href="#icon-add"></use></svg>
+      </button>
+    </div>
+    `);
+  
+    let _to_list_view = function () {
+      frappe.route_options = {
+        name: ["in", names],
+      };
+      frappe.set_route("List", doctype, "List");
+    };
+  
+    $link_template.on("click", onclick || _to_list_view);
+  
+    frm.dashboard.transactions_area
+      .find(`.form-link-title:contains('${group}')`)
+      .after($link_template);
+    frm.dashboard.set_badge_count(doctype, open_count, count, names);
+  };
+  

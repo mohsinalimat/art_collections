@@ -355,3 +355,11 @@ frappe.add_dashboard_connection = function (
     frm.dashboard.set_badge_count(doctype, open_count, count, names);
   };
   
+
+frappe.write_xlsx = function (data, sheet_name, file_name) {
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheet_name);
+    XLSX.writeFile(workbook, file_name+".xlsx");
+}
+

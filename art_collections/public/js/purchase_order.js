@@ -23,6 +23,14 @@ frappe.ui.form.on('Purchase Order', {
 	},
 	refresh: function (frm) {
 
+		frm.add_custom_button(
+			__("Download PO Item Template"),
+			function () {
+				const sample_data = [[__("Item Code"),__("Qty")],["92003", 10],["92004",15]]
+				frappe.write_xlsx(sample_data, 'PO Item Template', "PO Item Template")
+			},
+			__("Tools")
+		  );
 
 		frm.add_custom_button(
 			__("Upload PO Items"),
@@ -152,7 +160,7 @@ frappe.ui.form.on('Purchase Order', {
 		let promises = [];
 		for (const d of items) {
 		  let item = frm.add_child("items", {
-			qty: d[0][1],
+			qty: cint(d[1]),
 			schedule_date: frappe.datetime.get_today(),
 		  });
 		  promises.push(

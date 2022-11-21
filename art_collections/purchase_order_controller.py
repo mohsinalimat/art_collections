@@ -19,7 +19,35 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from frappe.utils import cint, get_site_url, get_url
+from erpnext.buying.doctype.purchase_order.purchase_order import PurchaseOrder
 
+class CustomPurchaseOrder(PurchaseOrder):
+    def validate_minimum_order_qty(self):
+        print('55')
+        if not self.get("items"):
+            return
+        items = list(set(d.item_code for d in self.get("items")))
+
+        itemwise_min_order_qty = frappe._dict(
+            frappe.db.sql(
+                """select name, min_order_qty
+            from tabItem where name in ({0})""".format(
+                    ", ".join(["%s"] * len(items))
+                ),
+                items,
+            )
+        )
+        itemwise_qty = frappe._dict()
+        for d in self.get("items"):
+            itemwise_qty.setdefault(d.item_code, 0)
+            itemwise_qty[d.item_code] += flt(d.stock_qty)
+
+        for item_code, qty in itemwise_qty.items():
+            if flt(qty) < flt(itemwise_min_order_qty.get(item_code)):
+                frappe.msgprint(
+                    _("Item {0}: Ordered qty {1} cannot be less than minimum order qty {2} (defined in Item).")
+                    .format(item_code, qty, itemwise_min_order_qty.get(item_code)), indicator="red", alert=True)
+    
 
 def purchase_order_custom_validation(self, method):
     fill_item_pack_details(self)
@@ -267,13 +295,13 @@ def get_po_dashboard_links(data):
 
 @frappe.whitelist()
 def get_connected_shipment(purchase_order):
-	shipment_list=[]
-	shipment_results=frappe.db.sql("""SELECT distinct shipment   FROM `tabSupplier Packing List Detail Art`
-							where docstatus!=2 and purchase_order =%s""",
+    shipment_list=[]
+    shipment_results=frappe.db.sql("""SELECT distinct shipment   FROM `tabSupplier Packing List Detail Art`
+                            where docstatus!=2 and purchase_order =%s""",
         (purchase_order),as_dict=True)
-	if len(shipment_results)>0:
-		for shipment in shipment_results:
-			shipment_list.append(shipment.shipment)
-		return shipment_list
-	else:
-		return []    
+    if len(shipment_results)>0:
+        for shipment in shipment_results:
+            shipment_list.append(shipment.shipment)
+        return shipment_list
+    else:
+        return []    

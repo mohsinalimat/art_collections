@@ -319,5 +319,6 @@ jenv = {
 }
 
 override_doctype_class = {
-    "Pick List": "art_collections.pick_list_controller.CustomPickList"
+    "Pick List": "art_collections.pick_list_controller.CustomPickList",
+    "Purchase Order" : "art_collections.purchase_order_controller.CustomPurchaseOrder",
 }
